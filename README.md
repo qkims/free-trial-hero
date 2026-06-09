@@ -49,6 +49,9 @@ data); FCP/LCP measured with the puppeteer + CDP throttling harness used for the
   **PNG** (`assets/logo-fallback.png`) for anything that plays neither. A `drop-shadow` keeps the white
   wordmark legible over light tiles.
 - **Accessibility** — `prefers-reduced-motion` freezes the row scroll to a static mosaic.
+- **Editing aid** — tiles are scaled so ~4 rows fill the hero, and each card shows its source
+  number (`assets/tile-NN.webp`) as a small corner badge so specific tiles can be swapped. The
+  badges are on by default; press **`n`** to toggle them off.
 - **`assets/tile-*.webp`** — 30 real Shopify product/UI tiles pulled from the Figma design, resized to
   ~440 px and encoded WebP q72 (8–24 KB each).
 
