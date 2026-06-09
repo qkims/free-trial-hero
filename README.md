@@ -34,9 +34,13 @@ data); FCP/LCP measured with the puppeteer + CDP throttling harness used for the
   marquee: a `.lane` built from two **identical** halves that loops on `translateX(-50%)` — seamless
   because every card carries a trailing `margin-right` (not flex `gap`), so one half is exactly `n·(card+gap)`
   and `-50%` lands precisely one half over. Adjacent rows use opposite-direction keyframes (`scrollL` /
-  `scrollR`) and slightly different durations for an organic shear. A tiny inline script fills each half
-  with a mix of portrait/landscape tiles from a shuffled deck (no near repeats); the first few
-  above-the-fold tiles are `fetchpriority="high"`, the rest `loading="lazy"`.
+  `scrollR`) at a slow ~80–106 s sweep with per-row phase offsets for an organic shear. Each row spans
+  the full clip width with its lane left-anchored and each half wider than the clip, so the two-halves
+  loop is genuinely gap-free. A tiny inline script fills each half with a mix of portrait/landscape tiles
+  from a shuffled deck (no near repeats); the first few above-the-fold tiles are `fetchpriority="high"`,
+  the rest `loading="lazy"`.
+- **Scrim** — a flat low-opacity dark tint over the whole mosaic, plus a soft darker pool behind the
+  center and an edge vignette, so the white intro card and CTA read as the prominent element.
 - **Content** — white intro card ("Your business starts with Shopify" + offer), rich-black CTA card with
   "Start for free" + email input. Copy/spec taken from Figma (`Inter Medium 44px` headline).
 - **Logo** — an animated end-card video with transparency, played once on load then held. To keep the

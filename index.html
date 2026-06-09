@@ -46,20 +46,21 @@
     overflow:hidden;
     z-index:0;
   }
-  /* Static vertical stack, centered in the rotor (tall enough to cover it).
+  /* Static vertical stack filling the rotor (tall enough to cover it).
      The vertical position is fixed; motion happens per-row, horizontally. */
   .track{
-    position:absolute; top:50%; left:50%;
-    transform:translate(-50%,-50%);
+    position:absolute; top:50%; left:0; width:100%;
+    transform:translateY(-50%);
     display:flex;
     flex-direction:column;
-    align-items:center;
+    align-items:stretch;                     /* rows span the full clip width */
     gap:var(--gap);                          /* vertical gaps between rows */
   }
   /* Each row is a horizontal marquee: a .lane of two identical halves looping on
      translateX. Adjacent rows scroll opposite ways (row 1 →, row 2 ←, row 3 →, …),
-     so the wall of tiles shears like the live video. */
-  .row{ display:flex; }                       /* row hugs its lane's full (2-half) width */
+     so the wall of tiles shears like the live video. The row is exactly the clip
+     width and the lane is left-anchored, so the two-halves loop never shows a gap. */
+  .row{ display:flex; overflow:visible; }     /* lane overflows; the rotor clips it */
   .lane{
     display:flex; flex:0 0 auto;
     animation: scrollL var(--dur, 58s) linear infinite;
@@ -86,12 +87,15 @@
     object-fit:cover; display:block;
   }
 
-  /* ---------- Legibility scrim / depth ---------- */
+  /* ---------- Legibility scrim / depth ----------
+     A flat low-opacity dark tint over the whole mosaic + a soft darker pool behind
+     the center, so the white intro card and CTA read as the prominent element. */
   .scrim{
     position:absolute; inset:0; z-index:1; pointer-events:none;
     background:
-      radial-gradient(120% 90% at 50% 52%, rgba(255,255,255,.30) 0%, rgba(255,255,255,0) 42%),
-      radial-gradient(140% 120% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.28) 100%); /* vignette */
+      radial-gradient(75% 70% at 50% 50%, rgba(0,0,0,.28) 0%, rgba(0,0,0,0) 70%),   /* pool behind the card */
+      radial-gradient(140% 120% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.30) 100%),/* edge vignette */
+      linear-gradient(rgba(0,0,0,.30), rgba(0,0,0,.30));                            /* flat dark tint */
   }
 
   /* ---------- Foreground content ---------- */
@@ -264,15 +268,17 @@
     var TH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--th')) || 280;
     var W1 = TH * 239/314, W2 = TH * 539/314;       // portrait / landscape widths (Figma ratios)
     var GAP = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 16;
-    // One half must be wider than the (tilted, oversized) rotor so a row never shows a gap.
-    var halfTargetW = rotor.clientWidth * 1.15;
+    // One half must be at least as wide as the row (= the rotor) so the two-halves
+    // loop never exposes a gap; a comfortable margin covers the tilt + rounding.
+    var halfTargetW = rotor.clientWidth * 1.3;
 
     var firstRow = true, rowIndex = 0;
     function makeRow(){
       var row = document.createElement('div');
       row.className = 'row' + (rowIndex % 2 ? ' rev' : '');   // alternate scroll direction
       var lane = document.createElement('div'); lane.className = 'lane';
-      lane.style.setProperty('--dur', (50 + (rowIndex % 3) * 9) + 's');  // gentle per-row variance
+      lane.style.setProperty('--dur', (80 + (rowIndex % 3) * 13) + 's'); // slow drift, gentle per-row variance
+      lane.style.animationDelay = -(rowIndex * 9) + 's';                 // desync rows so they don't move in lockstep
 
       // Pick the tiles/widths for ONE half first…
       var cells = [], w = 0;
