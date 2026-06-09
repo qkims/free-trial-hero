@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your business starts with Shopify — Free Trial</title>
+<!-- Critical CSS inlined: no render-blocking stylesheet, no web-font round-trip. -->
+<style>
+  :root{
+    --rich-black:#02090a;
+    --ink:#0b0b0c;
+    --card-w: clamp(120px, 11vw, 168px);   /* mosaic tile width */
+    --gap: clamp(10px, 1vw, 18px);
+    --radius-tile: 15px;
+    --font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Inter", Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{
+    font-family:var(--font);
+    background:var(--ink);
+    color:#000;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---------- Hero shell ---------- */
+  .hero{
+    position:relative;
+    width:100%;
+    aspect-ratio: 1440 / 810;
+    max-height:100svh;
+    overflow:hidden;
+    background:#c7cdd2;            /* matches mosaic mid-tone so first paint isn't black */
+    isolation:isolate;
+  }
+
+  /* ---------- Rotated, drifting mosaic ---------- */
+  /* Centered, rotated clip box that fully covers the hero. */
+  .rotor{
+    position:absolute;
+    top:50%; left:50%;
+    width:185%; height:185%;
+    transform:translate(-50%,-50%) rotate(15deg);
+    transform-origin:center;
+    overflow:hidden;
+    z-index:0;
+  }
+  /* Top-anchored track = two identical halves; each half is taller than the rotor,
+     so translateY(-50%) (one half) wraps seamlessly while always covering. */
+  .track{
+    position:absolute; top:0; left:0; width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:var(--gap);
+    animation: drift 26s linear infinite;   /* slow seamless diagonal drift */
+    will-change:transform;
+  }
+  @keyframes drift{
+    from{ transform:translateY(-50%); }      /* downward drift (matches source video) */
+    to  { transform:translateY(0); }
+  }
+  .row{
+    display:flex;
+    gap:var(--gap);
+    justify-content:center;
+  }
+  .card{
+    flex:0 0 auto;
+    width:var(--card-w);
+    aspect-ratio: 239 / 314;                /* portrait, from Figma */
+    border-radius:var(--radius-tile);
+    overflow:hidden;
+    background:#e7e3dc;
+    box-shadow:0 6px 14px -6px rgba(0,0,0,.25);
+  }
+  .card img{
+    width:100%; height:100%;
+    object-fit:cover; display:block;
+  }
+
+  /* ---------- Legibility scrim / depth ---------- */
+  .scrim{
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 52%, rgba(255,255,255,.30) 0%, rgba(255,255,255,0) 42%),
+      radial-gradient(140% 120% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.28) 100%); /* vignette */
+  }
+
+  /* ---------- Foreground content ---------- */
+  .logo{
+    position:absolute; top:max(18px,2.4vh); left:50%; transform:translateX(-50%);
+    z-index:3; display:flex; align-items:center; gap:.5em;
+    color:#1a1a1a;
+  }
+  .logo svg{ display:block; height:34px; width:auto; }
+  .logo span{ font-size:30px; font-weight:600; letter-spacing:-.02em; }
+
+  .content{
+    position:absolute; z-index:3;
+    top:50%; left:50%; transform:translate(-50%,-50%);
+    width:min(460px, 86vw);
+    display:flex; flex-direction:column; gap:10px; align-items:stretch;
+  }
+
+  /* Intro card (white) — this is the intended LCP element: pure text on CSS bg */
+  .intro{
+    background:#fff;
+    border-radius:35px;
+    padding:30px 24px 25px 20px;
+    box-shadow:0 18px 40px -22px rgba(0,0,0,.45);
+  }
+  .intro h1{
+    margin:0;
+    font-weight:500;
+    font-size:clamp(30px, 4.6vw, 44px);
+    line-height:1;
+    letter-spacing:-.01em;
+    color:#000;
+  }
+  .intro p{
+    margin:14px 0 0;
+    font-size:clamp(15px, 1.6vw, 18px);
+    line-height:1.2;
+    letter-spacing:-.01em;
+    color:rgba(0,0,0,.6);
+  }
+  .intro p b{ color:#000; font-weight:400; }
+
+  /* CTA card (rich black) */
+  .cta{
+    background:var(--rich-black);
+    border:1px solid rgba(255,255,255,.17);
+    border-radius:35px;
+    padding:18px 10px 10px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .cta-top{
+    display:flex; align-items:baseline; gap:32px; padding-left:5px;
+  }
+  .cta-top .free{
+    color:#fff; font-weight:500; font-size:clamp(20px,2.4vw,24px);
+    letter-spacing:-.01em; padding-left:10px; white-space:nowrap;
+  }
+  .cta-top .disclaimer{
+    color:rgba(255,255,255,.5); font-size:11px; line-height:1.2; letter-spacing:-.01em;
+  }
+  .email{
+    background:#171717; border:1px solid rgba(255,255,255,.3);
+    border-radius:100px; padding:5px 5px 5px 15px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .email input{
+    flex:1; background:transparent; border:0; outline:0;
+    color:#fff; font-family:var(--font); font-size:clamp(16px,2vw,20px); letter-spacing:-.01em;
+    padding:10px 0;
+  }
+  .email input::placeholder{ color:rgba(255,255,255,.7); }
+  .email button{
+    flex:0 0 auto; width:48px; height:48px; border-radius:200px; border:0;
+    background:#fff; color:#111; cursor:pointer;
+    display:grid; place-items:center; transition:transform .15s ease, background .15s ease;
+  }
+  .email button:hover{ transform:translateX(2px); }
+  .email button svg{ width:17px; height:16px; display:block; }
+
+  /* ---------- LCP diagnostic panel (deferred, non-blocking) ---------- */
+  #perf{
+    position:fixed; right:10px; bottom:10px; z-index:9;
+    font:12px/1.4 ui-monospace,Menlo,monospace;
+    background:rgba(0,0,0,.78); color:#7CFFB2; padding:8px 11px; border-radius:8px;
+    pointer-events:none; white-space:pre;
+  }
+
+  /* ---------- Responsive: portrait hero on mobile (matches real mobile layout) ---------- */
+  @media (max-width: 900px){
+    .hero{ aspect-ratio:auto; height:100svh; min-height:600px; }
+    .rotor{ width:230%; }                 /* wider plane so the tilt still fills a tall, narrow hero */
+    :root{ --card-w: clamp(96px, 26vw, 150px); }
+  }
+
+  /* ---------- Reduced motion: freeze the drift ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .track{ animation:none; transform:translateY(-25%); }
+  }
+</style>
+</head>
+<body>
+  <main class="hero">
+    <!-- Mosaic background (built by tiny inline script below; sits behind content) -->
+    <div class="rotor" aria-hidden="true"><div class="track" id="track"></div></div>
+
+    <div class="scrim" aria-hidden="true"></div>
+
+    <!-- Logo -->
+    <a class="logo" href="#" aria-label="Shopify">
+      <svg viewBox="0 0 110 125" role="img" aria-hidden="true">
+        <path fill="#95BF47" d="M95 24c-.1-.6-.6-1-1-1-.5 0-9.6-.7-9.6-.7s-6.4-6.3-7.1-7c-.7-.7-2-.5-2.6-.3 0 0-1.3.4-3.5 1.1C68.4 11.4 65.3 4 58.9 4h-.6C56.4 1.6 54 .6 52 .6c-15.2.1-22.5 19-24.8 28.6-5.9 1.8-10.1 3.1-10.6 3.3-3.3 1-3.4 1.1-3.8 4.2C12.4 39.1 4 104 4 104l64.8 12.2 35.2-7.6S95.1 24.6 95 24zM63.3 16.3l-5.8 1.8v-1.2c0-3.6-.5-6.5-1.3-8.8 3.3.4 5.5 4.1 7.1 8.2zm-11.6-7.4c.9 2.2 1.4 5.3 1.4 9.6v.6l-12 3.7c2.3-8.9 6.7-13.2 10.6-14.5zm-4.7-4.4c.7 0 1.4.2 2.1.7-5.1 2.4-10.6 8.5-12.9 20.7l-9.5 2.9C29.4 20.6 35.6 4.5 46.9 4.5z"/>
+        <path fill="#5E8E3E" d="M94 23c-.5 0-9.6-.7-9.6-.7s-6.4-6.3-7.1-7c-.3-.3-.6-.4-1-.5L68.8 116.2l35.2-7.6S95.1 24.6 95 24c-.1-.6-.6-1-1-1z"/>
+        <path fill="#FFF" d="M58.4 41.6l-4.3 12.9s-3.8-2-8.5-2c-6.9 0-7.2 4.3-7.2 5.4 0 5.9 15.5 8.2 15.5 22.1 0 11-7 18-16.3 18-11.2 0-16.9-7-16.9-7l3-9.9s5.9 5 10.8 5c3.2 0 4.5-2.5 4.5-4.4 0-7.7-12.7-8-12.7-20.7 0-10.8 7.7-21.2 23.3-21.2 6 0 8.8 1.7 8.8 1.7z"/>
+      </svg>
+      <span>shopify</span>
+    </a>
+
+    <!-- Foreground content -->
+    <div class="content">
+      <section class="intro">
+        <h1>Your business<br>starts with Shopify</h1>
+        <p>Try 3 days free, then <b>$1/month for 3 months.</b><br>What are you waiting for?</p>
+      </section>
+
+      <form class="cta" onsubmit="return false">
+        <div class="cta-top">
+          <span class="free">Start for free</span>
+          <span class="disclaimer">You agree to receive Shopify marketing emails.</span>
+        </div>
+        <div class="email">
+          <input type="email" placeholder="Enter your email" aria-label="Email address" />
+          <button type="submit" aria-label="Start free trial">
+            <svg viewBox="0 0 17 16" fill="none"><path d="M1 8h14M9 2l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Mosaic builder: inline, runs during parse, no network of its own. -->
+  <script>
+  (function(){
+    var TILES = ["tile-01.webp","tile-02.webp","tile-03.webp","tile-04.webp","tile-05.webp","tile-06.webp","tile-07.webp","tile-08.webp","tile-09.webp","tile-10.webp","tile-11.webp","tile-12.webp","tile-13.webp","tile-14.webp","tile-15.webp","tile-16.webp","tile-17.webp","tile-18.webp","tile-19.webp","tile-20.webp","tile-21.webp","tile-22.webp","tile-23.webp","tile-24.webp","tile-25.webp","tile-26.webp","tile-27.webp","tile-28.webp","tile-29.webp","tile-30.webp"];
+    var COLS = 14;
+    var track = document.getElementById('track');
+    var rotor = track.parentElement;
+    var seed = 7;                                   // deterministic so the collage is stable per load
+    function rnd(){ seed = (seed*1103515245 + 12345) & 0x7fffffff; return seed/0x7fffffff; }
+    var r = 0;
+    function makeRow(idx){
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.transform = 'translateX(' + ((idx%2)? '-7%':'4%') + ')';   // brick-like stagger
+      for(var c=0; c<COLS; c++){
+        var card = document.createElement('div');
+        card.className = 'card';
+        var img = document.createElement('img');
+        img.src = 'assets/' + TILES[Math.floor(rnd()*TILES.length)];
+        img.alt = ''; img.decoding = 'async'; img.width = 168; img.height = 221;
+        if(idx===0 && c<6){ img.loading='eager'; img.fetchPriority='high'; }  // a few prioritized tiles
+        else { img.loading='lazy'; }
+        card.appendChild(img); row.appendChild(card);
+      }
+      return row;
+    }
+    // Build one half: enough rows that it's taller than the rotor (guarantees full coverage).
+    var target = rotor.clientHeight + 200;
+    do { track.appendChild(makeRow(r++)); } while (track.offsetHeight < target && r < 40);
+    // Clone the half to form the seamless second copy.
+    var half = Array.prototype.slice.call(track.children);
+    for(var i=0;i<half.length;i++){ track.appendChild(half[i].cloneNode(true)); }
+  })();
+  </script>
+
+  <!-- LCP diagnostic: deferred, never blocks paint. Toggle with the "p" key. -->
+  <div id="perf">LCP: measuring…</div>
+  <script>
+  (function(){
+    var el = document.getElementById('perf');
+    try{
+      new PerformanceObserver(function(list){
+        var es = list.getEntries();
+        var last = es[es.length-1];
+        var t = (last.renderTime || last.loadTime || last.startTime);
+        el.textContent = 'LCP: ' + Math.round(t) + ' ms\nel: ' + (last.element ? last.element.tagName.toLowerCase()+(last.element.className?'.'+String(last.element.className).split(' ')[0]:'') : '?');
+      }).observe({type:'largest-contentful-paint', buffered:true});
+    }catch(e){ el.textContent='LCP: n/a'; }
+    addEventListener('keydown', function(e){ if(e.key==='p') el.style.display = (el.style.display==='none'?'block':'none'); });
+  })();
+  </script>
+</body>
+</html>
