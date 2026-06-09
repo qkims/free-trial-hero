@@ -17,10 +17,10 @@ frame (~18°, mostly a flat 2D rotation) and the tile set is curated to match th
 
 | | Live page (`<video>`) | This rebuild | Δ |
 |---|---|---|---|
-| **Desktop** LCP (cable) | 0.88 s | **0.33 s** | **−63%** |
-| **Mobile** LCP (Slow 4G, 4× CPU) | 3.36 s 🟠 | **1.38 s** 🟢 | **−59%** |
+| **Desktop** LCP (cable) | 0.88 s | **0.37 s** | **−58%** |
+| **Mobile** LCP (Slow 4G, 4× CPU) | 3.36 s 🟠 | **1.77 s** 🟢 | **−47%** |
 | Mobile FCP | ~2.6 s | **0.27 s** | |
-| Hero payload | ~700 KB (webm + poster) | **436 KB** (12 KB HTML + 424 KB tiles, mostly lazy) | |
+| Hero payload | ~700 KB (webm + poster) | **~490 KB** (13 KB HTML + 424 KB tiles mostly lazy + 54 KB logo WebM) | |
 
 Mobile crosses from the "poor" band into **"good"** (≤ 2.5 s). Numbers are lab/emulated (not CrUX field
 data); FCP/LCP measured with the puppeteer + CDP throttling harness used for the baseline.
@@ -38,8 +38,13 @@ data); FCP/LCP measured with the puppeteer + CDP throttling harness used for the
   with a mix of portrait/landscape tiles from a shuffled deck (no near repeats); the first few
   above-the-fold tiles are `fetchpriority="high"`, the rest `loading="lazy"`.
 - **Content** — white intro card ("Your business starts with Shopify" + offer), rich-black CTA card with
-  "Start for free" + email input, Shopify logo. Copy/spec taken from Figma (`Inter Medium 44px` headline).
-- **Accessibility** — `prefers-reduced-motion` freezes the drift to a static mosaic.
+  "Start for free" + email input. Copy/spec taken from Figma (`Inter Medium 44px` headline).
+- **Logo** — an animated end-card video with transparency, played once on load then held. To keep the
+  alpha channel cross-browser it ships in two codecs — **VP9 WebM** (`assets/logo.webm`, 54 KB, for
+  Chrome/Firefox/Edge) and **HEVC MP4** (`assets/logo.mp4`, ~250 KB, for Safari) — with a transparent
+  **PNG** (`assets/logo-fallback.png`) for anything that plays neither. A `drop-shadow` keeps the white
+  wordmark legible over light tiles.
+- **Accessibility** — `prefers-reduced-motion` freezes the row scroll to a static mosaic.
 - **`assets/tile-*.webp`** — 30 real Shopify product/UI tiles pulled from the Figma design, resized to
   ~440 px and encoded WebP q72 (8–24 KB each).
 

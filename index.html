@@ -96,12 +96,16 @@
 
   /* ---------- Foreground content ---------- */
   .logo{
-    position:absolute; top:max(18px,2.4vh); left:50%; transform:translateX(-50%);
-    z-index:3; display:flex; align-items:center; gap:.5em;
-    color:#1a1a1a;
+    position:absolute; top:max(12px,1.8vh); left:50%; transform:translateX(-50%);
+    z-index:3; display:block; line-height:0;
   }
-  .logo svg{ display:block; height:34px; width:auto; }
-  .logo span{ font-size:30px; font-weight:600; letter-spacing:-.02em; }
+  /* Animated logo end-card (transparent video). Sized by height; width auto keeps aspect.
+     A soft shadow keeps the white wordmark legible over light mosaic tiles. */
+  .logo-vid{
+    display:block; height:clamp(46px, 5.8vw, 74px); width:auto;
+    filter:drop-shadow(0 1px 6px rgba(0,0,0,.28));
+  }
+  .logo-vid img{ height:100%; width:auto; display:block; }
 
   .content{
     position:absolute; z-index:3;
@@ -198,14 +202,15 @@
 
     <div class="scrim" aria-hidden="true"></div>
 
-    <!-- Logo -->
+    <!-- Logo: animated end-card video with transparency (WebM/VP9 for Chrome·FF·Edge,
+         HEVC MP4 for Safari, PNG for no-video fallback). Plays once on load, then holds. -->
     <a class="logo" href="#" aria-label="Shopify">
-      <svg viewBox="0 0 110 125" role="img" aria-hidden="true">
-        <path fill="#95BF47" d="M95 24c-.1-.6-.6-1-1-1-.5 0-9.6-.7-9.6-.7s-6.4-6.3-7.1-7c-.7-.7-2-.5-2.6-.3 0 0-1.3.4-3.5 1.1C68.4 11.4 65.3 4 58.9 4h-.6C56.4 1.6 54 .6 52 .6c-15.2.1-22.5 19-24.8 28.6-5.9 1.8-10.1 3.1-10.6 3.3-3.3 1-3.4 1.1-3.8 4.2C12.4 39.1 4 104 4 104l64.8 12.2 35.2-7.6S95.1 24.6 95 24zM63.3 16.3l-5.8 1.8v-1.2c0-3.6-.5-6.5-1.3-8.8 3.3.4 5.5 4.1 7.1 8.2zm-11.6-7.4c.9 2.2 1.4 5.3 1.4 9.6v.6l-12 3.7c2.3-8.9 6.7-13.2 10.6-14.5zm-4.7-4.4c.7 0 1.4.2 2.1.7-5.1 2.4-10.6 8.5-12.9 20.7l-9.5 2.9C29.4 20.6 35.6 4.5 46.9 4.5z"/>
-        <path fill="#5E8E3E" d="M94 23c-.5 0-9.6-.7-9.6-.7s-6.4-6.3-7.1-7c-.3-.3-.6-.4-1-.5L68.8 116.2l35.2-7.6S95.1 24.6 95 24c-.1-.6-.6-1-1-1z"/>
-        <path fill="#FFF" d="M58.4 41.6l-4.3 12.9s-3.8-2-8.5-2c-6.9 0-7.2 4.3-7.2 5.4 0 5.9 15.5 8.2 15.5 22.1 0 11-7 18-16.3 18-11.2 0-16.9-7-16.9-7l3-9.9s5.9 5 10.8 5c3.2 0 4.5-2.5 4.5-4.4 0-7.7-12.7-8-12.7-20.7 0-10.8 7.7-21.2 23.3-21.2 6 0 8.8 1.7 8.8 1.7z"/>
-      </svg>
-      <span>shopify</span>
+      <video class="logo-vid" autoplay muted playsinline disablepictureinpicture
+             width="850" height="300" aria-hidden="true">
+        <source src="assets/logo.webm" type="video/webm" />
+        <source src="assets/logo.mp4" type='video/mp4; codecs="hvc1"' />
+        <img src="assets/logo-fallback.png" alt="Shopify" />
+      </video>
     </a>
 
     <!-- Foreground content -->
