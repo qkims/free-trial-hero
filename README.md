@@ -5,16 +5,17 @@ its animated photo-mosaic background as an autoplay **`<video>`** (webm 496 KB /
 **204 KB WebP poster** — and that poster is the page's **LCP element**, so the largest paint waits on
 one big asset to download.
 
-This version recreates the same look — a 15°-tilted wall of rounded product cards drifting slowly on a
-seamless loop — using **pure HTML/CSS** and a handful of tiny optimized images, so no single large asset
-gates the paint.
+This version recreates the look of the linked Figma Hero — an **upright masonry of large rounded product
+tiles** (uniform height, a mix of portrait `239:314` and landscape `539:314` cards, ~20 px gaps) drifting
+slowly on a seamless loop — using **pure HTML/CSS** and a handful of tiny optimized images, so no single
+large asset gates the paint.
 
 ## Result (lab, emulated — same harness for baseline and rebuild)
 
 | | Live page (`<video>`) | This rebuild | Δ |
 |---|---|---|---|
-| **Desktop** LCP (cable) | 0.88 s | **0.23 s** | **−74%** |
-| **Mobile** LCP (Slow 4G, 4× CPU) | 3.36 s 🟠 | **1.46 s** 🟢 | **−57%** |
+| **Desktop** LCP (cable) | 0.88 s | **0.20 s** | **−77%** |
+| **Mobile** LCP (Slow 4G, 4× CPU) | 3.36 s 🟠 | **1.49 s** 🟢 | **−56%** |
 | Mobile FCP | ~2.6 s | **0.27 s** | |
 | Hero payload | ~700 KB (webm + poster) | **388 KB** (12 KB HTML + 376 KB tiles, mostly lazy) | |
 
@@ -25,10 +26,10 @@ data); FCP/LCP measured with the puppeteer + CDP throttling harness used for the
 
 - **`index.html`** — single self-contained file. Critical CSS inlined; system font stack (no web-font
   round-trip); the drift is pure CSS `@keyframes`, zero render-blocking JS.
-- **Mosaic** — a centered, `rotate(15deg)` clip box holds a top-anchored track of two identical halves;
-  `translateY` over 26 s wraps seamlessly (each half is taller than the box, so it always covers).
-  Tiles are built by a tiny inline script: 6 above-the-fold tiles are `fetchpriority="high"`, the rest
-  `loading="lazy"`.
+- **Mosaic** — an upright clip box holds a top-anchored track of two identical halves; `translateY` over
+  40 s wraps seamlessly (each half is taller than the hero, so it always covers). A tiny inline script
+  fills each row with a mix of portrait/landscape tiles drawn from a shuffled deck (no near repeats); the
+  first few above-the-fold tiles are `fetchpriority="high"`, the rest `loading="lazy"`.
 - **Content** — white intro card ("Your business starts with Shopify" + offer), rich-black CTA card with
   "Start for free" + email input, Shopify logo. Copy/spec taken from Figma (`Inter Medium 44px` headline).
 - **Accessibility** — `prefers-reduced-motion` freezes the drift to a static mosaic.

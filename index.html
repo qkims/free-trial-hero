@@ -9,8 +9,8 @@
   :root{
     --rich-black:#02090a;
     --ink:#0b0b0c;
-    --card-w: clamp(120px, 11vw, 168px);   /* mosaic tile width */
-    --gap: clamp(10px, 1vw, 18px);
+    --th: clamp(150px, 21vw, 314px);       /* mosaic tile height (uniform per Figma) */
+    --gap: clamp(8px, 1.3vw, 20px);
     --radius-tile: 15px;
     --font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Inter", Arial, sans-serif;
   }
@@ -35,45 +35,43 @@
     isolation:isolate;
   }
 
-  /* ---------- Rotated, drifting mosaic ---------- */
-  /* Centered, rotated clip box that fully covers the hero. */
+  /* ---------- Upright, drifting masonry mosaic (matches Figma Hero) ---------- */
+  /* Clip layer covering the hero. Upright — no rotation, per the linked Hero frame. */
   .rotor{
-    position:absolute;
-    top:50%; left:50%;
-    width:185%; height:185%;
-    transform:translate(-50%,-50%) rotate(15deg);
-    transform-origin:center;
+    position:absolute; inset:0;
     overflow:hidden;
     z-index:0;
+    display:flex; justify-content:center; align-items:flex-start;
   }
-  /* Top-anchored track = two identical halves; each half is taller than the rotor,
+  /* Top-anchored track = two identical halves; each half is taller than the hero,
      so translateY(-50%) (one half) wraps seamlessly while always covering. */
   .track{
-    position:absolute; top:0; left:0; width:100%;
     display:flex;
     flex-direction:column;
     gap:var(--gap);
-    animation: drift 26s linear infinite;   /* slow seamless diagonal drift */
+    animation: drift 40s linear infinite;    /* slow seamless vertical drift */
     will-change:transform;
   }
   @keyframes drift{
-    from{ transform:translateY(-50%); }      /* downward drift (matches source video) */
-    to  { transform:translateY(0); }
+    from{ transform:translateY(0); }
+    to  { transform:translateY(-50%); }      /* one of two identical halves → seamless */
   }
   .row{
     display:flex;
     gap:var(--gap);
     justify-content:center;
+    flex-wrap:nowrap;
   }
+  /* Uniform height, two widths (portrait 239:314 and landscape 539:314) — from Figma. */
   .card{
     flex:0 0 auto;
-    width:var(--card-w);
-    aspect-ratio: 239 / 314;                /* portrait, from Figma */
+    height:var(--th);
     border-radius:var(--radius-tile);
     overflow:hidden;
     background:#e7e3dc;
-    box-shadow:0 6px 14px -6px rgba(0,0,0,.25);
   }
+  .card.w1{ aspect-ratio: 239 / 314; }       /* portrait tile */
+  .card.w2{ aspect-ratio: 539 / 314; }       /* landscape tile */
   .card img{
     width:100%; height:100%;
     object-fit:cover; display:block;
@@ -175,8 +173,7 @@
   /* ---------- Responsive: portrait hero on mobile (matches real mobile layout) ---------- */
   @media (max-width: 900px){
     .hero{ aspect-ratio:auto; height:100svh; min-height:600px; }
-    .rotor{ width:230%; }                 /* wider plane so the tilt still fills a tall, narrow hero */
-    :root{ --card-w: clamp(96px, 26vw, 150px); }
+    :root{ --th: clamp(150px, 34vw, 230px); }
   }
 
   /* ---------- Reduced motion: freeze the drift ---------- */
@@ -228,31 +225,57 @@
   <script>
   (function(){
     var TILES = ["tile-01.webp","tile-02.webp","tile-03.webp","tile-04.webp","tile-05.webp","tile-06.webp","tile-07.webp","tile-08.webp","tile-09.webp","tile-10.webp","tile-11.webp","tile-12.webp","tile-13.webp","tile-14.webp","tile-15.webp","tile-16.webp","tile-17.webp","tile-18.webp","tile-19.webp","tile-20.webp","tile-21.webp","tile-22.webp","tile-23.webp","tile-24.webp","tile-25.webp","tile-26.webp","tile-27.webp","tile-28.webp","tile-29.webp","tile-30.webp"];
-    var COLS = 14;
     var track = document.getElementById('track');
     var rotor = track.parentElement;
-    var seed = 7;                                   // deterministic so the collage is stable per load
+    var seed = 11;                                  // deterministic so the collage is stable per load
     function rnd(){ seed = (seed*1103515245 + 12345) & 0x7fffffff; return seed/0x7fffffff; }
-    var r = 0;
-    function makeRow(idx){
-      var row = document.createElement('div');
-      row.className = 'row';
-      row.style.transform = 'translateX(' + ((idx%2)? '-7%':'4%') + ')';   // brick-like stagger
-      for(var c=0; c<COLS; c++){
+
+    // Draw tiles from a shuffled deck (no replacement) so the same photo doesn't repeat
+    // close together. Reshuffle when exhausted; never repeat the last few used.
+    var deck = [], recent = [];
+    function nextTile(){
+      if(deck.length === 0){
+        deck = TILES.slice();
+        for(var j=deck.length-1;j>0;j--){ var k=Math.floor(rnd()*(j+1)); var t=deck[j];deck[j]=deck[k];deck[k]=t; }
+      }
+      var pick = deck.pop();
+      // avoid a tile that's still "recent" (used in the last ~6 cards)
+      var guard = 0;
+      while(recent.indexOf(pick) !== -1 && deck.length && guard++ < 8){ deck.unshift(pick); pick = deck.pop(); }
+      recent.push(pick); if(recent.length > 6) recent.shift();
+      return pick;
+    }
+
+    // Tile height (px) and the two card widths, derived from the CSS --th.
+    var TH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--th')) || 280;
+    var W1 = TH * 239/314, W2 = TH * 539/314;       // portrait / landscape widths (Figma ratios)
+    var GAP = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 16;
+    var rowTargetW = rotor.clientWidth * 1.25;      // overfill so edges are covered as it drifts
+
+    var firstRow = true;
+    function makeRow(){
+      var row = document.createElement('div'); row.className = 'row';
+      var w = 0, c = 0;
+      // fill the row with a mix of landscape (w2) and portrait (w1) tiles
+      while (w < rowTargetW){
+        var wide = rnd() < 0.42;                    // ~42% landscape, matches Figma mix
         var card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'card ' + (wide ? 'w2' : 'w1');
         var img = document.createElement('img');
-        img.src = 'assets/' + TILES[Math.floor(rnd()*TILES.length)];
-        img.alt = ''; img.decoding = 'async'; img.width = 168; img.height = 221;
-        if(idx===0 && c<6){ img.loading='eager'; img.fetchPriority='high'; }  // a few prioritized tiles
+        img.src = 'assets/' + nextTile();
+        img.alt = ''; img.decoding = 'async';
+        if(firstRow && c < 4){ img.loading='eager'; img.fetchPriority='high'; }
         else { img.loading='lazy'; }
         card.appendChild(img); row.appendChild(card);
+        w += (wide ? W2 : W1) + GAP; c++;
       }
+      firstRow = false;
       return row;
     }
-    // Build one half: enough rows that it's taller than the rotor (guarantees full coverage).
-    var target = rotor.clientHeight + 200;
-    do { track.appendChild(makeRow(r++)); } while (track.offsetHeight < target && r < 40);
+    // Build one half: enough rows to be taller than the hero (guarantees full coverage during drift).
+    var target = rotor.clientHeight + TH;           // a little extra for the drift travel
+    var r = 0;
+    do { track.appendChild(makeRow()); r++; } while (track.offsetHeight < target && r < 20);
     // Clone the half to form the seamless second copy.
     var half = Array.prototype.slice.call(track.children);
     for(var i=0;i<half.length;i++){ track.appendChild(half[i].cloneNode(true)); }
