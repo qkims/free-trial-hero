@@ -46,27 +46,31 @@
     overflow:hidden;
     z-index:0;
   }
-  /* Top-anchored track = two identical halves; each half is taller than the rotor,
-     so translateY(-50%) (one half) wraps seamlessly while always covering. */
+  /* Static vertical stack, centered in the rotor (tall enough to cover it).
+     The vertical position is fixed; motion happens per-row, horizontally. */
   .track{
-    position:absolute; top:0; left:0; width:100%;
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:var(--gap);
-    animation: drift 40s linear infinite;    /* slow seamless drift */
+    gap:var(--gap);                          /* vertical gaps between rows */
+  }
+  /* Each row is a horizontal marquee: a .lane of two identical halves looping on
+     translateX. Adjacent rows scroll opposite ways (row 1 →, row 2 ←, row 3 →, …),
+     so the wall of tiles shears like the live video. */
+  .row{ display:flex; }                       /* row hugs its lane's full (2-half) width */
+  .lane{
+    display:flex; flex:0 0 auto;
+    animation: scrollL var(--dur, 58s) linear infinite;
     will-change:transform;
   }
-  @keyframes drift{
-    from{ transform:translateY(0); }
-    to  { transform:translateY(-50%); }      /* one of two identical halves → seamless */
-  }
-  .row{
-    display:flex;
-    gap:var(--gap);
-    justify-content:center;
-    flex-wrap:nowrap;
-  }
+  .row.rev .lane{ animation-name: scrollR; }
+  /* Trailing margin (not flex gap) on every card makes one half = n·(card+gap),
+     so translateX(-50%) lands exactly one half over → perfectly seamless wrap. */
+  .lane .card{ margin-right:var(--gap); }
+  @keyframes scrollL{ from{ transform:translateX(0); }    to{ transform:translateX(-50%); } }
+  @keyframes scrollR{ from{ transform:translateX(-50%); } to{ transform:translateX(0); } }
   /* Uniform height, two widths (portrait 239:314 and landscape 539:314) — from Figma. */
   .card{
     flex:0 0 auto;
@@ -181,9 +185,9 @@
     :root{ --th: clamp(150px, 34vw, 230px); }
   }
 
-  /* ---------- Reduced motion: freeze the drift ---------- */
+  /* ---------- Reduced motion: freeze every row ---------- */
   @media (prefers-reduced-motion: reduce){
-    .track{ animation:none; transform:translateY(-25%); }
+    .lane{ animation:none; }
   }
 </style>
 </head>
@@ -255,35 +259,45 @@
     var TH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--th')) || 280;
     var W1 = TH * 239/314, W2 = TH * 539/314;       // portrait / landscape widths (Figma ratios)
     var GAP = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 16;
-    var rowTargetW = rotor.clientWidth * 1.25;      // overfill so edges are covered as it drifts
+    // One half must be wider than the (tilted, oversized) rotor so a row never shows a gap.
+    var halfTargetW = rotor.clientWidth * 1.15;
 
-    var firstRow = true;
+    var firstRow = true, rowIndex = 0;
     function makeRow(){
-      var row = document.createElement('div'); row.className = 'row';
-      var w = 0, c = 0;
-      // fill the row with a mix of landscape (w2) and portrait (w1) tiles
-      while (w < rowTargetW){
+      var row = document.createElement('div');
+      row.className = 'row' + (rowIndex % 2 ? ' rev' : '');   // alternate scroll direction
+      var lane = document.createElement('div'); lane.className = 'lane';
+      lane.style.setProperty('--dur', (50 + (rowIndex % 3) * 9) + 's');  // gentle per-row variance
+
+      // Pick the tiles/widths for ONE half first…
+      var cells = [], w = 0;
+      while (w < halfTargetW){
         var wide = rnd() < 0.42;                    // ~42% landscape, matches Figma mix
-        var card = document.createElement('div');
-        card.className = 'card ' + (wide ? 'w2' : 'w1');
-        var img = document.createElement('img');
-        img.src = 'assets/' + nextTile();
-        img.alt = ''; img.decoding = 'async';
-        if(firstRow && c < 4){ img.loading='eager'; img.fetchPriority='high'; }
-        else { img.loading='lazy'; }
-        card.appendChild(img); row.appendChild(card);
-        w += (wide ? W2 : W1) + GAP; c++;
+        cells.push({ wide: wide, tile: nextTile() });
+        w += (wide ? W2 : W1) + GAP;
       }
-      firstRow = false;
+      // …then render that exact sequence TWICE, so translateX(-50%) wraps seamlessly.
+      for(var rep = 0; rep < 2; rep++){
+        for(var i = 0; i < cells.length; i++){
+          var cd = cells[i];
+          var card = document.createElement('div');
+          card.className = 'card ' + (cd.wide ? 'w2' : 'w1');
+          var img = document.createElement('img');
+          img.src = 'assets/' + cd.tile;
+          img.alt = ''; img.decoding = 'async';
+          if(firstRow && rep === 0 && i < 4){ img.loading='eager'; img.fetchPriority='high'; }
+          else { img.loading='lazy'; }
+          card.appendChild(img); lane.appendChild(card);
+        }
+      }
+      firstRow = false; rowIndex++;
+      row.appendChild(lane);
       return row;
     }
-    // Build one half: enough rows to be taller than the hero (guarantees full coverage during drift).
-    var target = rotor.clientHeight + TH;           // a little extra for the drift travel
+    // Stack enough rows to cover the rotor's full height (it's centered, so add a row of slack).
+    var target = rotor.clientHeight + TH;
     var r = 0;
-    do { track.appendChild(makeRow()); r++; } while (track.offsetHeight < target && r < 20);
-    // Clone the half to form the seamless second copy.
-    var half = Array.prototype.slice.call(track.children);
-    for(var i=0;i<half.length;i++){ track.appendChild(half[i].cloneNode(true)); }
+    do { track.appendChild(makeRow()); r++; } while (track.offsetHeight < target && r < 24);
   })();
   </script>
 
