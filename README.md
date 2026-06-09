@@ -5,19 +5,21 @@ its animated photo-mosaic background as an autoplay **`<video>`** (webm 496 KB /
 **204 KB WebP poster** — and that poster is the page's **LCP element**, so the largest paint waits on
 one big asset to download.
 
-This version recreates the look of the linked Figma Hero — an **upright masonry of large rounded product
+This version recreates the look of the live video — a **+18°-tilted masonry of large rounded product
 tiles** (uniform height, a mix of portrait `239:314` and landscape `539:314` cards, ~20 px gaps) drifting
 slowly on a seamless loop — using **pure HTML/CSS** and a handful of tiny optimized images, so no single
-large asset gates the paint.
+large asset gates the paint. The tilt angle was measured off the rendered video frame (~18°, mostly a flat
+2D rotation) and the tile set is curated to match the live content mix (lifestyle / people / apparel /
+workspaces, with a few product shots).
 
 ## Result (lab, emulated — same harness for baseline and rebuild)
 
 | | Live page (`<video>`) | This rebuild | Δ |
 |---|---|---|---|
-| **Desktop** LCP (cable) | 0.88 s | **0.20 s** | **−77%** |
-| **Mobile** LCP (Slow 4G, 4× CPU) | 3.36 s 🟠 | **1.49 s** 🟢 | **−56%** |
+| **Desktop** LCP (cable) | 0.88 s | **0.22 s** | **−75%** |
+| **Mobile** LCP (Slow 4G, 4× CPU) | 3.36 s 🟠 | **1.65 s** 🟢 | **−51%** |
 | Mobile FCP | ~2.6 s | **0.27 s** | |
-| Hero payload | ~700 KB (webm + poster) | **388 KB** (12 KB HTML + 376 KB tiles, mostly lazy) | |
+| Hero payload | ~700 KB (webm + poster) | **436 KB** (12 KB HTML + 424 KB tiles, mostly lazy) | |
 
 Mobile crosses from the "poor" band into **"good"** (≤ 2.5 s). Numbers are lab/emulated (not CrUX field
 data); FCP/LCP measured with the puppeteer + CDP throttling harness used for the baseline.
@@ -26,8 +28,9 @@ data); FCP/LCP measured with the puppeteer + CDP throttling harness used for the
 
 - **`index.html`** — single self-contained file. Critical CSS inlined; system font stack (no web-font
   round-trip); the drift is pure CSS `@keyframes`, zero render-blocking JS.
-- **Mosaic** — an upright clip box holds a top-anchored track of two identical halves; `translateY` over
-  40 s wraps seamlessly (each half is taller than the hero, so it always covers). A tiny inline script
+- **Mosaic** — a clip box rotated **+18°** (matching the live video) holds a top-anchored track of two
+  identical halves; `translateY` over 40 s wraps seamlessly (each half is taller than the rotor, and the
+  rotor is oversized so the tilt still covers the hero corners). A tiny inline script
   fills each row with a mix of portrait/landscape tiles drawn from a shuffled deck (no near repeats); the
   first few above-the-fold tiles are `fetchpriority="high"`, the rest `loading="lazy"`.
 - **Content** — white intro card ("Your business starts with Shopify" + offer), rich-black CTA card with
@@ -48,5 +51,5 @@ Press **`p`** on the page to toggle the live LCP readout (bottom-right).
 
 - Tiles are a curated 30-image subset (the real hero uses ~86); the grid repeats them — collage variety
   is close, not pixel-identical.
-- The animation is a faithful **CSS recreation** of the diagonal drift, not a frame-exact copy of the
-  rendered 3D camera move.
+- The animation is a faithful **CSS recreation** of the +18° diagonal drift, not a frame-exact copy of the
+  rendered 3D camera move (the live video has a touch of perspective; this is a flat 2D rotation).

@@ -35,21 +35,26 @@
     isolation:isolate;
   }
 
-  /* ---------- Upright, drifting masonry mosaic (matches Figma Hero) ---------- */
-  /* Clip layer covering the hero. Upright — no rotation, per the linked Hero frame. */
+  /* ---------- Tilted, drifting masonry mosaic (matches the live video) ---------- */
+  /* Centered, rotated clip box (+18° like the live video), oversized so the tilt still
+     covers the hero. Rotation lives here; the drift lives on the inner .track. */
   .rotor{
-    position:absolute; inset:0;
+    position:absolute; top:50%; left:50%;
+    width:130%; height:158%;
+    transform:translate(-50%,-50%) rotate(var(--tilt, 18deg));
+    transform-origin:center;
     overflow:hidden;
     z-index:0;
-    display:flex; justify-content:center; align-items:flex-start;
   }
-  /* Top-anchored track = two identical halves; each half is taller than the hero,
+  /* Top-anchored track = two identical halves; each half is taller than the rotor,
      so translateY(-50%) (one half) wraps seamlessly while always covering. */
   .track{
+    position:absolute; top:0; left:0; width:100%;
     display:flex;
     flex-direction:column;
+    align-items:center;
     gap:var(--gap);
-    animation: drift 40s linear infinite;    /* slow seamless vertical drift */
+    animation: drift 40s linear infinite;    /* slow seamless drift */
     will-change:transform;
   }
   @keyframes drift{
