@@ -23,9 +23,9 @@
   .imgcol{ position:absolute; top:0; bottom:0; right:0; left:44%; overflow:hidden; z-index:1; }
   .rows{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; gap:var(--rgap); }
   .row{ display:flex; gap:var(--rgap); width:max-content; will-change:transform; }
-  .row.r0{ animation:driftL var(--d0,64s) linear infinite; }
-  .row.r1{ animation:driftL var(--d1,78s) linear infinite; }
-  .row.r2{ animation:driftL var(--d2,70s) linear infinite; }
+  .row.r0{ animation:driftL var(--d0,88s) linear infinite; }
+  .row.r1{ animation:driftL var(--d1,106s) linear infinite reverse; }  /* middle row drifts the other way */
+  .row.r2{ animation:driftL var(--d2,96s) linear infinite; }
   @keyframes driftL{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
   .tile{ flex:0 0 auto; height:var(--rh); border-radius:8px; overflow:hidden; background:#eee;
     box-shadow:0 14px 30px -22px rgba(0,0,0,.45); }
@@ -116,7 +116,7 @@
     // Mixed widths echo the Figma's wide (≈1.7) + narrow (≈0.78) tiles, by row height.
     var WIDE = 1.7, NARROW = 0.78;
     var PATTERN = [WIDE, NARROW, WIDE, NARROW, NARROW, WIDE, NARROW, WIDE, NARROW, WIDE];
-    var DUR = [64, 78, 70];
+    var DUR = [88, 106, 96];   // slower drift
     var eager = 0;
 
     for (var r = 0; r < 3; r++){
