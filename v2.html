@@ -22,6 +22,8 @@
       rgba(0,0,0,.66) 0%, rgba(0,0,0,.52) 32%, rgba(0,0,0,.26) 56%, rgba(0,0,0,0) 78%);
   }
   .logo{ position:absolute; top:max(14px,2.2vh); left:50%; transform:translateX(-50%); z-index:3; line-height:0; }
+  /* Larger, dark (black-wordmark) logo so it reads prominently over the columns. */
+  .logo .logo-vid{ height:clamp(64px,7vw,96px); filter:drop-shadow(0 2px 10px rgba(0,0,0,.35)); }
   .content{
     position:absolute; z-index:3; top:50%; left:50%; transform:translate(-50%,-50%);
     width:min(500px, 88vw); display:flex; flex-direction:column; gap:12px; text-align:center; align-items:center;
@@ -41,9 +43,9 @@
 
     <a class="logo" href="#" aria-label="Shopify">
       <video class="logo-vid" autoplay muted playsinline disablepictureinpicture width="850" height="300" aria-hidden="true">
-        <source src="assets/logo.webm" type="video/webm" />
-        <source src="assets/logo.mp4" type='video/mp4; codecs="hvc1"' />
-        <img src="assets/logo-fallback.png" alt="Shopify" />
+        <source src="assets/logo-dark.webm" type="video/webm" />
+        <source src="assets/logo-dark.mp4" type='video/mp4; codecs="hvc1"' />
+        <img src="assets/logo-dark.png" alt="Shopify" />
       </video>
     </a>
 
