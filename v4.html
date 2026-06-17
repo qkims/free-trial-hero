@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>V4 — Editorial, brand-forward with tile rail</title>
+<link rel="stylesheet" href="lib/mosaic.css" />
+<link rel="stylesheet" href="lib/ui.css" />
+<style>
+  /* V4: the most signup-forward + lightest. A deep brand-gradient stage carries the eye
+     straight to the form; a single thin tilted rail of merchant tiles drifts along the
+     bottom to hint at the breadth of stores without ever competing with the CTA.
+     Only the rail loads images (a handful), so LCP is the heading text — fastest of the set. */
+  body{ background:#04110f; }
+  .hero{
+    position:relative; width:100%; height:100svh; min-height:620px; max-height:920px; overflow:hidden;
+    background:
+      radial-gradient(120% 90% at 18% 24%, #0c3b32 0%, rgba(12,59,50,0) 55%),
+      radial-gradient(120% 100% at 90% 80%, #0a2c4d 0%, rgba(10,44,77,0) 55%),
+      linear-gradient(160deg, #04110f 0%, #061a17 60%, #03252c 100%);
+    isolation:isolate;
+  }
+
+  /* thin drifting rail anchored to the bottom, slightly tilted */
+  .rail{
+    position:absolute; left:-6%; right:-6%; bottom:clamp(-28px,-2vw,-10px);
+    height:clamp(150px, 22vh, 230px);
+    --th: clamp(140px, 20vh, 210px); --tilt:-7deg;
+    transform:rotate(var(--tilt)); transform-origin:center; overflow:visible; z-index:1;
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+            mask-image:linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .rail .rotor{ position:absolute; top:50%; left:50%; width:112%; height:100%; transform:translate(-50%,-50%); }
+  .rail .card{ box-shadow:0 18px 40px -22px rgba(0,0,0,.7); }
+  .rail .scrim{ position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:linear-gradient(0deg, rgba(4,17,15,.55), rgba(4,17,15,0) 60%); }
+
+  .logo{ position:absolute; top:max(18px,2.6vh); left:clamp(24px,5vw,72px); z-index:3; line-height:0; }
+  .content{
+    position:absolute; z-index:3; left:clamp(24px,5vw,72px); top:clamp(96px,18vh,180px);
+    width:min(500px, 88vw); display:flex; flex-direction:column; gap:14px;
+  }
+  .content .intro.bare h1{ font-size:clamp(38px,5vw,60px); }
+  .content .cta{ width:min(460px,100%); margin-top:6px; }
+  .content .trust{ margin-top:8px; }
+
+  @media (max-width: 900px){
+    .content{ top:clamp(86px,14vh,150px); }
+    .content .intro.bare h1{ font-size:clamp(34px,9vw,46px); }
+    .rail{ height:clamp(150px,26vh,220px); --th:clamp(130px,24vh,190px); }
+  }
+</style>
+</head>
+<body>
+  <main class="hero">
+    <div class="rail" aria-hidden="true">
+      <div class="rotor"><div class="track"></div></div>
+      <div class="scrim"></div>
+    </div>
+
+    <a class="logo" href="#" aria-label="Shopify">
+      <video class="logo-vid" autoplay muted playsinline disablepictureinpicture width="850" height="300" aria-hidden="true">
+        <source src="assets/logo.webm" type="video/webm" />
+        <source src="assets/logo.mp4" type='video/mp4; codecs="hvc1"' />
+        <img src="assets/logo-fallback.png" alt="Shopify" />
+      </video>
+    </a>
+
+    <div class="content">
+      <section class="intro bare on-dark">
+        <h1>Your business<br>starts with Shopify</h1>
+        <p>Try 3 days free, then <b style="color:#fff">$1/month for 3 months.</b> What are you waiting for?</p>
+      </section>
+      <form class="cta" onsubmit="return false">
+        <div class="cta-top">
+          <span class="free">Start for free</span>
+          <span class="disclaimer">You agree to receive Shopify marketing emails.</span>
+        </div>
+        <div class="email">
+          <input type="email" placeholder="Enter your email" aria-label="Email address" />
+          <button type="submit" aria-label="Start free trial">
+            <svg viewBox="0 0 17 16" fill="none"><path d="M1 8h14M9 2l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </form>
+      <div class="trust on-dark"><span class="lbl">Trusted by</span><span class="names">Allbirds · Clek · Leesa · UNTUCKit</span></div>
+    </div>
+  </main>
+
+  <div id="perf">LCP: measuring…</div>
+  <script src="lib/mosaic.js"></script>
+  <script>
+    Mosaic.build(document.querySelector('.rail .rotor'), { eagerFirst:4, halfMul:1.4, durBase:70, maxRows:1, landscapeRatio:0.5 });
+    Mosaic.perfPanel();
+  </script>
+</body>
+</html>
