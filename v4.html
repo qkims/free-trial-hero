@@ -125,35 +125,41 @@
     var GAP = 10;
     var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // New height on a swap: a wide band around the cell's base, biased to grow, so the
+    // boxes scale up dramatically. Re-randomised from base each time (not cumulative),
+    // so it oscillates and the column total stays bounded (never drifts off).
+    function morphH(cell){ return (cell._base * (0.8 + rnd()*0.7)).toFixed(1) + 'px'; }
+
     function scheduleSwap(cell, front, back, idx){
       var f = front, b = back;
-      var period = 4600 + (idx % 7) * 820;             // staggered so cells don't flip in unison
-      setTimeout(function(){
-        setInterval(function(){
-          b.onload = function(){
-            b.classList.add('show'); f.classList.remove('show');
-            var tmp = f; f = b; b = tmp;
-            // As the new photo dissolves in, the box settles to a slightly new height
-            // (width stays fixed). Stay within a narrow band around the cell's base so
-            // the column total barely drifts and the motion reads as a subtle morph.
-            cell.style.height = (cell._base * (0.9 + rnd()*0.2)).toFixed(1) + 'px';
-          };
-          b.src = nextTile();
-        }, period);
-      }, 600 + (idx % 12) * 260);
+      var period = 4200 + (idx % 7) * 760;             // staggered so cells don't flip in unison
+      function swap(){
+        b.onload = function(){
+          b.classList.add('show'); f.classList.remove('show');
+          var tmp = f; f = b; b = tmp;
+          cell.style.height = morphH(cell);            // box scales as the new photo dissolves in
+        };
+        b.src = nextTile();
+      }
+      // First change comes quickly (~0.5–2.4s), then it settles into the longer cadence.
+      setTimeout(function(){ swap(); setInterval(swap, period); }, 500 + (idx % 12) * 170);
     }
 
     function makeCell(colW, ar, idx){
       var cell = document.createElement('div'); cell.className = 'cell';
       cell._base = colW / ar;
-      cell.style.height = cell._base.toFixed(1) + 'px';
       var a = new Image(), b = new Image();
       a.decoding = b.decoding = 'async'; a.alt = b.alt = '';
       if (idx < 7){ a.loading = 'eager'; a.fetchPriority = 'high'; } else { a.loading = 'lazy'; }
       b.loading = 'lazy';
       a.src = nextTile(); a.className = 'show';
       cell.appendChild(a); cell.appendChild(b);
-      if (!reduce) scheduleSwap(cell, a, b, idx);
+      if (reduce){ cell.style.height = cell._base.toFixed(1) + 'px'; return cell; }
+      // Intro: start a touch short, then immediately ease up to full height on open so
+      // the wall visibly scales up the moment the page loads.
+      cell.style.height = (cell._base * 0.82).toFixed(1) + 'px';
+      setTimeout(function(){ cell.style.height = cell._base.toFixed(1) + 'px'; }, 40 + (idx % 16) * 40);
+      scheduleSwap(cell, a, b, idx);
       return cell;
     }
 
@@ -170,7 +176,7 @@
         var h = 0, safety = 0;
         // offset each column's aspect sequence so neighbours don't line up
         for (var s = 0; s < c; s++) rnd();
-        while (h < H + colW && safety++ < 80){
+        while (h < H * 1.5 && safety++ < 100){
           var ar = aspects[Math.floor(rnd()*aspects.length)];
           var cell = makeCell(colW, ar, idx++);
           col.appendChild(cell);
