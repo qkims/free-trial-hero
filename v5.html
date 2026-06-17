@@ -23,8 +23,8 @@
 
   .field{ position:absolute; inset:0; z-index:1; }
   .layer{ position:absolute; inset:0; }
-  .layer.d0{ z-index:1; filter:blur(5px) saturate(.92) brightness(1.03); opacity:.7; }
-  .layer.d1{ z-index:2; filter:blur(1.6px); opacity:.92; }
+  /* Shallower depth: just two tiers now — a soft back and a sharp front. */
+  .layer.d1{ z-index:2; filter:blur(1px); opacity:.94; }
   .layer.d2{ z-index:3; }
 
   /* Each layer's cards live in a stack twice the viewport tall; translateY 0 -> -50%
@@ -33,7 +33,7 @@
     animation:slideUp var(--dur,40s) linear infinite; will-change:transform; }
   @keyframes slideUp{ from{ transform:translateY(0); } to{ transform:translateY(-50%); } }
 
-  .card{ position:absolute; border-radius:18px; overflow:hidden; background:#efece7;
+  .card{ position:absolute; border-radius:0; overflow:hidden; background:#efece7;
     box-shadow:0 22px 50px -26px rgba(0,0,0,.34); }
   .layer.d2 .card{ box-shadow:0 32px 66px -28px rgba(0,0,0,.42), 0 8px 18px rgba(0,0,0,.10); }
   /* Two stacked photo layers per card so it can crossfade to a new image while it travels. */
@@ -64,7 +64,6 @@
 
   @media (max-width: 900px){
     .hero{ min-height:100svh; }
-    .layer.d0{ display:none; }              /* thin the back layer so mobile stays calm */
     .halo{ width:148vw; height:70vh;
       background:
         radial-gradient(54% 50% at 50% 50%,
@@ -129,19 +128,17 @@
     // x = centre fraction of W, y = centre fraction of one loop (= viewport height). Cards are
     // spread wide across the field, including past the edges, so nothing clusters.
     // `swap:true` cards crossfade to a fresh photo periodically while they travel.
+    // Two tiers only (shallower depth) and a leaner card count so desktop doesn't crowd.
+    // Front cards are scaled up and pushed toward the edges, leaving the centre clear.
     var TIERS = [
-      { d:0, scale:0.80, dur:46, cards:[          // back — blurred, slow, small
-        {x:.04,y:.08,w:150,ar:1.28}, {x:.49,y:.04,w:128,ar:0.78}, {x:.95,y:.15,w:140,ar:1.0},
-        {x:.18,y:.42,w:120,ar:1.0},  {x:.80,y:.50,w:158,ar:1.30}, {x:.45,y:.72,w:132,ar:0.80},
-        {x:.97,y:.83,w:126,ar:1.20}, {x:.08,y:.88,w:146,ar:1.0} ]},
-      { d:1, scale:0.92, dur:35, cards:[          // mid
+      { d:1, scale:0.90, dur:35, cards:[          // back — soft, slow
         {x:.30,y:.15,w:176,ar:1.30, swap:true}, {x:.68,y:.27,w:160,ar:0.82},
         {x:.02,y:.58,w:184,ar:1.0},  {x:.90,y:.66,w:170,ar:1.28, swap:true},
-        {x:.54,y:.92,w:164,ar:1.0},  {x:.40,y:.40,w:148,ar:0.78} ]},
-      { d:2, scale:1.04, dur:27, cards:[          // front — sharp, faster, larger
-        {x:.13,y:.30,w:212,ar:1.30, swap:true}, {x:.82,y:.10,w:226,ar:1.0, swap:true},
-        {x:.71,y:.82,w:214,ar:0.80, swap:true},  {x:.24,y:.66,w:202,ar:1.24, swap:true},
-        {x:.96,y:.44,w:196,ar:1.0} ]}
+        {x:.54,y:.92,w:164,ar:1.0} ]},
+      { d:2, scale:1.14, dur:27, cards:[          // front — sharp, faster, larger
+        {x:.12,y:.30,w:232,ar:1.30, swap:true}, {x:.84,y:.10,w:246,ar:1.0, swap:true},
+        {x:.72,y:.82,w:234,ar:0.80, swap:true},  {x:.22,y:.66,w:220,ar:1.24, swap:true},
+        {x:.97,y:.44,w:214,ar:1.0} ]}
     ];
 
     var eager = 0, swapGroups = [], swapIdx = 0;

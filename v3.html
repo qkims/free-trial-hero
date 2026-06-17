@@ -9,10 +9,8 @@
 <style>
   /* V3 — structure referenced from Figma (307:20103): a left content column (heading +
      subtext + dark CTA pill) and, on the right, a structured BENTO cluster — a tall centre
-     portrait photo flanked by merchant-UI accent cards (a revenue/analytics card and a
-     product card) plus photo tiles. The accent cards are lightweight CSS recreations (the
-     Figma's live dashboard assets aren't shipped). Cells float gently, staggered.
-     LCP = the heading text. */
+     portrait flanked by merchant lifestyle photos in the surrounding blocks. Cells float
+     gently, staggered. LCP = the heading text. */
   :root{ --bg:#f4f5f7; }
   body{ background:#fff; }
   .hero{ position:relative; width:100%; height:100svh; min-height:640px; max-height:920px;
@@ -36,26 +34,6 @@
   .a-rev{ grid-area:rev; } .a-port{ grid-area:port; } .a-ph1{ grid-area:ph1; }
   .a-ph2{ grid-area:ph2; } .a-prod{ grid-area:prod; }
   @keyframes bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
-
-  /* Faux revenue / analytics card */
-  .card{ background:#fff; padding:clamp(12px,1.2vw,18px); display:flex; flex-direction:column; }
-  .rev .lbl{ font-size:clamp(10px,1vw,12px); color:rgba(0,0,0,.5); font-weight:500; letter-spacing:.01em; }
-  .rev .amt{ font-size:clamp(20px,2.3vw,30px); font-weight:600; letter-spacing:-.02em; margin-top:3px; color:#111; }
-  .rev .pill{ align-self:flex-start; margin-top:6px; font-size:clamp(9px,.95vw,11px); font-weight:600;
-    color:#0a7d5d; background:#e6f5ef; padding:2px 8px; border-radius:100px; }
-  .rev .chart{ margin-top:auto; width:100%; height:42%; }
-  .rev .chart svg{ width:100%; height:100%; display:block; overflow:visible; }
-
-  /* Faux product card */
-  .prod{ background:#fff; display:flex; flex-direction:column; }
-  .prod .shot{ flex:1 1 auto; min-height:0; background:var(--bg); }
-  .prod .shot img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .prod .meta{ padding:clamp(8px,.8vw,12px) clamp(10px,1vw,14px); display:flex; flex-direction:column; gap:6px; }
-  .prod .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .prod .name{ font-size:clamp(11px,1.1vw,13px); font-weight:600; color:#111; letter-spacing:-.01em; }
-  .prod .price{ font-size:clamp(11px,1.1vw,13px); font-weight:600; color:#111; }
-  .prod .add{ background:#111; color:#fff; border-radius:100px; text-align:center;
-    font-size:clamp(9px,.95vw,11px); font-weight:600; padding:6px 0; letter-spacing:.01em; }
 
   .logo{ position:absolute; top:max(18px,2.6vh); left:50%; transform:translateX(-50%); z-index:5; line-height:0; }
   .logo .logo-vid{ height:clamp(40px,4.4vw,58px); filter:none; }
@@ -82,34 +60,11 @@
   <main class="hero">
     <div class="stage" aria-hidden="true">
       <div class="bento" id="bento">
-        <!-- Revenue / analytics accent card -->
-        <div class="cell card rev a-rev" style="--bd:7.5s;--bdl:-1s">
-          <span class="lbl">Total sales</span>
-          <span class="amt">$53,285.00</span>
-          <span class="pill">▲ 12.4%</span>
-          <div class="chart">
-            <svg viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true">
-              <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#13ac6e" stop-opacity=".22"/>
-                <stop offset="1" stop-color="#13ac6e" stop-opacity="0"/>
-              </linearGradient></defs>
-              <path d="M0,30 L18,26 L34,28 L52,18 L70,21 L88,11 L104,14 L120,5 L120,40 L0,40 Z" fill="url(#g)"/>
-              <path d="M0,30 L18,26 L34,28 L52,18 L70,21 L88,11 L104,14 L120,5" fill="none" stroke="#13ac6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-        <!-- Tall centre portrait -->
+        <div class="cell photo a-rev"  style="--bd:7.5s;--bdl:-1s"></div>
         <div class="cell photo a-port" style="--bd:8.5s;--bdl:-3s"></div>
-        <div class="cell photo a-ph1" style="--bd:7s;--bdl:-2s"></div>
-        <div class="cell photo a-ph2" style="--bd:8s;--bdl:-4s"></div>
-        <!-- Product accent card -->
-        <div class="cell prod a-prod" style="--bd:7.8s;--bdl:-1.5s">
-          <div class="shot"></div>
-          <div class="meta">
-            <div class="row"><span class="name">Cabana Linen Shirt</span><span class="price">$135</span></div>
-            <div class="add">Add to cart</div>
-          </div>
-        </div>
+        <div class="cell photo a-ph1"  style="--bd:7s;--bdl:-2s"></div>
+        <div class="cell photo a-ph2"  style="--bd:8s;--bdl:-4s"></div>
+        <div class="cell photo a-prod" style="--bd:7.8s;--bdl:-1.5s"></div>
       </div>
     </div>
 
@@ -150,8 +105,8 @@
     for (var i=TILES.length-1;i>0;i--){ var k=Math.floor(rnd()*(i+1)); var t=TILES[i];TILES[i]=TILES[k];TILES[k]=t; }
     var di = 0; function nextTile(){ var t = TILES[di % TILES.length]; di++; return 'assets/' + t; }
 
-    // Fill every photo surface (.photo cells + the product card shot) with a tile.
-    var surfaces = document.querySelectorAll('.cell.photo, .prod .shot');
+    // Fill every photo cell with a merchant tile.
+    var surfaces = document.querySelectorAll('.cell.photo');
     surfaces.forEach(function(el, i){
       var img = new Image(); img.src = nextTile(); img.alt=''; img.decoding='async';
       if (i < 3){ img.loading='eager'; img.fetchPriority='high'; } else img.loading='lazy';

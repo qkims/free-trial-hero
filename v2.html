@@ -15,11 +15,14 @@
   body{ background:#0b0b0c; }
   .hero{ position:relative; width:100%; aspect-ratio:1440/810; max-height:100svh; overflow:hidden; background:#c7cdd2; isolation:isolate; }
   .bed{ position:absolute; inset:0; --gap:clamp(8px,0.9vw,14px); }
-  /* Feathered dark pool ONLY around the centre signup. */
+  /* Darkening, like Control: a flat tint across the whole wall so the images read a bit
+     darker overall, PLUS a deeper feathered pool around the centre signup for legibility. */
   .scrim{
     position:absolute; inset:0; z-index:1; pointer-events:none;
-    background:radial-gradient(40% 46% at 50% 50%,
-      rgba(0,0,0,.66) 0%, rgba(0,0,0,.52) 32%, rgba(0,0,0,.26) 56%, rgba(0,0,0,0) 78%);
+    background:
+      radial-gradient(42% 48% at 50% 50%,
+        rgba(0,0,0,.62) 0%, rgba(0,0,0,.46) 34%, rgba(0,0,0,.22) 58%, rgba(0,0,0,0) 80%),
+      linear-gradient(rgba(0,0,0,.30), rgba(0,0,0,.30));
   }
   .logo{ position:absolute; top:max(14px,2.2vh); left:50%; transform:translateX(-50%); z-index:3; line-height:0; }
   /* Larger, dark (black-wordmark) logo so it reads prominently over the columns. */
