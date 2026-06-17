@@ -64,14 +64,17 @@
 
   @media (max-width: 900px){
     .hero{ min-height:100svh; }
-    .halo{ width:148vw; height:70vh;
-      background:
-        radial-gradient(54% 50% at 50% 50%,
-          rgba(255,255,255,.99) 0%, rgba(255,255,255,.97) 34%, rgba(255,255,255,.8) 54%,
-          rgba(255,255,255,.4) 70%, rgba(255,255,255,.14) 84%, rgba(255,255,255,0) 95%),
-        radial-gradient(36% 38% at 50% 48%,
-          rgba(255,255,255,1) 0%, rgba(255,255,255,.9) 55%, rgba(255,255,255,0) 100%); }
+    /* Signup drops to the bottom; the feathered pool follows it down. */
+    .content{ top:auto; bottom:clamp(26px,5vh,46px); transform:translateX(-50%); }
     .content .intro h1{ font-size:clamp(30px,8vw,42px); }
+    .halo{ top:auto; bottom:0; transform:translateX(-50%);
+      width:172vw; height:64vh;
+      background:
+        radial-gradient(62% 58% at 50% 80%,
+          rgba(255,255,255,.99) 0%, rgba(255,255,255,.97) 34%, rgba(255,255,255,.8) 54%,
+          rgba(255,255,255,.4) 70%, rgba(255,255,255,.13) 86%, rgba(255,255,255,0) 97%),
+        radial-gradient(40% 34% at 50% 86%,
+          rgba(255,255,255,1) 0%, rgba(255,255,255,.9) 55%, rgba(255,255,255,0) 100%); }
   }
   @media (prefers-reduced-motion: reduce){ .stack{ animation:none; } }
 </style>

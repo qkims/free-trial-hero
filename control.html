@@ -31,6 +31,8 @@
   @media (max-width: 900px){
     .hero{ aspect-ratio:auto; height:100svh; min-height:600px; }
     :root{ --th: clamp(200px, 46vw, 310px); }
+    /* Signup card drops to the bottom of the screen. */
+    .content{ top:auto; bottom:clamp(22px,4vh,42px); transform:translateX(-50%); }
   }
 </style>
 </head>

@@ -36,6 +36,12 @@
   .content .cta{ width:100%; text-align:left; }
   @media (max-width: 900px){
     .hero{ aspect-ratio:auto; height:100svh; min-height:600px; }
+    /* Signup drops to the bottom, centred; the dark pool follows it down. */
+    .content{ top:auto; bottom:clamp(22px,4vh,42px); transform:translateX(-50%); width:min(440px,92vw); }
+    .scrim{ background:
+      radial-gradient(64% 48% at 50% 84%,
+        rgba(0,0,0,.66) 0%, rgba(0,0,0,.46) 42%, rgba(0,0,0,.2) 64%, rgba(0,0,0,0) 82%),
+      linear-gradient(rgba(0,0,0,.3), rgba(0,0,0,.3)); }
   }
 </style>
 </head>
