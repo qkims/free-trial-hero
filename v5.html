@@ -41,10 +41,17 @@
     opacity:0; transition:opacity 1.1s ease; }
   .card img.show{ opacity:1; }
 
+  /* Feathered white pool behind the signup: a bright, near-opaque core that melts outward
+     through several soft stops to fully transparent, so the signup lifts off the card field
+     without any hard edge. Two stacked radials — a wider gentle feather + a tighter glow. */
   .halo{ position:absolute; z-index:2; top:50%; left:50%; transform:translate(-50%,-50%);
-    width:min(820px,98vw); height:min(580px,82vh); pointer-events:none;
-    background:radial-gradient(50% 50% at 50% 50%,
-      rgba(255,255,255,.95) 0%, rgba(255,255,255,.84) 42%, rgba(255,255,255,0) 72%); }
+    width:min(900px,104vw); height:min(640px,88vh); pointer-events:none;
+    background:
+      radial-gradient(52% 52% at 50% 50%,
+        rgba(255,255,255,.98) 0%, rgba(255,255,255,.97) 30%, rgba(255,255,255,.82) 50%,
+        rgba(255,255,255,.45) 66%, rgba(255,255,255,.16) 80%, rgba(255,255,255,0) 92%),
+      radial-gradient(34% 40% at 50% 48%,
+        rgba(255,255,255,1) 0%, rgba(255,255,255,.9) 55%, rgba(255,255,255,0) 100%); }
 
   .logo{ position:absolute; top:max(16px,2.4vh); left:50%; transform:translateX(-50%); z-index:5; line-height:0; }
   .logo .logo-vid{ height:clamp(36px,3.6vw,50px); filter:none; }
@@ -58,8 +65,13 @@
   @media (max-width: 900px){
     .hero{ min-height:100svh; }
     .layer.d0{ display:none; }              /* thin the back layer so mobile stays calm */
-    .halo{ width:130vw; height:64vh;
-      background:radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,.98) 0%, rgba(255,255,255,.9) 46%, rgba(255,255,255,0) 74%); }
+    .halo{ width:148vw; height:70vh;
+      background:
+        radial-gradient(54% 50% at 50% 50%,
+          rgba(255,255,255,.99) 0%, rgba(255,255,255,.97) 34%, rgba(255,255,255,.8) 54%,
+          rgba(255,255,255,.4) 70%, rgba(255,255,255,.14) 84%, rgba(255,255,255,0) 95%),
+        radial-gradient(36% 38% at 50% 48%,
+          rgba(255,255,255,1) 0%, rgba(255,255,255,.9) 55%, rgba(255,255,255,0) 100%); }
     .content .intro h1{ font-size:clamp(30px,8vw,42px); }
   }
   @media (prefers-reduced-motion: reduce){ .stack{ animation:none; } }
