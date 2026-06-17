@@ -12,13 +12,16 @@ body{
   color:#000; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
 }
 
-/* Animated logo end-card (transparent video). */
+/* Animated logo end-card (transparent video). White wordmark by default — for use
+   over the mosaic / dark backgrounds; a soft glow keeps it legible over light tiles. */
 .logo-vid{
   display:block; height:clamp(46px, 5.8vw, 74px); width:auto;
   filter:drop-shadow(0 1px 6px rgba(0,0,0,.28));
 }
 .logo-vid img{ height:100%; width:auto; display:block; }
-.logo--dark .logo-vid{ filter:none; }   /* on light backgrounds the white wordmark needs no glow when we swap to dark fill below */
+/* On LIGHT panels the white wordmark is invisible. .logo.ink renders the (monochrome
+   white) animated wordmark as solid ink so the animation reads on white. */
+.logo.ink .logo-vid{ filter:brightness(0); }
 
 /* Intro card (white) — the intended LCP element: text on a CSS background. */
 .intro{

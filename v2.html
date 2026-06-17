@@ -7,18 +7,18 @@
 <link rel="stylesheet" href="lib/mosaic.css" />
 <link rel="stylesheet" href="lib/ui.css" />
 <style>
-  /* V2: same drifting mosaic, but pushed back — desaturated, softly blurred and slowed —
-     so it reads as ambient texture while a single centered signup column carries all focus.
-     A darker centre pool deepens the contrast behind the card. */
+  /* V2: the full, bright drifting mosaic stays in full colour — NO global tint or blur.
+     The only darkening is a soft, feathered pool centred behind the signup sheet, so just
+     the signup area is shaded for legibility while the rest of the wall reads clearly. */
   body{ background:#0b0b0c; }
-  .hero{ position:relative; width:100%; aspect-ratio:1440/810; max-height:100svh; overflow:hidden; background:#1c2024; isolation:isolate; }
-  .rotor{ filter:saturate(.82) brightness(.9) blur(2px); transform:translate(-50%,-50%) rotate(var(--tilt,18deg)) scale(1.06); }
+  .hero{ position:relative; width:100%; aspect-ratio:1440/810; max-height:100svh; overflow:hidden; background:#c7cdd2; isolation:isolate; }
+  .rotor{ transform:translate(-50%,-50%) rotate(var(--tilt,18deg)) scale(1.04); }
+  /* Feathered dark pool ONLY around the centre signup — generous falloff to fully
+     transparent well before the edges, so the mosaic elsewhere is untinted. */
   .scrim{
     position:absolute; inset:0; z-index:1; pointer-events:none;
-    background:
-      radial-gradient(58% 64% at 50% 50%, rgba(0,0,0,.55) 0%, rgba(0,0,0,.30) 45%, rgba(0,0,0,0) 78%),
-      radial-gradient(140% 120% at 50% 45%, rgba(0,0,0,0) 50%, rgba(0,0,0,.5) 100%),
-      linear-gradient(rgba(8,10,12,.42), rgba(8,10,12,.42));
+    background:radial-gradient(42% 46% at 50% 50%,
+      rgba(0,0,0,.62) 0%, rgba(0,0,0,.50) 32%, rgba(0,0,0,.26) 56%, rgba(0,0,0,0) 78%);
   }
   .logo{ position:absolute; top:max(14px,2.2vh); left:50%; transform:translateX(-50%); z-index:3; line-height:0; }
   .content{
@@ -65,7 +65,6 @@
           </button>
         </div>
       </form>
-      <div class="trust on-dark"><span class="lbl">Trusted by</span><span class="names">Allbirds · Clek · Leesa · UNTUCKit</span></div>
     </div>
   </main>
 
