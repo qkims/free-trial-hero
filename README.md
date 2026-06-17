@@ -1,9 +1,34 @@
-# Free-Trial Hero — coded rebuild
+# Free-Trial Hero — coded rebuild + signup-focused exploration
 
-A from-scratch, dependency-free rebuild of the `shopify.com/free-trial` hero. The live page renders
-its animated photo-mosaic background as an autoplay **`<video>`** (webm 496 KB / mp4 1.5 MB) behind a
-**204 KB WebP poster** — and that poster is the page's **LCP element**, so the largest paint waits on
-one big asset to download.
+A from-scratch, dependency-free rebuild of the `shopify.com/free-trial` hero, plus a set of
+signup-focused layout explorations. The live page renders its animated photo-mosaic background as an
+autoplay **`<video>`** (webm 496 KB / mp4 1.5 MB) behind a **204 KB WebP poster** — and that poster is
+the page's **LCP element**, so the largest paint waits on one big asset to download.
+
+## Exploration harness (open `index.html`)
+
+`index.html` is a **review harness**: a tab rail (Control + four variants) with a **Desktop / Mobile**
+toggle, each variant rendered live in an iframe. The goal across all of them is to pull focus to the
+signup while letting the merchant imagery tell a stronger story — and keep LCP low.
+
+| Tab | Signup placement | Imagery role | Mobile LCP | Desktop LCP |
+|---|---|---|---|---|
+| **Control** | Centered card | Full-bleed drifting mosaic | 2.48 s 🟢 | 0.44 s |
+| **V1 · Left signup** | Left column | Mosaic fills right two-thirds, fades into white | 2.20 s 🟢 | 0.40 s |
+| **V2 · Center calm** | Centered | Same mosaic, muted/blurred/slowed bed | 2.46 s 🟢 | 0.40 s |
+| **V3 · Right + story** | Right column | Curated floating collage (4 real photos) | **1.23 s** 🟢 | 0.24 s |
+| **V4 · Editorial** | Top-left, brand-forward | Deep gradient + a single thin drifting tile rail | **0.89 s** 🟢 | 0.30 s |
+
+All five sit in the "good" band (mobile ≤ 2.5 s). The lighter the imagery commitment, the faster the
+paint: **V3** (a handful of curated tiles) and **V4** (gradient + one thin rail) are dramatically
+quicker than the full-mosaic layouts because far less image bandwidth competes during first paint.
+Numbers are lab/emulated medians (Slow 4G + 4× CPU for mobile, cable for desktop) via the same harness
+used for the baseline. Shared engine lives in `lib/` (`mosaic.css`, `ui.css`, `mosaic.js`); each
+variant is a slim standalone HTML so its LCP is measured in isolation.
+
+---
+
+## Control: the coded rebuild
 
 This version recreates the look of the live video — a **+18°-tilted wall of large rounded product
 tiles** (uniform height, a mix of portrait `239:314` and landscape `539:314` cards, ~20 px gaps) where

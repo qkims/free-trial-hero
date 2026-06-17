@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>V3 — Right signup, scrolling story columns left</title>
+<link rel="stylesheet" href="lib/mosaic.css" />
+<link rel="stylesheet" href="lib/ui.css" />
+<style>
+  /* V3 (reworked): the left side is now FULLY populated — vertical columns of merchant
+     photos scroll continuously (adjacent columns opposite ways), so the wall is always
+     full and keeps revealing more of the deck. The signup sits in a clean right column
+     with the real dark logo. */
+  :root{ --font:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Inter",Arial,sans-serif; --radius-tile:14px; --gap:clamp(9px,1vw,15px); }
+  body{ background:#f4f3f1; }
+  .hero{ position:relative; width:100%; height:100svh; min-height:640px; max-height:940px; overflow:hidden; display:flex; }
+
+  /* Left: fully-populated scrolling columns */
+  .story{ position:relative; flex:1 1 auto; min-width:0; overflow:hidden; background:#e9e7e3; }
+  .story .edge{ position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:linear-gradient(90deg, rgba(233,231,227,0) 86%, rgba(233,231,227,.9) 100%); }
+
+  /* Right: signup column */
+  .panel{
+    position:relative; z-index:3; flex:0 0 clamp(380px, 36%, 520px);
+    background:#fff; padding:clamp(28px,4vw,60px);
+    display:flex; flex-direction:column; box-shadow:-22px 0 54px -30px rgba(0,0,0,.3);
+  }
+  .panel .logo-vid{ height:clamp(50px,4.8vw,70px); filter:none; }  /* larger, no drop shadow */
+  .panel .lead{ margin:auto 0; display:flex; flex-direction:column; gap:18px; }
+  .panel .intro h1{ font-size:clamp(32px,3.4vw,48px); }
+
+  @media (max-width: 900px){
+    .hero{ flex-direction:column; height:auto; min-height:100svh; }
+    .panel{ order:1; flex:0 0 auto; box-shadow:none; }
+    .panel .lead{ margin:14px 0 0; }
+    .story{ order:2; flex:0 0 48svh; min-height:340px; }
+    .story .edge{ background:linear-gradient(0deg, rgba(233,231,227,0) 88%, rgba(233,231,227,.9) 100%); }
+  }
+</style>
+</head>
+<body>
+  <main class="hero">
+    <div class="story" id="story" aria-hidden="true">
+      <div class="edge"></div>
+    </div>
+
+    <aside class="panel">
+      <a class="logo" href="#" aria-label="Shopify">
+        <video class="logo-vid" autoplay muted playsinline disablepictureinpicture width="850" height="300" aria-hidden="true">
+          <source src="assets/logo-dark.webm" type="video/webm" />
+          <source src="assets/logo-dark.mp4" type='video/mp4; codecs="hvc1"' />
+          <img src="assets/logo-dark.png" alt="Shopify" />
+        </video>
+      </a>
+      <div class="lead">
+        <section class="intro bare on-light">
+          <h1>Your business<br>starts with Shopify</h1>
+          <p>Try 3 days free, then <b>$1/month for 3 months.</b> What are you waiting for?</p>
+        </section>
+        <form class="cta" onsubmit="return false">
+          <div class="cta-top">
+            <span class="free">Start for free</span>
+            <span class="disclaimer">You agree to receive Shopify marketing emails.</span>
+          </div>
+          <div class="email">
+            <input type="email" placeholder="Enter your email" aria-label="Email address" />
+            <button type="submit" aria-label="Start free trial">
+              <svg viewBox="0 0 17 16" fill="none"><path d="M1 8h14M9 2l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </form>
+      </div>
+    </aside>
+  </main>
+
+  <div id="perf">LCP: measuring…</div>
+  <script src="lib/mosaic.js"></script>
+  <script>
+    Mosaic.buildColumns(document.getElementById('story'), { colTargetW: 230, eagerFirst:4, durBase:70 });
+    Mosaic.perfPanel();
+  </script>
+</body>
+</html>

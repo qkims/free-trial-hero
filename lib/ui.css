@@ -1,0 +1,96 @@
+/* ============================================================================
+   Shared foreground UI — the signup story: heading card, "Start for free" CTA,
+   email capture, animated logo, and a lightweight trust line. Layout-neutral:
+   each variant positions these; this file only styles them.
+   ============================================================================ */
+:root{
+  --rich-black:#02090a;
+  --ink:#0b0b0c;
+}
+body{
+  font-family:var(--font, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif);
+  color:#000; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+
+/* Animated logo end-card (transparent video). White wordmark by default — for use
+   over the mosaic / dark backgrounds; a soft glow keeps it legible over light tiles. */
+.logo-vid{
+  display:block; height:clamp(46px, 5.8vw, 74px); width:auto;
+  filter:drop-shadow(0 1px 6px rgba(0,0,0,.28));
+}
+.logo-vid img{ height:100%; width:auto; display:block; }
+/* On LIGHT panels the white wordmark is invisible. .logo.ink renders the (monochrome
+   white) animated wordmark as solid ink so the animation reads on white. */
+.logo.ink .logo-vid{ filter:brightness(0); }
+
+/* Intro card (white) — the intended LCP element: text on a CSS background. */
+.intro{
+  background:#fff; border-radius:35px;
+  padding:30px 24px 25px 20px;
+  box-shadow:0 18px 40px -22px rgba(0,0,0,.45);
+}
+.intro h1{
+  margin:0; font-weight:500;
+  font-size:clamp(30px, 4.6vw, 44px); line-height:1; letter-spacing:-.01em; color:#000;
+}
+.intro p{
+  margin:14px 0 0; font-size:clamp(15px, 1.6vw, 18px); line-height:1.2;
+  letter-spacing:-.01em; color:rgba(0,0,0,.6);
+}
+.intro p b{ color:#000; font-weight:400; }
+
+/* "naked" intro variant — heading directly on the page (no white card), for split layouts */
+.intro.bare{ background:transparent; box-shadow:none; padding:0; }
+.intro.bare.on-light h1{ color:#0b0b0c; }
+.intro.bare.on-light p{ color:rgba(0,0,0,.55); }
+.intro.bare.on-dark h1{ color:#fff; }
+.intro.bare.on-dark p{ color:rgba(255,255,255,.7); }
+
+/* CTA card (rich black) */
+.cta{
+  background:var(--rich-black);
+  border:1px solid rgba(255,255,255,.17);
+  border-radius:35px; padding:18px 10px 10px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.cta-top{ display:flex; align-items:baseline; gap:32px; padding-left:5px; }
+.cta-top .free{
+  color:#fff; font-weight:500; font-size:clamp(20px,2.4vw,24px);
+  letter-spacing:-.01em; padding-left:10px; white-space:nowrap;
+}
+.cta-top .disclaimer{ color:rgba(255,255,255,.5); font-size:11px; line-height:1.2; letter-spacing:-.01em; }
+.email{
+  background:#171717; border:1px solid rgba(255,255,255,.3);
+  border-radius:100px; padding:5px 5px 5px 15px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.email input{
+  flex:1; background:transparent; border:0; outline:0; color:#fff;
+  font-family:var(--font); font-size:clamp(16px,2vw,20px); letter-spacing:-.01em; padding:10px 0;
+}
+.email input::placeholder{ color:rgba(255,255,255,.7); }
+.email button{
+  flex:0 0 auto; width:48px; height:48px; border-radius:200px; border:0;
+  background:#fff; color:#111; cursor:pointer; display:grid; place-items:center;
+  transition:transform .15s ease, background .15s ease;
+}
+.email button:hover{ transform:translateX(2px); }
+.email button svg{ width:17px; height:16px; display:block; }
+
+/* Lightweight trust line (text, no logo images → no extra requests gating LCP). */
+.trust{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px;
+  font-size:12px; letter-spacing:.02em; text-transform:uppercase;
+}
+.trust .lbl{ opacity:.55; font-weight:600; }
+.trust .names{ font-weight:600; opacity:.8; }
+.trust.on-dark{ color:#fff; }
+.trust.on-light{ color:#0b0b0c; }
+
+/* LCP diagnostic panel (deferred, never blocks paint; toggle with "p"). */
+#perf{
+  position:fixed; right:10px; bottom:10px; z-index:9;
+  font:12px/1.4 ui-monospace,Menlo,monospace;
+  background:rgba(0,0,0,.78); color:#7CFFB2; padding:8px 11px; border-radius:8px;
+  pointer-events:none; white-space:pre;
+}
