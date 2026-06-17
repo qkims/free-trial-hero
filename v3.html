@@ -3,43 +3,28 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>V3 — Right signup, story collage left</title>
+<title>V3 — Right signup, scrolling story columns left</title>
+<link rel="stylesheet" href="lib/mosaic.css" />
 <link rel="stylesheet" href="lib/ui.css" />
 <style>
-  /* V3: a curated, slowly-floating collage of real merchant photos tells a "your store,
-     your customers, your craft" story on the left; the signup sits in a clean column on
-     the right. This pass: a denser 3-column collage (more photos) + ink logo so it reads
-     on white. Heading text is the LCP element. */
-  :root{ --font:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Inter",Arial,sans-serif; --radius-tile:16px; }
+  /* V3 (reworked): the left side is now FULLY populated — vertical columns of merchant
+     photos scroll continuously (adjacent columns opposite ways), so the wall is always
+     full and keeps revealing more of the deck. The signup sits in a clean right column
+     with the real dark logo. */
+  :root{ --font:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Inter",Arial,sans-serif; --radius-tile:14px; --gap:clamp(9px,1vw,15px); }
   body{ background:#f4f3f1; }
   .hero{ position:relative; width:100%; height:100svh; min-height:640px; max-height:940px; overflow:hidden; display:flex; }
 
-  /* Left: floating collage — 3 columns, varied heights for a rich masonry feel */
-  .story{ position:relative; flex:1 1 auto; min-width:0; padding:clamp(18px,2.4vw,40px); overflow:hidden; }
-  .collage{
-    position:absolute; inset:clamp(18px,2.4vw,40px);
-    display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:1fr;
-    gap:clamp(10px,1.2vw,18px);
-  }
-  .ph{ position:relative; border-radius:var(--radius-tile); overflow:hidden; background:#e7e3dc;
-       box-shadow:0 12px 30px -20px rgba(0,0,0,.5); animation:float var(--fd,12s) ease-in-out infinite; will-change:transform; }
-  .ph img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .ph.t2{ grid-row:span 2; }
-  .ph:nth-child(1){ --fd:13s; animation-delay:-1s; }
-  .ph:nth-child(2){ --fd:11s; animation-delay:-4s; }
-  .ph:nth-child(3){ --fd:14s; animation-delay:-7s; }
-  .ph:nth-child(4){ --fd:12s; animation-delay:-2s; }
-  .ph:nth-child(5){ --fd:15s; animation-delay:-9s; }
-  .ph:nth-child(6){ --fd:13s; animation-delay:-5s; }
-  .ph:nth-child(7){ --fd:11s; animation-delay:-3s; }
-  @keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-9px); } }
-  @media (prefers-reduced-motion: reduce){ .ph{ animation:none; } }
+  /* Left: fully-populated scrolling columns */
+  .story{ position:relative; flex:1 1 auto; min-width:0; overflow:hidden; background:#e9e7e3; }
+  .story .edge{ position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:linear-gradient(90deg, rgba(233,231,227,0) 86%, rgba(233,231,227,.9) 100%); }
 
   /* Right: signup column */
   .panel{
     position:relative; z-index:3; flex:0 0 clamp(380px, 36%, 520px);
     background:#fff; padding:clamp(28px,4vw,60px);
-    display:flex; flex-direction:column; box-shadow:-20px 0 50px -30px rgba(0,0,0,.25);
+    display:flex; flex-direction:column; box-shadow:-22px 0 54px -30px rgba(0,0,0,.3);
   }
   .panel .logo-vid{ height:clamp(40px,4vw,54px); }
   .panel .lead{ margin:auto 0; display:flex; flex-direction:column; gap:18px; }
@@ -49,31 +34,23 @@
     .hero{ flex-direction:column; height:auto; min-height:100svh; }
     .panel{ order:1; flex:0 0 auto; box-shadow:none; }
     .panel .lead{ margin:14px 0 0; }
-    .story{ order:2; flex:0 0 46svh; min-height:320px; }
-    .collage{ grid-template-columns:repeat(3,1fr); }
+    .story{ order:2; flex:0 0 48svh; min-height:340px; }
+    .story .edge{ background:linear-gradient(0deg, rgba(233,231,227,0) 88%, rgba(233,231,227,.9) 100%); }
   }
 </style>
 </head>
 <body>
   <main class="hero">
-    <div class="story">
-      <div class="collage" aria-hidden="true">
-        <div class="ph t2"><img src="assets/tile-08.webp" alt="" decoding="async" fetchpriority="high"></div>
-        <div class="ph"><img src="assets/tile-19.webp" alt="" loading="lazy" decoding="async"></div>
-        <div class="ph t2"><img src="assets/tile-24.webp" alt="" loading="lazy" decoding="async"></div>
-        <div class="ph"><img src="assets/tile-07.webp" alt="" loading="lazy" decoding="async"></div>
-        <div class="ph t2"><img src="assets/tile-11.webp" alt="" loading="lazy" decoding="async"></div>
-        <div class="ph"><img src="assets/tile-16.webp" alt="" loading="lazy" decoding="async"></div>
-        <div class="ph"><img src="assets/tile-10.webp" alt="" loading="lazy" decoding="async"></div>
-      </div>
+    <div class="story" id="story" aria-hidden="true">
+      <div class="edge"></div>
     </div>
 
     <aside class="panel">
-      <a class="logo ink" href="#" aria-label="Shopify">
+      <a class="logo" href="#" aria-label="Shopify">
         <video class="logo-vid" autoplay muted playsinline disablepictureinpicture width="850" height="300" aria-hidden="true">
-          <source src="assets/logo.webm" type="video/webm" />
-          <source src="assets/logo.mp4" type='video/mp4; codecs="hvc1"' />
-          <img src="assets/logo-fallback.png" alt="Shopify" />
+          <source src="assets/logo-dark.webm" type="video/webm" />
+          <source src="assets/logo-dark.mp4" type='video/mp4; codecs="hvc1"' />
+          <img src="assets/logo-dark.png" alt="Shopify" />
         </video>
       </a>
       <div class="lead">
@@ -100,6 +77,7 @@
   <div id="perf">LCP: measuring…</div>
   <script src="lib/mosaic.js"></script>
   <script>
+    Mosaic.buildColumns(document.getElementById('story'), { colTargetW: 230, eagerFirst:4, durBase:70 });
     Mosaic.perfPanel();
   </script>
 </body>

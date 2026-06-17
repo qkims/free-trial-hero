@@ -49,6 +49,24 @@ html,body{ margin:0; }
 .card.w2{ aspect-ratio: 539 / 314; }   /* landscape */
 .card img{ width:100%; height:100%; object-fit:cover; display:block; }
 
+/* ---------------------------------------------------------------------------
+   Vertical-columns mode — a row of columns, each an independent vertical marquee
+   (adjacent columns scroll opposite ways). Smaller tiles, many of them on screen,
+   continuously revealing more of the deck. Used by V2 (full-bleed) and V3 (left).
+   --------------------------------------------------------------------------- */
+.cols{ position:absolute; inset:0; display:flex; gap:var(--gap); overflow:hidden; }
+.vcol{ flex:1 1 0; min-width:0; position:relative; overflow:hidden; }
+.vstack{
+  position:absolute; top:0; left:0; width:100%;
+  display:flex; flex-direction:column;
+  animation: scrollUp var(--dur, 60s) linear infinite; will-change:transform;
+}
+.vcol.rev .vstack{ animation-name: scrollDown; }
+.vstack .vcard{ width:100%; margin-bottom:var(--gap); border-radius:var(--radius-tile); overflow:hidden; background:#e7e3dc; flex:0 0 auto; }
+.vstack .vcard img{ width:100%; height:100%; object-fit:cover; display:block; }
+@keyframes scrollUp{ from{ transform:translateY(0); }    to{ transform:translateY(-50%); } }
+@keyframes scrollDown{ from{ transform:translateY(-50%); } to{ transform:translateY(0); } }
+
 @media (prefers-reduced-motion: reduce){
-  .lane{ animation:none; }
+  .lane, .vstack{ animation:none; }
 }
