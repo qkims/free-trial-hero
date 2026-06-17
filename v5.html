@@ -8,10 +8,10 @@
 <link rel="stylesheet" href="lib/ui.css" />
 <style>
   /* V5 (depth world): a calm WHITE hero, signup centred, and a layered scatter of upright
-     merchant cards on three DEPTH tiers — back cards smaller, blurred and dim; front cards
-     larger and sharp. Each card is a seamless vertical strip whose photos SLIDE UP and loop
-     forever; back tiers scroll slower than front for parallax. Extra cards top & bottom build
-     a fuller 3D field. LCP = heading / first visible slide. */
+     merchant cards on three DEPTH layers — back smaller/blurred/dim, front larger/sharp.
+     The CARDS themselves drift UP the page and seamlessly loop (a card leaving the top
+     re-enters from the bottom). Each depth layer scrolls at its own speed for parallax:
+     back slow, front faster. LCP = heading / first front card. */
   :root{ --font:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Inter",Arial,sans-serif; }
   body{ background:#fff; }
   .hero{ position:relative; width:100%; height:100svh; min-height:640px; max-height:940px;
@@ -22,20 +22,21 @@
     isolation:isolate; }
 
   .field{ position:absolute; inset:0; z-index:1; }
-  .fcard{ position:absolute; border-radius:18px; overflow:hidden; will-change:transform; }
-  .fcard.d0{ filter:blur(5px) saturate(.92) brightness(1.03); opacity:.7;  z-index:1;
-    box-shadow:0 16px 38px -26px rgba(0,0,0,.30); }
-  .fcard.d1{ filter:blur(1.6px); opacity:.92; z-index:2;
-    box-shadow:0 22px 50px -26px rgba(0,0,0,.34); }
-  .fcard.d2{ filter:none; opacity:1; z-index:3;
-    box-shadow:0 32px 66px -28px rgba(0,0,0,.42), 0 8px 18px rgba(0,0,0,.10); }
+  .layer{ position:absolute; inset:0; }
+  .layer.d0{ z-index:1; filter:blur(5px) saturate(.92) brightness(1.03); opacity:.7; }
+  .layer.d1{ z-index:2; filter:blur(1.6px); opacity:.92; }
+  .layer.d2{ z-index:3; }
 
-  /* Seamless upward-scrolling strip: two identical halves, translateY 0 -> -50% loops. */
-  .strip{ position:absolute; left:0; top:0; width:100%; display:flex; flex-direction:column;
-    animation:slideUp var(--dur,18s) linear infinite; will-change:transform; }
-  .strip .slide{ width:100%; flex:0 0 auto; }
-  .strip img{ width:100%; height:100%; object-fit:cover; display:block; }
+  /* Each layer's cards live in a stack twice the viewport tall; translateY 0 -> -50%
+     scrolls everything up by one viewport and loops seamlessly (the halves are identical). */
+  .stack{ position:absolute; left:0; top:0; width:100%;
+    animation:slideUp var(--dur,40s) linear infinite; will-change:transform; }
   @keyframes slideUp{ from{ transform:translateY(0); } to{ transform:translateY(-50%); } }
+
+  .card{ position:absolute; border-radius:18px; overflow:hidden; background:#efece7;
+    box-shadow:0 22px 50px -26px rgba(0,0,0,.34); }
+  .layer.d2 .card{ box-shadow:0 32px 66px -28px rgba(0,0,0,.42), 0 8px 18px rgba(0,0,0,.10); }
+  .card img{ width:100%; height:100%; object-fit:cover; display:block; }
 
   .halo{ position:absolute; z-index:2; top:50%; left:50%; transform:translate(-50%,-50%);
     width:min(820px,98vw); height:min(580px,82vh); pointer-events:none;
@@ -53,12 +54,12 @@
 
   @media (max-width: 900px){
     .hero{ min-height:100svh; }
-    .field .fcard:nth-child(n+6){ display:none; }
+    .layer.d0{ display:none; }              /* thin the back layer so mobile stays calm */
     .halo{ width:130vw; height:64vh;
       background:radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,.98) 0%, rgba(255,255,255,.9) 46%, rgba(255,255,255,0) 74%); }
     .content .intro h1{ font-size:clamp(30px,8vw,42px); }
   }
-  @media (prefers-reduced-motion: reduce){ .strip{ animation:none; } }
+  @media (prefers-reduced-motion: reduce){ .stack{ animation:none; } }
 </style>
 </head>
 <body>
@@ -108,52 +109,42 @@
     var W = field.clientWidth || 1280, H = field.clientHeight || 800;
     var u = Math.max(0.62, W / 1440);
 
-    // Card centres + depth tier d (0=back blur, 1=mid, 2=front). Extra layers top & bottom.
-    var SPECS = [
-      {x:.15,y:.21,w:210,h:270,d:1},
-      {x:.62,y:.16,w:200,h:248,d:0},
-      {x:.07,y:.52,w:198,h:250,d:2},
-      {x:.81,y:.33,w:212,h:286,d:0},
-      {x:.20,y:.79,w:190,h:228,d:2},
-      {x:.64,y:.77,w:214,h:250,d:1},
-      {x:.42,y:.10,w:178,h:212,d:0},
-      {x:.91,y:.61,w:168,h:208,d:2},
-      {x:.30,y:.94,w:165,h:200,d:1},   // bottom layer
-      {x:.52,y:.04,w:160,h:195,d:0},   // top layer (far back)
-      {x:.10,y:.91,w:150,h:182,d:0},   // bottom-left far back
-      {x:.88,y:.89,w:158,h:188,d:1}    // bottom-right
+    // Three depth layers. Each card: x (centre fraction of W), y (centre fraction of one
+    // loop = viewport height). Cards spread across y so the column stays populated as it loops.
+    var TIERS = [
+      { d:0, scale:0.80, w:155, dur:46, cards:[   // back — blurred, slow
+        {x:.50,y:.05}, {x:.12,y:.30}, {x:.86,y:.24}, {x:.40,y:.53}, {x:.72,y:.70}, {x:.22,y:.90} ]},
+      { d:1, scale:0.92, w:188, dur:35, cards:[   // mid
+        {x:.16,y:.15}, {x:.82,y:.09}, {x:.90,y:.55}, {x:.10,y:.66}, {x:.34,y:.84} ]},
+      { d:2, scale:1.04, w:210, dur:27, cards:[   // front — sharp, faster
+        {x:.07,y:.40}, {x:.64,y:.33}, {x:.26,y:.67}, {x:.90,y:.87} ]}
     ];
-    var SCALE   = [0.8, 0.92, 1.04];   // by depth tier
-    var PERSLIDE= [5.4, 4.2, 3.2];     // seconds per photo: back scrolls slower (parallax)
-    var K = 5;                         // distinct photos per loop half
 
-    SPECS.forEach(function(s, idx){
-      var w = s.w * u, h = s.h * u;
-      var card = document.createElement('div'); card.className = 'fcard d' + s.d;
-      card.style.width = w.toFixed(1) + 'px'; card.style.height = h.toFixed(1) + 'px';
-      card.style.left = (W*s.x - w/2).toFixed(1) + 'px';
-      card.style.top  = (H*s.y - h/2).toFixed(1) + 'px';
-      card.style.transform = 'scale(' + SCALE[s.d] + ')';
+    var eager = 0;
+    TIERS.forEach(function(tier){
+      var layer = document.createElement('div'); layer.className = 'layer d' + tier.d;
+      var stack = document.createElement('div'); stack.className = 'stack';
+      stack.style.height = (2 * H).toFixed(0) + 'px';
+      if (!reduce){ stack.style.setProperty('--dur', tier.dur + 's'); stack.style.animationDelay = (-rnd()*tier.dur).toFixed(1) + 's'; }
+      else { stack.style.animation = 'none'; }
 
-      var strip = document.createElement('div'); strip.className = 'strip';
-      strip.style.setProperty('--dur', (PERSLIDE[s.d] * K).toFixed(1) + 's');
-      if (!reduce) strip.style.animationDelay = (-rnd() * PERSLIDE[s.d] * K).toFixed(1) + 's';
-      else strip.style.animation = 'none';
+      var w = tier.w * u, h = w * 1.3;
+      tier.cards.forEach(function(c){ c._tile = nextTile(); });   // fixed per card so both halves match
 
-      // One loop half = K distinct photos; render it twice for a seamless -50% loop.
-      var half = []; for (var j=0;j<K;j++) half.push(nextTile());
-      for (var rep=0; rep<2; rep++){
-        for (var j2=0;j2<K;j2++){
-          var slide = document.createElement('div'); slide.className = 'slide';
-          slide.style.height = h.toFixed(1) + 'px';
-          var img = new Image(); img.src = half[j2]; img.alt=''; img.decoding='async';
-          img.loading = (idx < 3 && rep===0 && j2===0) ? 'eager' : 'lazy';
-          if (idx < 3 && rep===0 && j2===0) img.fetchPriority = 'high';
-          slide.appendChild(img); strip.appendChild(slide);
-        }
+      for (var rep = 0; rep < 2; rep++){
+        tier.cards.forEach(function(c){
+          var card = document.createElement('div'); card.className = 'card';
+          card.style.width = w.toFixed(1) + 'px'; card.style.height = h.toFixed(1) + 'px';
+          card.style.left = (W*c.x - w/2).toFixed(1) + 'px';
+          card.style.top  = (c.y*H + rep*H - h/2).toFixed(1) + 'px';
+          card.style.transform = 'scale(' + tier.scale + ')';
+          var img = new Image(); img.src = c._tile; img.alt=''; img.decoding='async';
+          if (tier.d === 2 && rep === 0 && eager < 3){ img.loading='eager'; img.fetchPriority='high'; eager++; }
+          else { img.loading='lazy'; }
+          card.appendChild(img); stack.appendChild(card);
+        });
       }
-      card.appendChild(strip);
-      field.appendChild(card);
+      layer.appendChild(stack); field.appendChild(layer);
     });
     Mosaic.perfPanel();
   })();
