@@ -8,6 +8,9 @@
 <link rel="stylesheet" href="lib/ui.css" />
 <style>
   /* Control: full-bleed tilted drifting mosaic, centered intro+CTA over a legibility scrim. */
+  /* Smaller tiles: render at/below the source size so photos stay crisp (the old 430px
+     cap upscaled them), and the shorter rows let the wall pack in an extra strip. */
+  :root{ --th: clamp(150px, 19vw, 268px); }
   body{ background:var(--ink); }
   .hero{
     position:relative; width:100%; aspect-ratio:1440/810; max-height:100svh;
