@@ -6,12 +6,13 @@
 <title>V4 — Living mood wall</title>
 <link rel="stylesheet" href="lib/ui.css" />
 <style>
-  /* V4 (reimagined): NOT a marquee. A fixed "mood wall" of merchant tiles that slowly
-     CROSSFADE through the photo deck and gently breathe in place, with a subtle mouse
-     parallax. A brand-gradient veil sweeps from the left so the signup stays crisp and
-     dominant. Feels alive and editorial without anything sliding across the screen.
-     Only a few tiles load eagerly → LCP is the heading text. */
-  :root{ --font:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Inter",Arial,sans-serif; --rt:18px; }
+  /* V4 (round 3): a fully-packed "mood wall" of merchant tiles — no marquee, no sliding.
+     The wall is BUILT IN JS to completely fill its area (square cells, no holes/gaps).
+     Each tile periodically MORPHS to a new photo with a zoom-dissolve (incoming image
+     scales in as the old one fades + zooms out — clipped inside the cell, so nothing
+     scales into its neighbours). On hover the whole wall does a snappy 3D parallax tilt.
+     A brand-gradient veil keeps the signup crisp. LCP is the heading text. */
+  :root{ --font:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Inter",Arial,sans-serif; --rt:16px; }
   body{ background:#04110f; }
   .hero{
     position:relative; width:100%; height:100svh; min-height:620px; max-height:940px; overflow:hidden;
@@ -19,24 +20,24 @@
       radial-gradient(120% 90% at 14% 22%, #0c3b32 0%, rgba(12,59,50,0) 55%),
       radial-gradient(120% 100% at 92% 84%, #0a2c4d 0%, rgba(10,44,77,0) 52%),
       linear-gradient(160deg, #04110f 0%, #061a17 58%, #03252c 100%);
-    isolation:isolate;
+    isolation:isolate; perspective:1500px;
   }
 
-  /* The wall lives on the right; a 4-col grid of breathing, crossfading cells. */
+  /* The wall lives on the right; JS packs it with square cells so it fully fills. */
   .wall{
-    position:absolute; top:-4%; bottom:-4%; right:-3%; width:64%;
-    display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:1fr;
-    gap:clamp(10px,1vw,16px); z-index:0;
-    transform:translate(0,0); transition:transform .25s ease-out; will-change:transform;
+    position:absolute; top:-5%; bottom:-5%; right:-3%; width:64%;
+    display:grid; gap:10px; z-index:0;
+    transform-style:preserve-3d; transform:rotateX(0) rotateY(0);
+    transition:transform .12s ease-out; will-change:transform;
   }
   .cell{ position:relative; border-radius:var(--rt); overflow:hidden; background:#0c1c1a;
-    box-shadow:0 22px 50px -28px rgba(0,0,0,.8); animation:breathe var(--bd,9s) ease-in-out infinite; will-change:transform; }
-  .cell.t2{ grid-row:span 2; }
-  .cell img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.1s ease; }
-  .cell img.show{ opacity:1; }
-  .cell:nth-child(2n){ --bd:11s; }
-  .cell:nth-child(3n){ --bd:10s; }
-  @keyframes breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.04); } }
+    box-shadow:0 20px 46px -30px rgba(0,0,0,.8); }
+  /* Morph: a hidden tile sits zoomed-in; on .show it dissolves in and settles to scale 1.
+     The outgoing tile fades out while zooming slightly further — a gentle cross-zoom. */
+  .cell img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    opacity:0; transform:scale(1.09); transform-origin:50% 50%;
+    transition:opacity 1.25s ease, transform 1.5s cubic-bezier(.2,.6,.2,1); }
+  .cell img.show{ opacity:1; transform:scale(1); }
 
   /* Brand-gradient veil sweeping from the left over the wall, so the signup reads cleanly. */
   .veil{ position:absolute; inset:0; z-index:1; pointer-events:none;
@@ -53,33 +54,24 @@
   .content .cta{ width:min(460px,100%); margin-top:6px; }
 
   @media (max-width: 900px){
-    .hero{ display:flex; flex-direction:column; }
-    /* Signup leads on mobile; the wall sits below it as a bounded band. */
+    .hero{ display:flex; flex-direction:column; perspective:none; }
+    /* Signup leads on mobile; the wall sits below it as a bounded, fully-packed band. */
     .content{ position:static; transform:none; order:1; width:auto;
       margin:clamp(78px,12vh,120px) clamp(20px,5vw,32px) 0; }
     .content .intro.bare h1{ font-size:clamp(34px,9vw,46px); }
     .content .cta{ width:100%; }
     .wall{ position:static; order:2; width:auto; right:auto; top:auto; bottom:auto;
+      height:clamp(280px,44svh,460px);
       margin:clamp(20px,4vh,32px) clamp(14px,4vw,24px) clamp(16px,3vh,26px);
-      grid-template-columns:repeat(4,1fr); grid-auto-rows:minmax(78px,11vh); }
+      transform:none; transition:none; }
     .veil{ background:linear-gradient(0deg, rgba(4,17,15,0) 78%, rgba(4,17,15,.35) 100%); }
   }
-  @media (prefers-reduced-motion: reduce){ .cell{ animation:none; } .wall{ transition:none; } }
+  @media (prefers-reduced-motion: reduce){ .wall{ transition:none; } .cell img{ transition:opacity .4s ease; transform:none; } }
 </style>
 </head>
 <body>
   <main class="hero">
-    <div class="wall" id="wall" aria-hidden="true">
-      <div class="cell t2"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell t2"></div>
-      <div class="cell t2"></div>
-      <div class="cell"></div>
-      <div class="cell"></div>
-      <div class="cell t2"></div>
-      <div class="cell"></div>
-    </div>
+    <div class="wall" id="wall" aria-hidden="true"></div>
     <div class="veil" aria-hidden="true"></div>
 
     <a class="logo" href="#" aria-label="Shopify">
@@ -114,41 +106,67 @@
   <script src="lib/mosaic.js"></script>
   <script>
   (function(){
-    // Deck of all tiles, shuffled deterministically; each cell shows one and slowly
-    // crossfades to the next over time (no translation — the wall stays put and "lives").
+    // Deterministically-shuffled deck; cells pull from it and morph between photos.
     var TILES = Mosaic.ALL.slice();
     var seed = 23; function rnd(){ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; }
     for (var i=TILES.length-1;i>0;i--){ var k=Math.floor(rnd()*(i+1)); var t=TILES[i];TILES[i]=TILES[k];TILES[k]=t; }
     var di = 0; function nextTile(){ var t = TILES[di % TILES.length]; di++; return 'assets/' + t; }
 
-    var cells = [].slice.call(document.querySelectorAll('.cell'));
-    cells.forEach(function(cell, idx){
-      // two stacked imgs per cell for a true crossfade
-      var a = new Image(), b = new Image();
-      a.decoding = b.decoding = 'async'; a.alt = b.alt = '';
-      if (idx < 4){ a.loading='eager'; a.fetchPriority='high'; } else { a.loading='lazy'; }
-      b.loading = 'lazy';
-      a.src = nextTile(); a.className = 'show';
-      cell.appendChild(a); cell.appendChild(b);
-      var front = a, back = b;
-      var period = 4200 + (idx % 5) * 900;        // staggered so cells don't flip in unison
+    var wall = document.getElementById('wall');
+    var GAP = 10;
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function scheduleSwap(front, back, idx){
+      var f = front, b = back;
+      var period = 4600 + (idx % 7) * 820;             // staggered so cells don't flip in unison
       setTimeout(function(){
         setInterval(function(){
-          back.onload = function(){ back.classList.add('show'); front.classList.remove('show');
-            var tmp = front; front = back; back = tmp; };
-          back.src = nextTile();
+          b.onload = function(){ b.classList.add('show'); f.classList.remove('show');
+            var tmp = f; f = b; b = tmp; };
+          b.src = nextTile();
         }, period);
-      }, 700 + idx * 350);
-    });
+      }, 600 + (idx % 12) * 260);
+    }
 
-    // Subtle mouse parallax (desktop, motion allowed): the whole wall drifts a few px.
-    var wall = document.getElementById('wall');
-    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Pack the wall with square cells that completely fill its measured area.
+    function buildWall(){
+      var W = wall.clientWidth, H = wall.clientHeight;
+      if (!W || !H){ return; }
+      var cols = Math.max(3, Math.round(W / 240));
+      var cellW = (W - GAP*(cols-1)) / cols;
+      var rows = Math.max(3, Math.ceil((H + GAP) / (cellW + GAP)));
+      wall.style.gridTemplateColumns = 'repeat(' + cols + ',1fr)';
+      wall.style.gridAutoRows = cellW.toFixed(2) + 'px';
+      wall.style.gap = GAP + 'px';
+      var n = cols * rows;
+      for (var i = 0; i < n; i++){
+        var cell = document.createElement('div'); cell.className = 'cell';
+        var a = new Image(), b = new Image();
+        a.decoding = b.decoding = 'async'; a.alt = b.alt = '';
+        if (i < 6){ a.loading = 'eager'; a.fetchPriority = 'high'; } else { a.loading = 'lazy'; }
+        b.loading = 'lazy';
+        a.src = nextTile(); a.className = 'show';
+        cell.appendChild(a); cell.appendChild(b);
+        wall.appendChild(cell);
+        if (!reduce) scheduleSwap(a, b, i);
+        else { setTimeout((function(bb){ return function(){ bb.src = nextTile(); }; })(b), 0); }
+      }
+    }
+    buildWall();
+
+    // Snappy 3D parallax tilt on hover (desktop, motion allowed). Resets when the
+    // pointer leaves so the wall settles flat.
     if (wall && !reduce && matchMedia('(min-width:901px)').matches){
-      addEventListener('pointermove', function(e){
+      var hero = document.querySelector('.hero');
+      hero.addEventListener('pointermove', function(e){
         var dx = (e.clientX / innerWidth - 0.5), dy = (e.clientY / innerHeight - 0.5);
-        wall.style.transform = 'translate(' + (-dx*22).toFixed(1) + 'px,' + (-dy*16).toFixed(1) + 'px)';
+        var ry = (-dx * 9).toFixed(2), rx = (dy * 7).toFixed(2);
+        wall.style.transform = 'rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) translate(' +
+          (-dx*18).toFixed(1) + 'px,' + (-dy*13).toFixed(1) + 'px)';
       }, { passive:true });
+      hero.addEventListener('pointerleave', function(){
+        wall.style.transform = 'rotateX(0deg) rotateY(0deg) translate(0,0)';
+      });
     }
     Mosaic.perfPanel();
   })();
