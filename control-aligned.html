@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Control — centered card over drifting mosaic</title>
+<title>Control (Aligned) — centered card over drifting mosaic</title>
 <link rel="stylesheet" href="lib/mosaic.css" />
 <link rel="stylesheet" href="lib/ui.css" />
 <style>
@@ -13,7 +13,7 @@
   :root{ --th: clamp(150px, 19vw, 268px); }
   body{ background:var(--ink); }
   .hero{
-    position:relative; width:100%; aspect-ratio:1440/810; max-height:100svh;
+    position:relative; width:100%; height:100svh; min-height:560px;
     overflow:hidden; background:#c7cdd2; isolation:isolate;
   }
   .scrim{
@@ -24,15 +24,33 @@
       linear-gradient(rgba(0,0,0,.30), rgba(0,0,0,.30));
   }
   .logo{ position:absolute; top:max(12px,1.8vh); left:50%; transform:translateX(-50%); z-index:3; line-height:0; }
+  /* White Shopify mark (vector, with the bag's S as a real cut-out so the mosaic shows through
+     it — matching the live page). Colour comes from background; the SVG is used as an alpha mask. */
+  .logo .logo-mark{
+    display:block; height:clamp(26px,2.9vw,38px); aspect-ratio:1160/313; background:#fff;
+    -webkit-mask:url(assets/logo.svg) center/contain no-repeat;
+            mask:url(assets/logo.svg) center/contain no-repeat;
+    filter:drop-shadow(0 1px 6px rgba(0,0,0,.28));
+  }
   .content{
     position:absolute; z-index:3; top:50%; left:50%; transform:translate(-50%,-50%);
     width:min(460px, 86vw); display:flex; flex-direction:column; gap:10px;
   }
+  /* Entrance — mirrors the live hero: the two cards slide up + fade in, staggered.
+     Only the foreground cards move; the mosaic drift behind is untouched. */
+  @keyframes riseIn{ from{ opacity:0; transform:translateY(26px); } to{ opacity:1; transform:translateY(0); } }
+  .content .intro, .content .cta{ animation:riseIn .6s cubic-bezier(.22,.61,.36,1) both; }
+  .content .intro{ animation-delay:.05s; }
+  .content .cta{ animation-delay:.18s; }
   @media (max-width: 900px){
     .hero{ aspect-ratio:auto; height:100svh; min-height:600px; }
-    :root{ --th: clamp(200px, 46vw, 310px); }
+    /* Smaller tiles on mobile → more rows on screen, more images drifting past. */
+    :root{ --th: clamp(132px, 34vw, 196px); }
     /* Signup card drops to the bottom of the screen. */
     .content{ top:auto; bottom:clamp(22px,4vh,42px); transform:translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .content .intro, .content .cta{ animation:none; }
   }
 </style>
 </head>
@@ -41,23 +59,15 @@
     <div class="rotor" aria-hidden="true"><div class="track"></div></div>
     <div class="scrim" aria-hidden="true"></div>
 
-    <a class="logo" href="#" aria-label="Shopify">
-      <video class="logo-vid" autoplay muted playsinline disablepictureinpicture width="850" height="300" aria-hidden="true">
-        <source src="assets/logo.webm" type="video/webm" />
-        <source src="assets/logo.mp4" type='video/mp4; codecs="hvc1"' />
-        <img src="assets/logo-fallback.png" alt="Shopify" />
-      </video>
-    </a>
-
     <div class="content">
       <section class="intro">
         <h1>Your business<br>starts with Shopify</h1>
-        <p>Try 3 days free, then <b>$1/month for 3 months.</b><br>What are you waiting for?</p>
+        <p>Start for free, keep building for <b>$1/month.</b><br>Plus, earn up to $7,000 in credits as you sell.</p>
       </section>
       <form class="cta" onsubmit="return false">
         <div class="cta-top">
           <span class="free">Start for free</span>
-          <span class="disclaimer">You agree to receive Shopify marketing emails.</span>
+          <span class="disclaimer">You agree to receive marketing emails.</span>
         </div>
         <div class="email">
           <input type="email" placeholder="Enter your email" aria-label="Email address" />
@@ -72,7 +82,18 @@
   <div id="perf">LCP: measuring…</div>
   <script src="lib/mosaic.js"></script>
   <script>
-    Mosaic.build(document.querySelector('.rotor'), { eagerFirst:4, halfMul:1.3 });
+    // Fixed mosaic re-synced from the Figma set (358:24004). Each entry is [code, aspect-ratio];
+    // the code is the filename (assets/<code>.webp). Cells are A→Z in exact Figma reading order
+    // (left-to-right, top-to-bottom) across the 6 / 7 / 7 / 6 rows, and each aspect ratio = the
+    // cell's Figma width ÷ height. To re-sync, re-export from the same node; to swap one cell,
+    // replace its assets/<code>.webp.
+    var ROWS = [
+      [['A-1',1.731],['B-1',1.731],['C-1',0.769],['D-1',1.026],['E-1',0.769],['F-1',1.416]],
+      [['G-1',0.769],['H-1',0.769],['I-1',1.468],['J-1',1.731],['K-1',0.877],['L-1',1.731],['M-1',0.779]],
+      [['N-1',0.769],['O-1',1.731],['P-1',0.769],['Q-1',0.769],['R-1',0.769],['S-1',0.617],['T-1',1.058]],
+      [['U-1',1.731],['V-1',0.769],['W-1',1.357],['X-1',0.769],['Y-1',1.731],['Z-1',0.769]]
+    ];
+    Mosaic.buildFixed(document.querySelector('.rotor'), ROWS, { eagerFirst:4 });
     Mosaic.perfPanel();
   </script>
 </body>

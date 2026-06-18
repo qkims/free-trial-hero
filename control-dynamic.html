@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Control (Dynamic) — centered card over drifting mosaic</title>
+<link rel="stylesheet" href="lib/mosaic.css" />
+<link rel="stylesheet" href="lib/ui.css" />
+<style>
+  /* Control: full-bleed tilted drifting mosaic, centered intro+CTA over a legibility scrim. */
+  /* Smaller tiles: render at/below the source size so photos stay crisp (the old 430px
+     cap upscaled them), and the shorter rows let the wall pack in an extra strip. */
+  :root{ --th: clamp(150px, 19vw, 268px); }
+  body{ background:var(--ink); }
+  .hero{
+    position:relative; width:100%; height:100svh; min-height:560px;
+    overflow:hidden; background:#c7cdd2; isolation:isolate;
+  }
+  .scrim{
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(75% 70% at 50% 50%, rgba(0,0,0,.28) 0%, rgba(0,0,0,0) 70%),
+      radial-gradient(140% 120% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.30) 100%),
+      linear-gradient(rgba(0,0,0,.30), rgba(0,0,0,.30));
+  }
+  .logo{ position:absolute; top:max(12px,1.8vh); left:50%; transform:translateX(-50%); z-index:3; line-height:0; }
+  /* White Shopify mark (vector, with the bag's S as a real cut-out so the mosaic shows through
+     it — matching the live page). Colour comes from background; the SVG is used as an alpha mask. */
+  .logo .logo-mark{
+    display:block; height:clamp(26px,2.9vw,38px); aspect-ratio:1160/313; background:#fff;
+    -webkit-mask:url(assets/logo.svg) center/contain no-repeat;
+            mask:url(assets/logo.svg) center/contain no-repeat;
+    filter:drop-shadow(0 1px 6px rgba(0,0,0,.28));
+  }
+  .content{
+    position:absolute; z-index:3; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:min(460px, 86vw); display:flex; flex-direction:column; gap:10px;
+  }
+  /* Entrance — mirrors the live hero: the two cards slide up + fade in, staggered.
+     Only the foreground cards move; the mosaic drift behind is untouched. */
+  @keyframes riseIn{ from{ opacity:0; transform:translateY(26px); } to{ opacity:1; transform:translateY(0); } }
+  .content .intro, .content .cta{ animation:riseIn .6s cubic-bezier(.22,.61,.36,1) both; }
+  .content .intro{ animation-delay:.05s; }
+  .content .cta{ animation-delay:.18s; }
+  @media (max-width: 900px){
+    .hero{ aspect-ratio:auto; height:100svh; min-height:600px; }
+    /* Smaller tiles on mobile → more rows on screen, more images drifting past. */
+    :root{ --th: clamp(132px, 34vw, 196px); }
+    /* Signup card drops to the bottom of the screen. */
+    .content{ top:auto; bottom:clamp(22px,4vh,42px); transform:translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .content .intro, .content .cta{ animation:none; }
+  }
+</style>
+</head>
+<body>
+  <main class="hero">
+    <div class="rotor" aria-hidden="true"><div class="track"></div></div>
+    <div class="scrim" aria-hidden="true"></div>
+
+    <div class="content">
+      <section class="intro">
+        <h1>Your business<br>starts with Shopify</h1>
+        <p>Start for free, keep building for <b>$1/month.</b><br>Plus, earn up to $7,000 in credits as you sell.</p>
+      </section>
+      <form class="cta" onsubmit="return false">
+        <div class="cta-top">
+          <span class="free">Start for free</span>
+          <span class="disclaimer">You agree to receive marketing emails.</span>
+        </div>
+        <div class="email">
+          <input type="email" placeholder="Enter your email" aria-label="Email address" />
+          <button type="submit" aria-label="Start free trial">
+            <svg viewBox="0 0 17 16" fill="none"><path d="M1 8h14M9 2l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div id="perf">LCP: measuring…</div>
+  <script src="lib/mosaic.js"></script>
+  <script>
+    // Fixed, addressable mosaic from the Figma set (375:45601 — the "dynamic" photo pool). Each
+    // entry is [code, aspect-ratio]; the code is both the filename (assets/<code>.webp) and the
+    // on-image badge. To swap a cell, point at its badge (e.g. "dyn7") and replace assets/dyn7.webp.
+    // 26 cells across 6 / 7 / 7 / 6 rows, orientations mixed per row (L = wide 1.731, P = portrait
+    // 0.769, Sq = square 1.0). Same drifting/tilted engine as Control (Aligned); only the photos differ.
+    var ROWS = [
+      [['dyn1',1.731],['dyn8',0.769],['dyn17',1.0],['dyn9',0.769],['dyn2',1.731],['dyn18',1.0]],
+      [['dyn10',0.769],['dyn3',1.731],['dyn19',1.0],['dyn11',0.769],['dyn4',1.731],['dyn20',1.0],['dyn12',0.769]],
+      [['dyn5',1.731],['dyn13',0.769],['dyn21',1.0],['dyn14',0.769],['dyn6',1.731],['dyn22',1.0],['dyn15',0.769]],
+      [['dyn23',1.0],['dyn16',0.769],['dyn7',1.731],['dyn24',1.42],['dyn25',0.769],['dyn26',1.0]]
+    ];
+    Mosaic.buildFixed(document.querySelector('.rotor'), ROWS, { eagerFirst:4 });
+    Mosaic.perfPanel();
+  </script>
+</body>
+</html>
