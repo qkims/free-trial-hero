@@ -82,16 +82,17 @@
   <div id="perf">LCP: measuring…</div>
   <script src="lib/mosaic.js"></script>
   <script>
-    // Fixed, addressable mosaic from the Figma set (375:45601 — the "dynamic" photo pool). Each
-    // entry is [code, aspect-ratio]; the code is both the filename (assets/<code>.webp) and the
-    // on-image badge. To swap a cell, point at its badge (e.g. "dyn7") and replace assets/dyn7.webp.
-    // 26 cells across 6 / 7 / 7 / 6 rows, orientations mixed per row (L = wide 1.731, P = portrait
-    // 0.769, Sq = square 1.0). Same drifting/tilted engine as Control (Aligned); only the photos differ.
+    // Fixed mosaic re-synced from the Figma set (375:45601 — the "dynamic" photo pool). Each entry
+    // is [code, aspect-ratio]; the code is the filename (assets/<code>.webp). Cells are dyn1→dyn25 in
+    // exact Figma reading order (left-to-right, top-to-bottom) across the 6 / 6 / 7 / 6 rows, and each
+    // aspect ratio = the cell's Figma width ÷ height (row height 309.9). Every tile is cropped directly
+    // from this frame, so the wall contains only images present in 375:45601. To swap one, replace its
+    // assets/<code>.webp; to re-sync, re-crop from the same node.
     var ROWS = [
-      [['dyn1',1.731],['dyn8',0.769],['dyn17',1.0],['dyn9',0.769],['dyn2',1.731],['dyn18',1.0]],
-      [['dyn10',0.769],['dyn3',1.731],['dyn19',1.0],['dyn11',0.769],['dyn4',1.731],['dyn20',1.0],['dyn12',0.769]],
-      [['dyn5',1.731],['dyn13',0.769],['dyn21',1.0],['dyn14',0.769],['dyn6',1.731],['dyn22',1.0],['dyn15',0.769]],
-      [['dyn23',1.0],['dyn16',0.769],['dyn7',1.731],['dyn24',1.42],['dyn25',0.769],['dyn26',1.0]]
+      [['dyn1',1.731],['dyn2',1.731],['dyn3',0.769],['dyn4',1.026],['dyn5',0.769],['dyn6',1.415]],
+      [['dyn7',0.769],['dyn8',1.731],['dyn9',1.467],['dyn10',0.779],['dyn11',0.769],['dyn12',1.731]],
+      [['dyn13',0.769],['dyn14',1.058],['dyn15',1.455],['dyn16',0.769],['dyn17',1.731],['dyn18',0.769],['dyn19',0.617]],
+      [['dyn20',1.731],['dyn21',0.769],['dyn22',1.357],['dyn23',0.769],['dyn24',1.731],['dyn25',0.769]]
     ];
     Mosaic.buildFixed(document.querySelector('.rotor'), ROWS, { eagerFirst:4 });
     Mosaic.perfPanel();
