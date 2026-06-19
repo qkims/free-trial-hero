@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>V3 — Bento cluster</title>
+<link rel="stylesheet" href="lib/mosaic.css" />
+<link rel="stylesheet" href="lib/ui.css" />
+<style>
+  /* V3 — structure referenced from Figma (307:20103): a left content column (heading +
+     subtext + dark CTA pill) and, on the right, a field of merchant photos in three
+     vertical COLUMNS. The image CARDS themselves slide (each container travels as a unit)
+     and loop seamlessly; adjacent columns drift opposite directions. LCP = heading. */
+  :root{ --bg:#f4f5f7; --g:clamp(10px,1vw,16px); }
+  body{ background:#fff; }
+  .hero{ position:relative; width:100%; height:100svh; min-height:640px; max-height:920px;
+    overflow:hidden; background:#fff; isolation:isolate; }
+
+  .stage{ position:absolute; top:50%; right:clamp(20px,3.4vw,46px); left:46%; transform:translateY(-50%);
+    height:min(560px, 80vh); z-index:1; }
+  /* Three vertical columns; each holds a TRACK of image cards. The track translates and
+     loops (its cards are rendered twice; translateY 0 → -50% advances one full set and
+     wraps seamlessly). The cards — whole containers — are what slide. */
+  .cols{ display:flex; gap:var(--g); height:100%; }
+  .col{ position:relative; flex:1 1 0; min-width:0; overflow:hidden; }
+  .col.wide{ flex:1.05 1 0; }
+  .track{ position:absolute; left:0; top:0; width:100%; will-change:transform;
+    animation:slideY var(--sd,42s) linear infinite; }
+  .track.down{ animation-direction:reverse; }
+  .card{ width:100%; margin-bottom:var(--g); border-radius:16px; overflow:hidden;
+    background:var(--bg); box-shadow:0 26px 50px -34px rgba(0,0,0,.4); }
+  .card img{ width:100%; height:100%; object-fit:cover; display:block; }
+  @keyframes slideY{ from{ transform:translateY(0); } to{ transform:translateY(-50%); } }
+
+  .logo{ position:absolute; top:max(18px,2.6vh); left:50%; transform:translateX(-50%); z-index:5; line-height:0; }
+  .logo .logo-vid{ height:clamp(40px,4.4vw,58px); filter:none; }
+
+  .content{ position:absolute; z-index:4; left:clamp(28px,6vw,90px); top:50%; transform:translateY(-50%);
+    width:min(520px, 42vw); display:flex; flex-direction:column; gap:clamp(20px,3vh,34px); }
+  .content .intro.bare h1{ font-size:clamp(34px,4.4vw,56px); line-height:1.04; }
+  .content .intro.bare p{ font-size:clamp(15px,1.5vw,18px); }
+  .content .cta{ width:min(460px,100%); }
+
+  @media (max-width: 900px){
+    .hero{ display:flex; flex-direction:column; height:100svh; max-height:none; }
+    /* Images fill the top; the signup drops to the bottom, centred. */
+    .stage{ position:relative; overflow:hidden; transform:none; order:1; top:auto; left:auto; right:auto;
+      width:auto; height:clamp(360px,52vh,560px);
+      margin:clamp(62px,9vh,94px) clamp(14px,4vw,22px) 0; }
+    /* Signup pushed to the bottom of the screen, centred. */
+    .content{ position:static; transform:none; order:2; width:auto;
+      margin:auto clamp(20px,6vw,32px) clamp(22px,4vh,34px);
+      gap:16px; align-items:center; text-align:center; }
+    .content .intro.bare h1{ font-size:clamp(32px,8.5vw,44px); }
+    .content .cta{ width:100%; max-width:440px; text-align:left; }
+  }
+  @media (prefers-reduced-motion: reduce){ .track{ animation:none; } }
+</style>
+</head>
+<body>
+  <main class="hero">
+    <div class="stage" aria-hidden="true">
+      <div class="cols" id="cols"></div>
+    </div>
+
+    <a class="logo" href="#" aria-label="Shopify">
+      <video class="logo-vid" autoplay muted playsinline disablepictureinpicture width="850" height="300" aria-hidden="true">
+        <source src="assets/logo-dark.webm" type="video/webm" />
+        <source src="assets/logo-dark.mp4" type='video/mp4; codecs="hvc1"' />
+        <img src="assets/logo-dark.png" alt="Shopify" />
+      </video>
+    </a>
+
+    <div class="content">
+      <section class="intro bare on-light">
+        <h1>Your business<br>starts with Shopify</h1>
+        <p>Try 3 days free, then <b>$1/month for 3 months.</b><br>What are you waiting for?</p>
+      </section>
+      <form class="cta" onsubmit="return false">
+        <div class="cta-top">
+          <span class="free">Start for free</span>
+          <span class="disclaimer">You agree to receive Shopify marketing emails.</span>
+        </div>
+        <div class="email">
+          <input type="email" placeholder="Enter your email" aria-label="Email address" />
+          <button type="submit" aria-label="Start free trial">
+            <svg viewBox="0 0 17 16" fill="none"><path d="M1 8h14M9 2l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div id="perf">LCP: measuring…</div>
+  <script src="lib/mosaic.js"></script>
+  <script>
+  (function(){
+    var TILES = Mosaic.ALL.slice();
+    var seed = 41; function rnd(){ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; }
+    for (var i=TILES.length-1;i>0;i--){ var k=Math.floor(rnd()*(i+1)); var t=TILES[i];TILES[i]=TILES[k];TILES[k]=t; }
+    var di = 0; function nextTile(){ var t = TILES[di % TILES.length]; di++; return 'assets/' + t; }
+
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var mobile = matchMedia('(max-width: 900px)').matches;
+
+    // Three columns of sliding image CARDS. Each column's set of cards is rendered twice
+    // and the track translateY 0 → -50% advances exactly one set and wraps seamlessly.
+    // Adjacent columns drift opposite ways. Mixed card aspect ratios give size variety.
+    var cols = document.getElementById('cols');
+    var DIR = [-1, 1, -1];                 // up / down per column
+    var DUR = [44, 38, 50];                // seconds per loop (slow, calm)
+    var ARS = [0.82, 1.12, 0.92, 1.0, 0.8, 1.18, 0.9, 1.05];   // card width/height variety
+    var PER = mobile ? 3 : 4;              // distinct cards per column
+    var ai = 0, eager = 0;
+    for (var c = 0; c < 3; c++){
+      var col = document.createElement('div'); col.className = 'col' + (c === 0 ? ' wide' : '');
+      var track = document.createElement('div'); track.className = 'track' + (DIR[c] > 0 ? ' down' : '');
+      if (reduce){ track.style.animation = 'none'; }
+      else {
+        track.style.setProperty('--sd', DUR[c] + 's');
+        track.style.animationDelay = (-rnd() * DUR[c]).toFixed(1) + 's';
+      }
+      var picks = [], ars = [];
+      for (var i = 0; i < PER; i++){ picks.push(nextTile()); ars.push(ARS[ai++ % ARS.length]); }
+      for (var rep = 0; rep < 2; rep++){
+        for (var j = 0; j < PER; j++){
+          var card = document.createElement('div'); card.className = 'card';
+          card.style.aspectRatio = ars[j] + ' / 1';
+          var img = new Image(); img.src = picks[j]; img.alt = ''; img.decoding = 'async';
+          if (rep === 0 && j === 0 && eager < 3){ img.loading='eager'; img.fetchPriority='high'; eager++; }
+          else img.loading = 'lazy';
+          card.appendChild(img); track.appendChild(card);
+        }
+      }
+      col.appendChild(track); cols.appendChild(col);
+    }
+    Mosaic.perfPanel();
+  })();
+  </script>
+</body>
+</html>
