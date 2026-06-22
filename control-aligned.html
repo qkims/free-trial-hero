@@ -6,6 +6,10 @@
 <title>Control (Aligned) — centered card over drifting mosaic</title>
 <link rel="stylesheet" href="lib/mosaic.css" />
 <link rel="stylesheet" href="lib/ui.css" />
+<!-- Preload only the LCP tile per breakpoint (desktop U-1, mobile O-1), picking the right-sized
+     1x/2x crop via imagesrcset. Every other tile is lazy+low, so the hero wins the wire alone. -->
+<link rel="preload" as="image" href="assets/U-1.webp" imagesrcset="assets/U-1.webp 1x, assets/U-1@2x.webp 2x" fetchpriority="high" media="(min-width:901px)" />
+<link rel="preload" as="image" href="assets/O-1.webp" imagesrcset="assets/O-1.webp 1x, assets/O-1@2x.webp 2x" fetchpriority="high" media="(max-width:900px)" />
 <style>
   /* Control: full-bleed tilted drifting mosaic, centered intro+CTA over a legibility scrim. */
   /* Smaller tiles: render at/below the source size so photos stay crisp (the old 430px
@@ -93,7 +97,7 @@
       [['N-1',0.769],['O-1',1.731],['P-1',0.769],['Q-1',0.769],['R-1',0.769],['S-1',0.617],['T-1',1.058]],
       [['U-1',1.731],['V-1',0.769],['W-1',1.357],['X-1',0.769],['Y-1',1.731],['Z-1',0.769]]
     ];
-    Mosaic.buildFixed(document.querySelector('.rotor'), ROWS, { eagerFirst:4 });
+    Mosaic.buildFixed(document.querySelector('.rotor'), ROWS, { heroCodes:['U-1','O-1'] });
     Mosaic.perfPanel();
   </script>
 </body>

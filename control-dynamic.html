@@ -6,6 +6,10 @@
 <title>Control (Dynamic) — centered card over drifting mosaic</title>
 <link rel="stylesheet" href="lib/mosaic.css" />
 <link rel="stylesheet" href="lib/ui.css" />
+<!-- Preload only the LCP tile per breakpoint (desktop dyn20, mobile dyn15), picking the right-sized
+     1x/2x crop via imagesrcset. Every other tile is lazy+low, so the hero wins the wire alone. -->
+<link rel="preload" as="image" href="assets/dyn20.webp" imagesrcset="assets/dyn20.webp 1x, assets/dyn20@2x.webp 2x" fetchpriority="high" media="(min-width:901px)" />
+<link rel="preload" as="image" href="assets/dyn15.webp" imagesrcset="assets/dyn15.webp 1x, assets/dyn15@2x.webp 2x" fetchpriority="high" media="(max-width:900px)" />
 <style>
   /* Control: full-bleed tilted drifting mosaic, centered intro+CTA over a legibility scrim. */
   /* Smaller tiles: render at/below the source size so photos stay crisp (the old 430px
@@ -94,7 +98,7 @@
       [['dyn13',0.769],['dyn14',1.058],['dyn15',1.455],['dyn16',0.769],['dyn17',1.731],['dyn18',0.769],['dyn19',0.617]],
       [['dyn20',1.731],['dyn21',0.769],['dyn22',1.357],['dyn23',0.769],['dyn24',1.731],['dyn25',0.769]]
     ];
-    Mosaic.buildFixed(document.querySelector('.rotor'), ROWS, { eagerFirst:4 });
+    Mosaic.buildFixed(document.querySelector('.rotor'), ROWS, { heroCodes:['dyn20','dyn15'] });
     Mosaic.perfPanel();
   </script>
 </body>
