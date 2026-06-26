@@ -1,0 +1,114 @@
+content:"";background-color:currentColor;width:1em;height:1em;margin-left:.25em;transition:opacity .12s,transform .3s cubic-bezier(.66,0,.34,1);bottom:.2em;-webkit-mask:url(https://cdn.shopify.com/shopifycloud/brochure2/staging/assets/link-arrow.e34cea4d.svg) 50%/cover no-repeat;mask:url(https://cdn.shopify.com/shopifycloud/brochure2/staging/assets/link-arrow.e34cea4d.svg) 50%/cover no-repeat}:root{--grid__devMode-4:repeating-linear-gradient(to right,#0000 -1rem,#0000 0%,#ff450033 0%,#ff450033 calc(25% - 1rem*(.75)));--grid__devMode-8:repeating-linear-gradient(to right,#0000 -1rem,#0000 0%,#ff450033 0%,#ff450033 calc(12.5% - 1rem*(.875)));--grid__devMode-12-md:repeating-linear-gradient(to right,#0000 -1rem,#0000 0%,#ff450033 0%,#ff450033 calc(8.3% - 1rem*(.9)));--grid__devMode-12-lg:repeating-linear-gradient(to right,#0000 -1.5rem,#0000 0%,#ff450033 0%,#ff450033 calc(8.3% - 1.5rem*(.9)))}
+.shopify-letter-container{animation:2s linear forwards shopify-letter-container-move}
+.shopify-letter-scale{animation:2s linear forwards shopify-letter-scale-transform}
+.shopify-logo-elements{animation:2s linear forwards shopify-logo-move-position}
+.shopify-y-container{animation:2s linear forwards shopify-y-container-move}
+.shopify-y-scale{animation:2s linear forwards shopify-y-scale-transform}
+.shopify-y-position{animation:2s linear forwards shopify-y-position-move}
+.shopify-y-visibility{animation:2s linear forwards shopify-y-visibility-scale}
+.shopify-y{animation:2s linear forwards shopify-y-opacity}
+.shopify-f-container{animation:2s linear forwards shopify-f-container-move}
+.shopify-f-scale{animation:2s linear forwards shopify-f-scale-transform}
+.shopify-f-position{animation:2s linear forwards shopify-f-position-move}
+.shopify-f-visibility{animation:2s linear forwards shopify-f-visibility-scale}
+.shopify-f{animation:2s linear forwards shopify-f-opacity}
+.shopify-i-container{animation:2s linear forwards shopify-i-container-move}
+.shopify-i-scale{animation:2s linear forwards shopify-i-scale-transform}
+.shopify-i-position{animation:2s linear forwards shopify-i-position-move}
+.shopify-i-visibility{animation:2s linear forwards shopify-i-visibility-scale}
+.shopify-i-dot-position{animation:2s linear forwards shopify-i-dot-position-move}
+.shopify-i-dot{animation:2s linear forwards shopify-i-dot-opacity}
+.shopify-i2-container{animation:2s linear forwards shopify-i2-container-move}
+.shopify-i2-scale{animation:2s linear forwards shopify-i2-scale-transform}
+.shopify-i2-position{animation:2s linear forwards shopify-i2-position-move}
+.shopify-i2-visibility{animation:2s linear forwards shopify-i2-visibility-scale}
+.shopify-i2{animation:2s linear forwards shopify-i2-opacity}
+.shopify-p-container{animation:2s linear forwards shopify-p-container-move}
+.shopify-p-scale{animation:2s linear forwards shopify-p-scale-transform}
+.shopify-p-position{animation:2s linear forwards shopify-p-position-move}
+.shopify-p-visibility{animation:2s linear forwards shopify-p-visibility-scale}
+.shopify-p{animation:2s linear forwards shopify-p-opacity}
+.shopify-o-container{animation:2s linear forwards shopify-o-container-move}
+.shopify-o-scale{animation:2s linear forwards shopify-o-scale-transform}
+.shopify-o-position{animation:2s linear forwards shopify-o-position-move}
+.shopify-o-visibility{animation:2s linear forwards shopify-o-visibility-scale}
+.shopify-o{animation:2s linear forwards shopify-o-opacity}
+.shopify-h-container{animation:2s linear forwards shopify-h-container-move}
+.shopify-h-scale{animation:2s linear forwards shopify-h-scale-transform}
+.shopify-h-position{animation:2s linear forwards shopify-h-position-move}
+.shopify-h-visibility{animation:2s linear forwards shopify-h-visibility-scale}
+.shopify-h{animation:2s linear forwards shopify-h-opacity}
+.shopify-s-container{animation:2s linear forwards shopify-s-container-move}
+.shopify-s-scale{animation:2s linear forwards shopify-s-scale-transform}
+.shopify-s-position{animation:2s linear forwards shopify-s-position-move}
+.shopify-s-visibility{animation:2s linear forwards shopify-s-visibility-scale}
+.shopify-s{animation:2s linear forwards shopify-s-opacity}
+.shopify-logo-move{animation:2s linear forwards shopify-logo-move-position}
+.shopify-mask-container{animation:2s linear forwards shopify-mask-container-move}
+.shopify-mask-element{animation:2s linear forwards shopify-mask-element-move}
+.shopify-mask-path-container{animation:2s linear forwards shopify-mask-path-container-move}
+.shopify-decorative-1{animation:2s linear forwards shopify-decorative-1-move}
+.shopify-decorative-2{animation:2s linear forwards shopify-decorative-2-move}
+.shopify-bag-animation{pointer-events:none;width:76px;height:76px;margin-inline:auto}
+@keyframes shopify-letter-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-letter-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-logo-move-position{0%{transform:translate(852px,310px)}15%{animation-timing-function:cubic-bezier(.9,0,.1,1);transform:translate(852px,310px)}65%{transform:translate(412px,310px)}to{transform:translate(412px,310px)}}
+@keyframes shopify-y-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-y-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-y-position-move{0%{transform:translate(143.359px,39.063px)}33.35%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(143.359px,39.063px)}66.65%{transform:translate(182.422px,39.063px)}to{transform:translate(182.422px,39.063px)}}
+@keyframes shopify-y-visibility-scale{0%{transform:scale(0)}33.35%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:scale(0)}66.65%{transform:scale(.39062,.39063)}to{transform:scale(.39062,.39063)}}
+@keyframes shopify-y-opacity{0%{opacity:0}48.35%{opacity:0;animation-timing-function:cubic-bezier(.167,.167,.667,1)}63.35%{opacity:1;animation-timing-function:step-end}to{opacity:1}}
+@keyframes shopify-f-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-f-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-f-position-move{0%{transform:translate(96.094px,39.063px)}30%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(96.094px,39.063px)}63.35%{transform:translate(135.156px,39.063px)}to{transform:translate(135.156px,39.063px)}}
+@keyframes shopify-f-visibility-scale{0%{transform:scale(0)}30%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:scale(0)}63.35%{transform:scale(.39062,.39063)}to{transform:scale(.39062,.39063)}}
+@keyframes shopify-f-opacity{0%{opacity:0}45%{opacity:0;animation-timing-function:cubic-bezier(.167,.167,.667,1)}58.35%{opacity:1;animation-timing-function:step-end}to{opacity:1}}
+@keyframes shopify-i-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-i-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-i-position-move{0%{transform:translate(67.969px,39.063px)}26.65%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(67.969px,39.063px)}60%{transform:translate(107.031px,39.063px)}to{transform:translate(107.031px,39.063px)}}
+@keyframes shopify-i-visibility-scale{0%{transform:scale(0)}26.65%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:scale(0)}60%{transform:scale(.39062,.39063)}to{transform:scale(.39062,.39063)}}
+@keyframes shopify-i-dot-position-move{0%{transform:translate(20.876px,-2.062px)}28.35%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(20.876px,-2.062px)}65%{transform:translate(52.876px,-174.062px)}to{transform:translate(52.876px,-174.062px)}}
+@keyframes shopify-i-dot-opacity{0%{opacity:0}48.35%{opacity:0}50%{opacity:.6;animation-timing-function:cubic-bezier(.167,.167,.667,1)}60%{opacity:1;animation-timing-function:step-end}to{opacity:1}}
+@keyframes shopify-i2-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-i2-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-i2-position-move{0%{transform:translate(67.969px,39.063px)}26.65%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(67.969px,39.063px)}60%{transform:translate(107.031px,39.063px)}to{transform:translate(107.031px,39.063px)}}
+@keyframes shopify-i2-visibility-scale{0%{transform:scale(0)}26.65%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:scale(0)}60%{transform:scale(.39062,.39063)}to{transform:scale(.39062,.39063)}}
+@keyframes shopify-i2-opacity{0%{opacity:0}43.35%{opacity:0;animation-timing-function:cubic-bezier(.167,.167,.667,1)}56.65%{opacity:1;animation-timing-function:step-end}to{opacity:1}}
+@keyframes shopify-p-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-p-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-p-position-move{0%{transform:translate(13.672px,39.063px)}23.35%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(13.672px,39.063px)}56.65%{transform:translate(52.734px,39.063px)}to{transform:translate(52.734px,39.063px)}}
+@keyframes shopify-p-visibility-scale{0%{transform:scale(0)}23.35%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:scale(0)}56.65%{transform:scale(.39062,.39063)}to{transform:scale(.39062,.39063)}}
+@keyframes shopify-p-opacity{0%{opacity:0}39.5%{opacity:0;animation-timing-function:step-end}40%{opacity:.133466;animation-timing-function:cubic-bezier(.2475,.3346,.6887,1)}53.35%{opacity:1;animation-timing-function:step-end}to{opacity:1}}
+@keyframes shopify-o-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-o-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-o-position-move{0%{transform:translate(-28.516px,39.063px)}20%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(-28.516px,39.063px)}53.35%{transform:translate(10.547px,39.063px)}to{transform:translate(10.547px,39.063px)}}
+@keyframes shopify-o-visibility-scale{0%{transform:scale(0)}20%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:scale(0)}53.35%{transform:scale(.39062,.39063)}to{transform:scale(.39062,.39063)}}
+@keyframes shopify-o-opacity{0%{opacity:0}39.5%{opacity:0;animation-timing-function:step-end}40%{opacity:.569437;animation-timing-function:cubic-bezier(.3342,.5259,.7039,1)}48.35%{opacity:1;animation-timing-function:step-end}to{opacity:1}}
+@keyframes shopify-h-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-h-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-h-position-move{0%{transform:translate(-93.359px,39.063px)}16.65%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(-93.359px,39.063px)}50%{transform:translate(-54.297px,39.063px)}to{transform:translate(-54.297px,39.063px)}}
+@keyframes shopify-h-visibility-scale{0%{transform:scale(0)}16.65%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:scale(0)}50%{transform:scale(.39062,.39063)}to{transform:scale(.39062,.39063)}}
+@keyframes shopify-h-opacity{0%{opacity:0}41.15%{opacity:0;animation-timing-function:step-end}41.65%{opacity:.906577;animation-timing-function:cubic-bezier(.3521,.6195,.692,1)}45%{opacity:1;animation-timing-function:step-end}to{opacity:1}}
+@keyframes shopify-s-container-move{0%{transform:translate(760px,320px)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:translate(760px,320px)}83.35%{transform:translate(850px,300px)}to{transform:translate(850px,300px)}}
+@keyframes shopify-s-scale-transform{0%{transform:scale(2.09)}13.35%{animation-timing-function:cubic-bezier(.67,0,.33,1);transform:scale(2.09)}83.35%{transform:scale(2.56)}to{transform:scale(2.56)}}
+@keyframes shopify-s-position-move{0%{transform:translate(-135.156px,39.063px)}13.35%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:translate(-135.156px,39.063px)}46.65%{transform:translate(-96.094px,39.063px)}to{transform:translate(-96.094px,39.063px)}}
+@keyframes shopify-s-visibility-scale{0%{transform:scale(0)}13.35%{animation-timing-function:cubic-bezier(.8,0,.2,1);transform:scale(0)}46.65%{transform:scale(.39062,.39063)}to{transform:scale(.39062,.39063)}}
+@keyframes shopify-s-opacity{0%{opacity:0}42.85%{opacity:0;animation-timing-function:step-end}43.35%{opacity:1}to{opacity:1}}
+@keyframes shopify-mask-container-move{0%{transform:translate(852px,310px)}15%{animation-timing-function:cubic-bezier(.9,0,.1,1);transform:translate(852px,310px)}65%{transform:translate(412px,310px)}to{transform:translate(412px,310px)}}
+@keyframes shopify-mask-element-move{0%{transform:translate(-34.889px,7.392px)}23.35%{animation-timing-function:cubic-bezier(.8,0,.667,1);transform:translate(-34.889px,7.392px)}41.65%{animation-timing-function:cubic-bezier(.333,0,.33,1);transform:translate(-39.902px,7.392px)}60%{transform:translate(-34.889px,7.392px)}to{transform:translate(-34.889px,7.392px)}}
+@keyframes shopify-mask-path-container-move{0%{transform:translate(852px,310px)}15%{animation-timing-function:cubic-bezier(.9,0,.1,1);transform:translate(852px,310px)}65%{transform:translate(412px,310px)}to{transform:translate(412px,310px)}}
+@keyframes shopify-decorative-1-move{0%{transform:translate(852px,310px)}15%{animation-timing-function:cubic-bezier(.9,0,.1,1);transform:translate(852px,310px)}65%{transform:translate(412px,310px)}to{transform:translate(412px,310px)}}
+@keyframes shopify-decorative-2-move{0%{transform:translate(852px,310px)}15%{animation-timing-function:cubic-bezier(.9,0,.1,1);transform:translate(852px,310px)}65%{transform:translate(412px,310px)}to{transform:translate(412px,310px)}}
+/* ---- Colour the monotone source ----------------------------------
+   Wordmark = black; the S = white. The bag is two-tone like the brand
+   mark: the front face (and its sprout/handle) use the light Shopify
+   green, the right side gusset uses the darker green. The bag is two
+   <path>s inside .shopify-logo-move — the front face lives in the
+   translate(1059.947 632.849) group, the side gusset in the
+   translate(1088.451 636.887) group. */
+.shopify-logo .shopify-letter-container path { fill: #1a1a1a; }
+.shopify-logo .shopify-logo-move path { fill: #95bf47; }   /* bag front face → light green */
+.shopify-logo .shopify-logo-move g[transform="translate(1088.451 636.887)"] path { fill: #5e8e3e; } /* side gusset → dark green */
+.shopify-logo .shopify-mask-element path { fill: #fff; }    /* S         → white */
+.shopify-logo .shopify-decorative-1 path,
+.shopify-logo .shopify-decorative-2 path { stroke: #95bf47; } /* handle → light green (matches front) */
