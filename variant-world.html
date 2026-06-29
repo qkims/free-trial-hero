@@ -1489,32 +1489,27 @@
     <script>
       if (window.__VP_MOBILE__) {
 (function () {
-  var cfg = { heroSel: ".m7-hero", fieldId: "m7-field", cls: "m7-card", gens: 2, lead: 1, ratio: 10.0, mStar: 1.0, period: 135, introTau: 0.45, introMin: 0.03, pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 400, pStrength: 0.5, amp: 18 };
+  var cfg = { heroSel: ".m7-hero", fieldId: "m7-field", cls: "m7-card", gens: 2, lead: 1, ratio: 10.0, mStar: 1.0, period: 135, introTau: 0.45, introMin: 0.03, pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 200, pStrength: 0.5, amp: 18 };
   var hero = document.querySelector(cfg.heroSel);
   var field = document.getElementById(cfg.fieldId);
   if (!field) return;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var A = "assets/world-new/";
-  var DW = 1440;
+  var DW = 393;
 
   // ---- Exact composition from Figma (file SwnQ7M7I5DG7o0QcZTncet, node 546:36120) -------
   // dx,dy,w,h: design-px layout (centre-relative). nw,nh: the image's NATIVE pixel size,
   // used so each tile is rasterised at full resolution and only ever scaled DOWN (crisp).
   var TILES = [
-    { f: "Image1.png",          dx:  61.9, dy:  19.7, w:  33.6, h:  20.7, nw: 966, nh: 600 },
-    { f: "Images.png",          dx: -83.2, dy:  63.9, w:  43.1, h:  59.4, nw: 434, nh: 600 },
-    { f: "IMG-2.png",           dx:  96.8, dy:  50.4, w:  62.4, h:  48.5, nw: 772, nh: 600 },
-    { f: "Image 6.png",         dx:-100.9, dy: -43.0, w:  91.4, h:  55.1, nw: 996, nh: 600 },
-    { f: "Image 8.png",         dx:  82.2, dy: -92.5, w:  45.4, h:  63.0, nw: 433, nh: 600 },
-    { f: "Image1-3.png",        dx: -64.2, dy:-182.5, w: 113.2, h:  80.4, nw: 844, nh: 600 },
-    { f: "IMG-1.png",           dx:-258.2, dy: -95.5, w:  88.4, h: 117.1, nw: 453, nh: 600 },
-    { f: "IMG.png",             dx: 230.8, dy: 168.0, w: 135.7, h: 176.8, nw: 461, nh: 600 },
-    { f: "Image1-2.png",        dx: 267.4, dy:-102.9, w: 251.6, h: 178.8, nw: 833, nh: 592 },
-    { f: "NorAm_EF_2254.png",   dx:-303.7, dy: 161.7, w: 177.1, h: 119.7, nw: 888, nh: 600 },
-    { f: "Image1-1.png",        dx: 409.4, dy: 266.3, w: 296.1, h: 210.9, nw: 843, nh: 600 },
-    { f: "MIB_FEYI_0289.png",   dx:-449.7, dy: 338.0, w: 210.1, h: 292.6, nw: 431, nh: 600 },
-    { f: "NorAm_FTC_02105.png", dx: 533.0, dy:-233.8, w: 374.1, h: 281.5, nw: 798, nh: 600 },
-    { f: "Image 9.png",         dx:-553.9, dy:-246.6, w: 332.2, h: 475.5, nw: 420, nh: 600 }
+    // Mobile composition — matches the designed portrait frame; tiles expand outward from here.
+    { f: "Image 9.png",         dx: -118, dy: -306, w: 165, h: 236, nw: 420, nh: 600 }, // overalls + art (top-left)
+    { f: "NorAm_FTC_02105.png", dx:  123, dy: -276, w: 150, h: 113, nw: 798, nh: 600 }, // hand + phone (top-right)
+    { f: "IMG-1.png",           dx: -126, dy: -156, w:  70, h:  93, nw: 453, nh: 600 }, // leopard bookend (left)
+    { f: "Image1-3.png",        dx:  -46, dy: -126, w:  80, h:  57, nw: 844, nh: 600 }, // two people on bench (center-left, above card)
+    { f: "Image1-2.png",        dx:   58, dy: -126, w: 120, h:  85, nw: 833, nh: 592 }, // woman at counter (center, above card)
+    { f: "MIB_FEYI_0289.png",   dx: -126, dy:  274, w: 150, h: 209, nw: 431, nh: 600 }, // sneakers in box (bottom-left)
+    { f: "IMG.png",             dx:   53, dy:  264, w: 105, h: 137, nw: 461, nh: 600 }, // woman green top (bottom-center)
+    { f: "Image1-1.png",        dx:  133, dy:  314, w: 140, h: 100, nw: 843, nh: 600 }  // bicycle storefront (bottom-right)
   ];
   var N = TILES.length, G = cfg.gens, R = cfg.ratio, LEAD = cfg.lead;
 
