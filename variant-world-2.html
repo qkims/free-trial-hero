@@ -106,16 +106,13 @@
           overflow: hidden;
           z-index: 0;
         }
-        /* White feathered frame so photos dissolve into the page at the
-         edges instead of hard-cutting. Above the field, below signup/logo. */
+        /* Edge frame disabled — photos run clean to the screen edge (no white feather). */
         .v7-edge {
           position: absolute;
           inset: 0;
           z-index: 3;
           pointer-events: none;
-          background:
-            linear-gradient(to right, #fff 0%, rgba(255, 255, 255, 0) 10%, rgba(255, 255, 255, 0) 90%, #fff 100%),
-            linear-gradient(to bottom, #fff 0%, rgba(255, 255, 255, 0) 13%, rgba(255, 255, 255, 0) 87%, #fff 100%);
+          background: none;
         }
         .v7-tier {
           position: absolute;
@@ -341,15 +338,13 @@
           overflow: hidden;
           z-index: 0;
         }
-        /* White feathered frame (see desktop note). */
+        /* Edge frame disabled — no white feather (see desktop note). */
         .m7-edge {
           position: absolute;
           inset: 0;
           z-index: 3;
           pointer-events: none;
-          background:
-            linear-gradient(to right, #fff 0%, rgba(255, 255, 255, 0) 9%, rgba(255, 255, 255, 0) 91%, #fff 100%),
-            linear-gradient(to bottom, #fff 0%, rgba(255, 255, 255, 0) 9%, rgba(255, 255, 255, 0) 88%, #fff 100%);
+          background: none;
         }
         .m7-tier {
           position: absolute;
@@ -1398,15 +1393,16 @@
   var cfg = {
     heroSel: ".v7-hero", fieldId: "v7-field", cls: "v7-card",
     gens: 3, lead: 2, ratio: 10.0, mStar: 1.0,
-    period: 70, flow: 0.7, introTau: 0.4, introMin: 0.03,
+    period: 108, flow: 0.7,                                // slow desktop cycle
+    introMin: 0.04, introTau: 0.5, stagger: 0.8, enterFade: 0.5,  // mobile-style emergence: phase-aligned boom, outer tiles first
     pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 400,
-    stagger: 0.7, enterFade: 0.5,
-    speedLo: 0.82, speedHi: 1.4,
-    blurMax: 5.0, blurNear: 1.0, blurFar: 0.12,
+    speedLo: 0.82, speedHi: 1.4,                           // wide spread → tiles desync into steady density (mobile-style)
+    blurMax: 7.0, blurClear: 0.62, blurFar: 0.20, blurCap: 22,  // DoF: only the deep back is soft, crisp from blurClear onward
     maxScale: 8,
-    count: 10, rMin: 110, rMax: 760, yScale: 0.62, sizeLo: 150, sizeHi: 280, minSep: 280,  // fewer, evenly spaced
+    count: 12, rMin: 130, rMax: 780, yScale: 0.62,
+    sizeLo: 148, sizeHi: 252, sepK: 1.0, sepPad: 34,      // size-aware spacing (uses each tile's long axis)
     exRX: 300, exRY: 195, exM: 1.12,                      // keep the centred signup clear
-    hover: true, hoverR: 300, hoverPush: 20, lerp: 0.1
+    parallax: true, amp: 30, pDepth: 0.42, panLerp: 0.07  // mouse parallax, depth-scaled
   };
   var hero = document.querySelector(cfg.heroSel);
   var field = document.getElementById(cfg.fieldId);
@@ -1435,8 +1431,7 @@
 
   var rnd = function (a, b) { return a + Math.random() * (b - a); };
 
-  // Even areal scatter (golden-angle sunflower) + jitter so the field fills the
-  // frame uniformly with no recurring white wedges; random image + size per tile.
+  // Even areal scatter (golden-angle sunflower) + jitter; random image + size per tile.
   var GA = Math.PI * (3 - Math.sqrt(5));
   var TILES = [];
   for (var i = 0; i < cfg.count; i++) {
@@ -1444,28 +1439,32 @@
     var rad = cfg.rMin + (cfg.rMax - cfg.rMin) * Math.sqrt((i + 0.5) / cfg.count);
     var im = i < IMAGES.length ? IMAGES[i] : IMAGES[(Math.random() * IMAGES.length) | 0];
     var w = rnd(cfg.sizeLo, cfg.sizeHi);
+    var h = w * im.nh / im.nw;
     TILES.push({
-      f: im.f, nw: im.nw, nh: im.nh, w: w, h: w * im.nh / im.nw,
+      f: im.f, nw: im.nw, nh: im.nh, w: w, h: h,
+      rHalf: 0.5 * Math.max(w, h),                        // half the long axis -> spacing radius
       dx: Math.cos(ang) * rad, dy: Math.sin(ang) * rad * cfg.yScale
     });
   }
-  // Spread: relax any tiles that landed too close (a few push-apart passes).
-  for (var pass = 0; pass < 8; pass++) {
+  // Push tiles apart by a size-aware minimum so neither big landscapes nor tall
+  // portraits ever crowd each other (small tiles may sit closer, filling gaps).
+  for (var pass = 0; pass < 12; pass++) {
     for (var a = 0; a < TILES.length; a++) {
       for (var b = a + 1; b < TILES.length; b++) {
         var Ta = TILES[a], Tb = TILES[b];
         var rx = Tb.dx - Ta.dx, ry = Tb.dy - Ta.dy;
         var rd = Math.sqrt(rx * rx + ry * ry) || 0.0001;
-        if (rd < cfg.minSep) {
-          var pu = (cfg.minSep - rd) * 0.5, ux = rx / rd, uy = ry / rd;
+        var need = (Ta.rHalf + Tb.rHalf) * cfg.sepK + cfg.sepPad;
+        if (rd < need) {
+          var pu = (need - rd) * 0.5, ux = rx / rd, uy = ry / rd;
           Ta.dx -= ux * pu; Ta.dy -= uy * pu;
           Tb.dx += ux * pu; Tb.dy += uy * pu;
         }
       }
     }
   }
-  for (var p = 0; p < TILES.length; p++) {
-    var tp = TILES[p];
+  for (var pp = 0; pp < TILES.length; pp++) {
+    var tp = TILES[pp];
     var q = Math.sqrt((tp.dx / cfg.exRX) * (tp.dx / cfg.exRX) + (tp.dy / cfg.exRY) * (tp.dy / cfg.exRY));
     if (q < cfg.exM) { var push = cfg.exM / (q || 0.0001); tp.dx *= push; tp.dy *= push; }
   }
@@ -1479,14 +1478,9 @@
   }
 
   var L = { s: 1, cx: 0, cy: 0 };
-  var mx = 0, my = 0, active = false;
-  var Tspd = [], Trnd = [], Tang = [];
-  for (var j = 0; j < N; j++) {
-    Tspd[j] = rnd(cfg.speedLo, cfg.speedHi);
-    Trnd[j] = rnd(0.5, 0.95);
-    Tang[j] = rnd(-0.4, 0.4);
-  }
-  var Tdel = [], ord = [];
+  var Tspd = [];
+  for (var j = 0; j < N; j++) Tspd[j] = rnd(cfg.speedLo, cfg.speedHi);
+  var Tdel = [], ord = [];                                 // outer tiles emerge first (radial stagger, mobile-style)
   for (var j = 0; j < N; j++) ord.push({ i: j, r: Math.sqrt(TILES[j].dx * TILES[j].dx + TILES[j].dy * TILES[j].dy) });
   ord.sort(function (a, b) { return b.r - a.r; });
   for (var j = 0; j < N; j++) Tdel[ord[j].i] = N <= 1 ? 0 : (j / (N - 1)) * cfg.stagger;
@@ -1507,7 +1501,7 @@
       im.src = A + encodeURI(t.f);
       el.appendChild(im);
       field.appendChild(el);
-      cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h), spd: Tspd[i], delay: Tdel[i], rnd: Trnd[i], ang: Tang[i], ox: 0, oy: 0 });
+      cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h), spd: Tspd[i], delay: Tdel[i] });
     }
   }
 
@@ -1518,25 +1512,30 @@
   measure();
   window.addEventListener("resize", measure);
 
-  if (cfg.hover && hero && !reduce) {
+  // Parallax: the field pans opposite the cursor; nearer (bigger) tiles shift
+  // more than distant ones, for depth. Smoothed so it eases, never jitters.
+  var panTX = 0, panTY = 0, panX = 0, panY = 0;
+  if (cfg.parallax && hero && !reduce) {
     hero.addEventListener("pointermove", function (e) {
-      var r = field.getBoundingClientRect();
-      mx = e.clientX - r.left; my = e.clientY - r.top; active = true;
+      var r = hero.getBoundingClientRect();
+      panTX = -(((e.clientX - r.left) / r.width) - 0.5) * 2 * cfg.amp;
+      panTY = -(((e.clientY - r.top) / r.height) - 0.5) * 2 * cfg.amp;
     });
-    hero.addEventListener("pointerleave", function () { active = false; });
+    hero.addEventListener("pointerleave", function () { panTX = 0; panTY = 0; });
   }
 
   function render(elapsed, isStatic) {
-    var hoverOn = cfg.hover && active && !isStatic;
+    panX += (panTX - panX) * cfg.panLerp;
+    panY += (panTY - panY) * cfg.panLerp;
     for (var k = 0; k < cards.length; k++) {
       var c = cards[k], t = c.t;
-      var u = isStatic ? 0 : (elapsed / (cfg.period * c.spd)) % 1;
+      var u = isStatic ? 0 : (elapsed / (cfg.period * c.spd)) % 1;   // phase-aligned start (mobile-style): nothing begins large
       if (!isStatic && cfg.flow) u -= (cfg.flow / 6.2831853) * Math.sin(6.2831853 * u);
       var ell = (c.g - LEAD) + u;
       var scale = cfg.mStar * Math.pow(R, ell);
       if (scale > cfg.maxScale) { c.el.style.opacity = 0; continue; }
       var vis = 1;
-      if (!isStatic) {
+      if (!isStatic) {                                      // mobile emergence: outer tiles boom out first, fading in
         var te = elapsed - c.delay;
         if (te <= 0) { scale *= cfg.introMin; vis = 0; }
         else {
@@ -1547,33 +1546,20 @@
       var sz = Math.pow(scale, c.P);
       var onW = t.w * L.s * sz, onH = t.h * L.s * sz;
       var s = onW / t.nw;
-      var cx = L.cx + t.dx * scale * L.s;
-      var cy = L.cy + t.dy * scale * L.s;
-      var tx = 0, ty = 0;
-      if (hoverOn) {
-        var ddx = cx - mx, ddy = cy - my;
-        var dist = Math.sqrt(ddx * ddx + ddy * ddy) || 0.0001;
-        var RAD = cfg.hoverR * L.s;
-        if (dist < RAD) {
-          var fall = 1 - dist / RAD; fall *= fall;
-          var mag = cfg.hoverPush * L.s * fall * c.rnd;
-          var ang = Math.atan2(ddy, ddx) + c.ang;
-          tx = Math.cos(ang) * mag; ty = Math.sin(ang) * mag;
-        }
-      }
-      c.ox += (tx - c.ox) * cfg.lerp;
-      c.oy += (ty - c.oy) * cfg.lerp;
-      var X = cx - onW / 2 + c.ox, Y = cy - onH / 2 + c.oy;
-      var bl = 0;
-      if (scale < cfg.blurNear) {
-        var bt = (cfg.blurNear - scale) / (cfg.blurNear - cfg.blurFar);
+      var depth = (scale < 2.6 ? scale : 2.6) * cfg.pDepth;
+      var cx = L.cx + (t.dx * scale + panX * depth) * L.s;
+      var cy = L.cy + (t.dy * scale + panY * depth) * L.s;
+      var X = cx - onW / 2, Y = cy - onH / 2;
+      var bl = 0;                                          // depth-of-field: soft at the back, crisp from blurClear
+      if (scale < cfg.blurClear) {
+        var bt = (cfg.blurClear - scale) / (cfg.blurClear - cfg.blurFar);
         if (bt > 1) bt = 1; else if (bt < 0) bt = 0;
-        bl = cfg.blurMax * bt / s;
-        if (bl > 30) bl = 30;
+        bl = cfg.blurMax * bt / s;                          // /s keeps SCREEN blur ~constant across depths
+        if (bl > cfg.blurCap) bl = cfg.blurCap;
       }
       c.el.style.zIndex = Math.round(scale * 2000) * 64 + k;
       c.el.style.opacity = vis;
-      c.el.style.filter = "blur(" + bl.toFixed(2) + "px)";
+      c.el.style.filter = bl > 0.01 ? "blur(" + bl.toFixed(2) + "px)" : "none";
       c.el.style.transform = "translate(" + X.toFixed(1) + "px," + Y.toFixed(1) + "px) scale(" + s.toFixed(4) + ")";
     }
   }
@@ -1602,8 +1588,8 @@
     speedLo: 0.82, speedHi: 1.4,
     blurMax: 4.0, blurNear: 1.0, blurFar: 0.12,
     maxScale: 8,
-    originY: 0.66,                                         // emergence sits behind the signup card so the spawn point stays hidden
-    count: 10, rMin: 60, rMax: 230, yScale: 1.6, sizeLo: 84, sizeHi: 150, minSep: 115,  // even upward fan → fills top-left / top / top-right; emergence hides behind the card
+    originY: 0.74,                                         // spawn point dropped lower so it stays tucked behind the signup card
+    count: 11, rMin: 90, rMax: 410, yScale: 1.45, sizeLo: 100, sizeHi: 178, minSep: 165,  // bigger photos, fanned wider across the surface; emergence hides behind the card
     hover: false
   };
   var field = document.getElementById(cfg.fieldId);
@@ -1636,7 +1622,7 @@
   // zoom up into the visible top-left / top / top-right. They emerge from the low
   // origin (behind the opaque signup card) so the spawn point stays hidden, and the
   // radius is decorrelated from the angle so the whole top band fills evenly.
-  var SPREAD = Math.PI * 1.15;                            // ~207° fan centred straight up
+  var SPREAD = Math.PI * 1.4;                             // ~252° fan centred straight up → reaches well into left/right
   var TILES = [];
   for (var i = 0; i < cfg.count; i++) {
     var frac = (i + 0.5) / cfg.count;                     // 0..1 → left → right across the top
@@ -1650,6 +1636,9 @@
       dx: Math.cos(ang) * rad, dy: Math.sin(ang) * rad * cfg.yScale
     });
   }
+  // Fill the sparse centre column: one photo straight up the middle of the fan.
+  var cim = IMAGES[12], cw = rnd(150, 185);
+  TILES.push({ f: cim.f, nw: cim.nw, nh: cim.nh, w: cw, h: cw * cim.nh / cim.nw, dx: rnd(-18, 18), dy: -320 });
   // Spread: relax any tiles that landed too close (a few push-apart passes).
   for (var pass = 0; pass < 8; pass++) {
     for (var a = 0; a < TILES.length; a++) {
