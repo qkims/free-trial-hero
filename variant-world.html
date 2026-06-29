@@ -106,17 +106,6 @@
           overflow: hidden;
           z-index: 0;
         }
-        /* White feathered frame so photos dissolve into the page at the
-         edges instead of hard-cutting. Above the field, below signup/logo. */
-        .v7-edge {
-          position: absolute;
-          inset: 0;
-          z-index: 3;
-          pointer-events: none;
-          background:
-            linear-gradient(to right, #fff 0%, rgba(255, 255, 255, 0) 10%, rgba(255, 255, 255, 0) 90%, #fff 100%),
-            linear-gradient(to bottom, #fff 0%, rgba(255, 255, 255, 0) 13%, rgba(255, 255, 255, 0) 87%, #fff 100%);
-        }
         .v7-tier {
           position: absolute;
           inset: 0;
@@ -341,16 +330,6 @@
           overflow: hidden;
           z-index: 0;
         }
-        /* White feathered frame (see desktop note). */
-        .m7-edge {
-          position: absolute;
-          inset: 0;
-          z-index: 3;
-          pointer-events: none;
-          background:
-            linear-gradient(to right, #fff 0%, rgba(255, 255, 255, 0) 9%, rgba(255, 255, 255, 0) 91%, #fff 100%),
-            linear-gradient(to bottom, #fff 0%, rgba(255, 255, 255, 0) 9%, rgba(255, 255, 255, 0) 88%, #fff 100%);
-        }
         .m7-tier {
           position: absolute;
           inset: 0;
@@ -514,7 +493,6 @@
            downward and loop seamlessly, built by the inline script below. The
            field clips the hero so cards bleed off its edges. -->
         <div class="v7-field" id="v7-field" aria-hidden="true"></div>
-        <div class="v7-edge" aria-hidden="true"></div>
 
         <!-- Logo overlaid on a transparent strip (photos show to its sides) -->
         <div class="v7-logo">
@@ -948,7 +926,6 @@
            downward and loop seamlessly, built by the inline script below. The
            field clips the hero so cards bleed off its edges. -->
         <div class="m7-field" id="m7-field" aria-hidden="true"></div>
-        <div class="m7-edge" aria-hidden="true"></div>
 
         <!-- Logo overlaid on a transparent strip (photos show to its sides) -->
         <div class="m7-logo">
@@ -1394,367 +1371,573 @@
     </script>
     <script>
       if (!window.__VP_MOBILE__) {
-(function () {
-  var cfg = {
-    heroSel: ".v7-hero", fieldId: "v7-field", cls: "v7-card",
-    gens: 3, lead: 2, ratio: 10.0, mStar: 1.0,
-    period: 70, flow: 0.7, introTau: 0.4, introMin: 0.03,
-    pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 400,
-    stagger: 0.7, enterFade: 0.5,
-    speedLo: 0.82, speedHi: 1.4,
-    blurMax: 5.0, blurNear: 1.0, blurFar: 0.12,
-    maxScale: 8,
-    count: 10, rMin: 110, rMax: 760, yScale: 0.62, sizeLo: 150, sizeHi: 280, minSep: 280,  // fewer, evenly spaced
-    exRX: 300, exRY: 195, exM: 1.12,                      // keep the centred signup clear
-    hover: true, hoverR: 300, hoverPush: 20, lerp: 0.1
-  };
-  var hero = document.querySelector(cfg.heroSel);
-  var field = document.getElementById(cfg.fieldId);
-  if (!field) return;
-  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var A = "assets/world-new/";
-  var DW = 1440;
+        (function () {
+          var cfg = {
+            heroSel: ".v7-hero",
+            fieldId: "v7-field",
+            cls: "v7-card",
+            gens: 2,
+            lead: 1,
+            ratio: 10.0,
+            mStar: 1.0,
+            period: 135,
+            introTau: 0.45,
+            introMin: 0.03,
+            pSmall: 0.92,
+            pBig: 0.5,
+            pLoD: 26,
+            pHiD: 400,
+            pStrength: 0.5,
+            amp: 26,
+          };
+          var hero = document.querySelector(cfg.heroSel);
+          var field = document.getElementById(cfg.fieldId);
+          if (!field) return;
+          var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var A = "assets/world-new/";
+          var DW = 1440;
 
-  var IMAGES = [
-    { f: "Image1.png",          nw: 966, nh: 600 },
-    { f: "Images.png",          nw: 434, nh: 600 },
-    { f: "IMG-2.png",           nw: 772, nh: 600 },
-    { f: "Image 6.png",         nw: 996, nh: 600 },
-    { f: "Image 8.png",         nw: 433, nh: 600 },
-    { f: "Image1-3.png",        nw: 844, nh: 600 },
-    { f: "IMG-1.png",           nw: 453, nh: 600 },
-    { f: "IMG.png",             nw: 461, nh: 600 },
-    { f: "Image1-2.png",        nw: 833, nh: 592 },
-    { f: "NorAm_EF_2254.png",   nw: 888, nh: 600 },
-    { f: "Image1-1.png",        nw: 843, nh: 600 },
-    { f: "MIB_FEYI_0289.png",   nw: 431, nh: 600 },
-    { f: "NorAm_FTC_02105.png", nw: 798, nh: 600 },
-    { f: "Image 9.png",         nw: 420, nh: 600 },
-    { f: "Image 10.png",        nw: 438, nh: 600 }
-  ];
+          // ---- Exact composition from Figma (file SwnQ7M7I5DG7o0QcZTncet, node 546:36120) -------
+          // dx,dy,w,h: design-px layout (centre-relative). nw,nh: the image's NATIVE pixel size,
+          // used so each tile is rasterised at full resolution and only ever scaled DOWN (crisp).
+          var TILES = [
+            {
+              f: "Image1.png",
+              dx: 61.9,
+              dy: 19.7,
+              w: 33.6,
+              h: 20.7,
+              nw: 966,
+              nh: 600,
+            },
+            {
+              f: "Images.png",
+              dx: -83.2,
+              dy: 63.9,
+              w: 43.1,
+              h: 59.4,
+              nw: 434,
+              nh: 600,
+            },
+            {
+              f: "IMG-2.png",
+              dx: 96.8,
+              dy: 50.4,
+              w: 62.4,
+              h: 48.5,
+              nw: 772,
+              nh: 600,
+            },
+            {
+              f: "Image 6.png",
+              dx: -100.9,
+              dy: -43.0,
+              w: 91.4,
+              h: 55.1,
+              nw: 996,
+              nh: 600,
+            },
+            {
+              f: "Image 8.png",
+              dx: 82.2,
+              dy: -92.5,
+              w: 45.4,
+              h: 63.0,
+              nw: 433,
+              nh: 600,
+            },
+            {
+              f: "Image1-3.png",
+              dx: -64.2,
+              dy: -182.5,
+              w: 113.2,
+              h: 80.4,
+              nw: 844,
+              nh: 600,
+            },
+            {
+              f: "IMG-1.png",
+              dx: -258.2,
+              dy: -95.5,
+              w: 88.4,
+              h: 117.1,
+              nw: 453,
+              nh: 600,
+            },
+            {
+              f: "IMG.png",
+              dx: 230.8,
+              dy: 168.0,
+              w: 135.7,
+              h: 176.8,
+              nw: 461,
+              nh: 600,
+            },
+            {
+              f: "Image1-2.png",
+              dx: 267.4,
+              dy: -102.9,
+              w: 251.6,
+              h: 178.8,
+              nw: 833,
+              nh: 592,
+            },
+            {
+              f: "NorAm_EF_2254.png",
+              dx: -303.7,
+              dy: 161.7,
+              w: 177.1,
+              h: 119.7,
+              nw: 888,
+              nh: 600,
+            },
+            {
+              f: "Image1-1.png",
+              dx: 409.4,
+              dy: 266.3,
+              w: 296.1,
+              h: 210.9,
+              nw: 843,
+              nh: 600,
+            },
+            {
+              f: "MIB_FEYI_0289.png",
+              dx: -449.7,
+              dy: 338.0,
+              w: 210.1,
+              h: 292.6,
+              nw: 431,
+              nh: 600,
+            },
+            {
+              f: "NorAm_FTC_02105.png",
+              dx: 533.0,
+              dy: -233.8,
+              w: 374.1,
+              h: 281.5,
+              nw: 798,
+              nh: 600,
+            },
+            {
+              f: "Image 9.png",
+              dx: -553.9,
+              dy: -246.6,
+              w: 332.2,
+              h: 475.5,
+              nw: 420,
+              nh: 600,
+            },
+          ];
+          var N = TILES.length,
+            G = cfg.gens,
+            R = cfg.ratio,
+            LEAD = cfg.lead;
 
-  var rnd = function (a, b) { return a + Math.random() * (b - a); };
+          // Per-tile size-growth power. Small images grow nearly in step with the expansion so they
+          // stay embedded in the cluster and leave WITH the group; big images grow slowly so they
+          // neither balloon into "one zoomed photo" nor blur.
+          function tileP(w, h) {
+            var d = Math.sqrt(w * h),
+              x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
+            if (x < 0) x = 0;
+            else if (x > 1) x = 1;
+            return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
+          }
 
-  // Even areal scatter (golden-angle sunflower) + jitter so the field fills the
-  // frame uniformly with no recurring white wedges; random image + size per tile.
-  var GA = Math.PI * (3 - Math.sqrt(5));
-  var TILES = [];
-  for (var i = 0; i < cfg.count; i++) {
-    var ang = i * GA + rnd(-0.07, 0.07);
-    var rad = cfg.rMin + (cfg.rMax - cfg.rMin) * Math.sqrt((i + 0.5) / cfg.count);
-    var im = i < IMAGES.length ? IMAGES[i] : IMAGES[(Math.random() * IMAGES.length) | 0];
-    var w = rnd(cfg.sizeLo, cfg.sizeHi);
-    TILES.push({
-      f: im.f, nw: im.nw, nh: im.nh, w: w, h: w * im.nh / im.nw,
-      dx: Math.cos(ang) * rad, dy: Math.sin(ang) * rad * cfg.yScale
-    });
-  }
-  // Spread: relax any tiles that landed too close (a few push-apart passes).
-  for (var pass = 0; pass < 8; pass++) {
-    for (var a = 0; a < TILES.length; a++) {
-      for (var b = a + 1; b < TILES.length; b++) {
-        var Ta = TILES[a], Tb = TILES[b];
-        var rx = Tb.dx - Ta.dx, ry = Tb.dy - Ta.dy;
-        var rd = Math.sqrt(rx * rx + ry * ry) || 0.0001;
-        if (rd < cfg.minSep) {
-          var pu = (cfg.minSep - rd) * 0.5, ux = rx / rd, uy = ry / rd;
-          Ta.dx -= ux * pu; Ta.dy -= uy * pu;
-          Tb.dx += ux * pu; Tb.dy += uy * pu;
-        }
-      }
-    }
-  }
-  for (var p = 0; p < TILES.length; p++) {
-    var tp = TILES[p];
-    var q = Math.sqrt((tp.dx / cfg.exRX) * (tp.dx / cfg.exRX) + (tp.dy / cfg.exRY) * (tp.dy / cfg.exRY));
-    if (q < cfg.exM) { var push = cfg.exM / (q || 0.0001); tp.dx *= push; tp.dy *= push; }
-  }
+          // ---- Expanding-universe loop -----------------------------------------------------------
+          // POSITION expands by scale = mStar*R^L*intro; on-screen SIZE grows by scale^P (per tile).
+          // Each element is sized to the image's NATIVE px and positioned with translate + a scale
+          // that maps native -> on-screen (almost always < 1, so downscaling keeps it sharp).
+          // opacity is always 1 (no fade). Two instances spaced by a large R: the incoming batch is
+          // a sub-px point behind the card during the boom and only grows out after the first batch
+          // has moved off-frame. Loops seamlessly: all quantities are functions of L=(g-LEAD)+u.
+          var L = { s: 1, cx: 0, cy: 0 };
+          var pxv = 0,
+            pyv = 0;
+          var cards = [];
+          for (var g = 0; g < G; g++) {
+            for (var i = 0; i < N; i++) {
+              var t = TILES[i];
+              var el = document.createElement("div");
+              el.className = cfg.cls;
+              el.style.cssText =
+                "left:0;top:0;width:" +
+                t.nw +
+                "px;height:" +
+                t.nh +
+                "px;opacity:1;transition:none;transform-origin:0 0;border-radius:0;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
+              var im = new Image();
+              im.alt = "";
+              im.decoding = "async";
+              im.loading = "eager";
+              im.style.cssText =
+                "width:100%;height:100%;object-fit:cover;display:block";
+              im.src = A + encodeURI(t.f);
+              el.appendChild(im);
+              field.appendChild(el);
+              cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h) });
+            }
+          }
 
-  var N = TILES.length, G = cfg.gens, R = cfg.ratio, LEAD = cfg.lead;
+          function measure() {
+            var r = field.getBoundingClientRect();
+            L.s = r.width / DW;
+            L.cx = r.width / 2;
+            L.cy = r.height / 2;
+          }
+          measure();
+          window.addEventListener("resize", measure);
 
-  function tileP(w, h) {
-    var d = Math.sqrt(w * h), x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
-    if (x < 0) x = 0; else if (x > 1) x = 1;
-    return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
-  }
+          if (hero && !reduce) {
+            hero.addEventListener("pointermove", function (e) {
+              var r = hero.getBoundingClientRect();
+              pxv = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
+              pyv = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
+            });
+            hero.addEventListener("pointerleave", function () {
+              pxv = 0;
+              pyv = 0;
+            });
+          }
 
-  var L = { s: 1, cx: 0, cy: 0 };
-  var mx = 0, my = 0, active = false;
-  var Tspd = [], Trnd = [], Tang = [];
-  for (var j = 0; j < N; j++) {
-    Tspd[j] = rnd(cfg.speedLo, cfg.speedHi);
-    Trnd[j] = rnd(0.5, 0.95);
-    Tang[j] = rnd(-0.4, 0.4);
-  }
-  var Tdel = [], ord = [];
-  for (var j = 0; j < N; j++) ord.push({ i: j, r: Math.sqrt(TILES[j].dx * TILES[j].dx + TILES[j].dy * TILES[j].dy) });
-  ord.sort(function (a, b) { return b.r - a.r; });
-  for (var j = 0; j < N; j++) Tdel[ord[j].i] = N <= 1 ? 0 : (j / (N - 1)) * cfg.stagger;
+          function render(u, intro) {
+            for (var k = 0; k < cards.length; k++) {
+              var c = cards[k],
+                t = c.t;
+              var ell = c.g - LEAD + u;
+              var scale = cfg.mStar * Math.pow(R, ell) * intro; // POSITION expansion
+              var sz = Math.pow(scale, c.P); // on-screen SIZE growth (per tile)
+              var onW = t.w * L.s * sz; // target on-screen width (design px)
+              var s = onW / t.nw; // native -> screen (mostly downscale)
+              var depth = (scale < 2.4 ? scale : 2.4) * cfg.pStrength;
+              // Hide the tight central spawn cluster: tiles stay invisible while small and
+              // near centre, fading in only as they grow out toward their framed positions.
+              var fade = (scale - 0.6) / 0.4;
+              if (fade < 0) fade = 0;
+              else if (fade > 1) fade = 1;
+              c.el.style.opacity = fade;
+              var cx = L.cx + (t.dx * scale + pxv * depth) * L.s;
+              var cy = L.cy + (t.dy * scale + pyv * depth) * L.s;
+              var X = cx - onW / 2,
+                Y = cy - (t.h * L.s * sz) / 2;
+              c.el.style.zIndex = (100 + Math.round(scale * 60)) | 0;
+              c.el.style.transform =
+                "translate(" +
+                X.toFixed(1) +
+                "px," +
+                Y.toFixed(1) +
+                "px) scale(" +
+                s.toFixed(4) +
+                ")";
+            }
+          }
 
-  var cards = [];
-  for (var g = 0; g < G; g++) {
-    for (var i = 0; i < N; i++) {
-      var t = TILES[i];
-      var el = document.createElement("div");
-      el.className = cfg.cls;
-      el.style.cssText = "left:0;top:0;width:" + t.nw + "px;height:" + t.nh +
-        "px;opacity:0;transition:none;transform-origin:0 0;border-radius:" +
-        Math.round(Math.min(t.nw, t.nh) * 0.05) +
-        "px;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
-      var im = new Image();
-      im.alt = ""; im.decoding = "async"; im.loading = "eager";
-      im.style.cssText = "width:100%;height:100%;object-fit:cover;display:block";
-      im.src = A + encodeURI(t.f);
-      el.appendChild(im);
-      field.appendChild(el);
-      cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h), spd: Tspd[i], delay: Tdel[i], rnd: Trnd[i], ang: Tang[i], ox: 0, oy: 0 });
-    }
-  }
+          if (reduce) {
+            render(0, 1);
+            return;
+          }
 
-  function measure() {
-    var r = field.getBoundingClientRect();
-    L.s = r.width / DW; L.cx = r.width / 2; L.cy = r.height / 2;
-  }
-  measure();
-  window.addEventListener("resize", measure);
-
-  if (cfg.hover && hero && !reduce) {
-    hero.addEventListener("pointermove", function (e) {
-      var r = field.getBoundingClientRect();
-      mx = e.clientX - r.left; my = e.clientY - r.top; active = true;
-    });
-    hero.addEventListener("pointerleave", function () { active = false; });
-  }
-
-  function render(elapsed, isStatic) {
-    var hoverOn = cfg.hover && active && !isStatic;
-    for (var k = 0; k < cards.length; k++) {
-      var c = cards[k], t = c.t;
-      var u = isStatic ? 0 : (elapsed / (cfg.period * c.spd)) % 1;
-      if (!isStatic && cfg.flow) u -= (cfg.flow / 6.2831853) * Math.sin(6.2831853 * u);
-      var ell = (c.g - LEAD) + u;
-      var scale = cfg.mStar * Math.pow(R, ell);
-      if (scale > cfg.maxScale) { c.el.style.opacity = 0; continue; }
-      var vis = 1;
-      if (!isStatic) {
-        var te = elapsed - c.delay;
-        if (te <= 0) { scale *= cfg.introMin; vis = 0; }
-        else {
-          scale *= 1 - (1 - cfg.introMin) * Math.exp(-te / cfg.introTau);
-          vis = te < cfg.enterFade ? te / cfg.enterFade : 1;
-        }
-      }
-      var sz = Math.pow(scale, c.P);
-      var onW = t.w * L.s * sz, onH = t.h * L.s * sz;
-      var s = onW / t.nw;
-      var cx = L.cx + t.dx * scale * L.s;
-      var cy = L.cy + t.dy * scale * L.s;
-      var tx = 0, ty = 0;
-      if (hoverOn) {
-        var ddx = cx - mx, ddy = cy - my;
-        var dist = Math.sqrt(ddx * ddx + ddy * ddy) || 0.0001;
-        var RAD = cfg.hoverR * L.s;
-        if (dist < RAD) {
-          var fall = 1 - dist / RAD; fall *= fall;
-          var mag = cfg.hoverPush * L.s * fall * c.rnd;
-          var ang = Math.atan2(ddy, ddx) + c.ang;
-          tx = Math.cos(ang) * mag; ty = Math.sin(ang) * mag;
-        }
-      }
-      c.ox += (tx - c.ox) * cfg.lerp;
-      c.oy += (ty - c.oy) * cfg.lerp;
-      var X = cx - onW / 2 + c.ox, Y = cy - onH / 2 + c.oy;
-      var bl = 0;
-      if (scale < cfg.blurNear) {
-        var bt = (cfg.blurNear - scale) / (cfg.blurNear - cfg.blurFar);
-        if (bt > 1) bt = 1; else if (bt < 0) bt = 0;
-        bl = cfg.blurMax * bt / s;
-        if (bl > 30) bl = 30;
-      }
-      c.el.style.zIndex = Math.round(scale * 2000) * 64 + k;
-      c.el.style.opacity = vis;
-      c.el.style.filter = "blur(" + bl.toFixed(2) + "px)";
-      c.el.style.transform = "translate(" + X.toFixed(1) + "px," + Y.toFixed(1) + "px) scale(" + s.toFixed(4) + ")";
-    }
-  }
-
-  if (reduce) { render(0, true); return; }
-
-  var start = 0;
-  function loop(ts) {
-    if (!start) start = ts;
-    render((ts - start) / 1000, false);
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-})();
+          var start = 0,
+            PERIOD = cfg.period,
+            TAU = cfg.introTau,
+            I0 = cfg.introMin;
+          function loop(ts) {
+            if (!start) start = ts;
+            var el = (ts - start) / 1000;
+            var u = (el / PERIOD) % 1;
+            var intro = 1 - (1 - I0) * Math.exp(-el / TAU);
+            render(u, intro);
+            requestAnimationFrame(loop);
+          }
+          requestAnimationFrame(loop);
+        })();
       }
     </script>
     <script>
       if (window.__VP_MOBILE__) {
-(function () {
-  var cfg = {
-    heroSel: ".m7-hero", fieldId: "m7-field", cls: "m7-card",
-    gens: 3, lead: 2, ratio: 10.0, mStar: 1.0,
-    period: 70, flow: 0.7, introTau: 0.4, introMin: 0.03,
-    pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 200,
-    stagger: 0.7, enterFade: 0.5,
-    speedLo: 0.82, speedHi: 1.4,
-    blurMax: 4.0, blurNear: 1.0, blurFar: 0.12,
-    maxScale: 8,
-    originY: 0.66,                                         // emergence sits behind the signup card so the spawn point stays hidden
-    count: 10, rMin: 60, rMax: 230, yScale: 1.6, sizeLo: 84, sizeHi: 150, minSep: 115,  // even upward fan → fills top-left / top / top-right; emergence hides behind the card
-    hover: false
-  };
-  var field = document.getElementById(cfg.fieldId);
-  if (!field) return;
-  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var A = "assets/world-new/";
-  var DW = 393;
+        (function () {
+          var cfg = {
+            heroSel: ".m7-hero",
+            fieldId: "m7-field",
+            cls: "m7-card",
+            gens: 2,
+            lead: 1,
+            ratio: 10.0,
+            mStar: 1.0,
+            period: 135,
+            introTau: 0.45,
+            introMin: 0.03,
+            pSmall: 0.92,
+            pBig: 0.5,
+            pLoD: 26,
+            pHiD: 200,
+            pStrength: 0.5,
+            amp: 18,
+          };
+          var hero = document.querySelector(cfg.heroSel);
+          var field = document.getElementById(cfg.fieldId);
+          if (!field) return;
+          var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var A = "assets/world-new/";
+          var DW = 393;
 
-  var IMAGES = [
-    { f: "Image1.png",          nw: 966, nh: 600 },
-    { f: "Images.png",          nw: 434, nh: 600 },
-    { f: "IMG-2.png",           nw: 772, nh: 600 },
-    { f: "Image 6.png",         nw: 996, nh: 600 },
-    { f: "Image 8.png",         nw: 433, nh: 600 },
-    { f: "Image1-3.png",        nw: 844, nh: 600 },
-    { f: "IMG-1.png",           nw: 453, nh: 600 },
-    { f: "IMG.png",             nw: 461, nh: 600 },
-    { f: "Image1-2.png",        nw: 833, nh: 592 },
-    { f: "NorAm_EF_2254.png",   nw: 888, nh: 600 },
-    { f: "Image1-1.png",        nw: 843, nh: 600 },
-    { f: "MIB_FEYI_0289.png",   nw: 431, nh: 600 },
-    { f: "NorAm_FTC_02105.png", nw: 798, nh: 600 },
-    { f: "Image 9.png",         nw: 420, nh: 600 },
-    { f: "Image 10.png",        nw: 438, nh: 600 }
-  ];
+          // ---- Exact composition from Figma (file SwnQ7M7I5DG7o0QcZTncet, node 546:36120) -------
+          // dx,dy,w,h: design-px layout (centre-relative). nw,nh: the image's NATIVE pixel size,
+          // used so each tile is rasterised at full resolution and only ever scaled DOWN (crisp).
+          var TILES = [
+            // Mobile composition — matches the designed portrait frame; tiles expand outward from here.
+            // 15 unique tiles (was 8) so the field doesn't visibly repeat as it loops.
+            {
+              f: "Image 9.png",
+              dx: -118,
+              dy: -306,
+              w: 165,
+              h: 236,
+              nw: 420,
+              nh: 600,
+            }, // overalls + art (top-left)
+            {
+              f: "NorAm_FTC_02105.png",
+              dx: 123,
+              dy: -276,
+              w: 150,
+              h: 113,
+              nw: 798,
+              nh: 600,
+            }, // hand + phone (top-right)
+            {
+              f: "IMG-2.png",
+              dx: 4,
+              dy: -332,
+              w: 120,
+              h: 93,
+              nw: 772,
+              nh: 600,
+            }, // top-center fill
+            {
+              f: "IMG-1.png",
+              dx: -126,
+              dy: -156,
+              w: 70,
+              h: 93,
+              nw: 453,
+              nh: 600,
+            }, // leopard bookend (left)
+            {
+              f: "NorAm_EF_2254.png",
+              dx: -168,
+              dy: -28,
+              w: 104,
+              h: 70,
+              nw: 888,
+              nh: 600,
+            }, // left-mid fill
+            {
+              f: "Image1.png",
+              dx: 150,
+              dy: -132,
+              w: 112,
+              h: 70,
+              nw: 966,
+              nh: 600,
+            }, // right-upper fill
+            {
+              f: "Image1-3.png",
+              dx: -46,
+              dy: -126,
+              w: 80,
+              h: 57,
+              nw: 844,
+              nh: 600,
+            }, // two people on bench (center-left, above card)
+            {
+              f: "Image1-2.png",
+              dx: 58,
+              dy: -126,
+              w: 120,
+              h: 85,
+              nw: 833,
+              nh: 592,
+            }, // woman at counter (center, above card)
+            {
+              f: "Image 6.png",
+              dx: 158,
+              dy: 34,
+              w: 120,
+              h: 72,
+              nw: 996,
+              nh: 600,
+            }, // right-mid fill
+            {
+              f: "Image 8.png",
+              dx: -150,
+              dy: 118,
+              w: 80,
+              h: 111,
+              nw: 433,
+              nh: 600,
+            }, // left-lower fill
+            {
+              f: "MIB_FEYI_0289.png",
+              dx: -126,
+              dy: 274,
+              w: 150,
+              h: 209,
+              nw: 431,
+              nh: 600,
+            }, // sneakers in box (bottom-left)
+            { f: "IMG.png", dx: 53, dy: 264, w: 105, h: 137, nw: 461, nh: 600 }, // woman green top (bottom-center)
+            {
+              f: "Image 10.png",
+              dx: 150,
+              dy: 168,
+              w: 80,
+              h: 110,
+              nw: 438,
+              nh: 600,
+            }, // right-lower fill
+            {
+              f: "Image1-1.png",
+              dx: 133,
+              dy: 314,
+              w: 140,
+              h: 100,
+              nw: 843,
+              nh: 600,
+            }, // bicycle storefront (bottom-right)
+            {
+              f: "Images.png",
+              dx: -34,
+              dy: 336,
+              w: 70,
+              h: 97,
+              nw: 434,
+              nh: 600,
+            }, // bottom-center-left fill
+          ];
+          var N = TILES.length,
+            G = cfg.gens,
+            R = cfg.ratio,
+            LEAD = cfg.lead;
 
-  var rnd = function (a, b) { return a + Math.random() * (b - a); };
+          // Per-tile size-growth power. Small images grow nearly in step with the expansion so they
+          // stay embedded in the cluster and leave WITH the group; big images grow slowly so they
+          // neither balloon into "one zoomed photo" nor blur.
+          function tileP(w, h) {
+            var d = Math.sqrt(w * h),
+              x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
+            if (x < 0) x = 0;
+            else if (x > 1) x = 1;
+            return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
+          }
 
-  // Even fan across the TOP: tiles spread left→right over a wide upward arc and
-  // zoom up into the visible top-left / top / top-right. They emerge from the low
-  // origin (behind the opaque signup card) so the spawn point stays hidden, and the
-  // radius is decorrelated from the angle so the whole top band fills evenly.
-  var SPREAD = Math.PI * 1.15;                            // ~207° fan centred straight up
-  var TILES = [];
-  for (var i = 0; i < cfg.count; i++) {
-    var frac = (i + 0.5) / cfg.count;                     // 0..1 → left → right across the top
-    var ang = -Math.PI / 2 + (frac - 0.5) * SPREAD + rnd(-0.12, 0.12);
-    var rstep = (i * 0.61803 + 0.5) % 1;                  // golden-ratio radius, independent of angle
-    var rad = cfg.rMin + (cfg.rMax - cfg.rMin) * Math.sqrt(rstep);
-    var im = i < IMAGES.length ? IMAGES[i] : IMAGES[(Math.random() * IMAGES.length) | 0];
-    var w = rnd(cfg.sizeLo, cfg.sizeHi);
-    TILES.push({
-      f: im.f, nw: im.nw, nh: im.nh, w: w, h: w * im.nh / im.nw,
-      dx: Math.cos(ang) * rad, dy: Math.sin(ang) * rad * cfg.yScale
-    });
-  }
-  // Spread: relax any tiles that landed too close (a few push-apart passes).
-  for (var pass = 0; pass < 8; pass++) {
-    for (var a = 0; a < TILES.length; a++) {
-      for (var b = a + 1; b < TILES.length; b++) {
-        var Ta = TILES[a], Tb = TILES[b];
-        var rx = Tb.dx - Ta.dx, ry = Tb.dy - Ta.dy;
-        var rd = Math.sqrt(rx * rx + ry * ry) || 0.0001;
-        if (rd < cfg.minSep) {
-          var pu = (cfg.minSep - rd) * 0.5, ux = rx / rd, uy = ry / rd;
-          Ta.dx -= ux * pu; Ta.dy -= uy * pu;
-          Tb.dx += ux * pu; Tb.dy += uy * pu;
-        }
-      }
-    }
-  }
+          // ---- Expanding-universe loop -----------------------------------------------------------
+          // POSITION expands by scale = mStar*R^L*intro; on-screen SIZE grows by scale^P (per tile).
+          // Each element is sized to the image's NATIVE px and positioned with translate + a scale
+          // that maps native -> on-screen (almost always < 1, so downscaling keeps it sharp).
+          // opacity is always 1 (no fade). Two instances spaced by a large R: the incoming batch is
+          // a sub-px point behind the card during the boom and only grows out after the first batch
+          // has moved off-frame. Loops seamlessly: all quantities are functions of L=(g-LEAD)+u.
+          var L = { s: 1, cx: 0, cy: 0 };
+          var pxv = 0,
+            pyv = 0;
+          var cards = [];
+          for (var g = 0; g < G; g++) {
+            for (var i = 0; i < N; i++) {
+              var t = TILES[i];
+              var el = document.createElement("div");
+              el.className = cfg.cls;
+              el.style.cssText =
+                "left:0;top:0;width:" +
+                t.nw +
+                "px;height:" +
+                t.nh +
+                "px;opacity:1;transition:none;transform-origin:0 0;border-radius:0;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
+              var im = new Image();
+              im.alt = "";
+              im.decoding = "async";
+              im.loading = "eager";
+              im.style.cssText =
+                "width:100%;height:100%;object-fit:cover;display:block";
+              im.src = A + encodeURI(t.f);
+              el.appendChild(im);
+              field.appendChild(el);
+              cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h) });
+            }
+          }
 
-  var N = TILES.length, G = cfg.gens, R = cfg.ratio, LEAD = cfg.lead;
+          function measure() {
+            var r = field.getBoundingClientRect();
+            L.s = r.width / DW;
+            L.cx = r.width / 2;
+            L.cy = r.height / 2;
+          }
+          measure();
+          window.addEventListener("resize", measure);
 
-  function tileP(w, h) {
-    var d = Math.sqrt(w * h), x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
-    if (x < 0) x = 0; else if (x > 1) x = 1;
-    return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
-  }
+          if (hero && !reduce) {
+            hero.addEventListener("pointermove", function (e) {
+              var r = hero.getBoundingClientRect();
+              pxv = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
+              pyv = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
+            });
+            hero.addEventListener("pointerleave", function () {
+              pxv = 0;
+              pyv = 0;
+            });
+          }
 
-  var L = { s: 1, cx: 0, cy: 0 };
-  var Tspd = [];
-  for (var j = 0; j < N; j++) Tspd[j] = rnd(cfg.speedLo, cfg.speedHi);
-  var Tdel = [], ord = [];
-  for (var j = 0; j < N; j++) ord.push({ i: j, r: Math.sqrt(TILES[j].dx * TILES[j].dx + TILES[j].dy * TILES[j].dy) });
-  ord.sort(function (a, b) { return b.r - a.r; });
-  for (var j = 0; j < N; j++) Tdel[ord[j].i] = N <= 1 ? 0 : (j / (N - 1)) * cfg.stagger;
+          function render(u, intro) {
+            for (var k = 0; k < cards.length; k++) {
+              var c = cards[k],
+                t = c.t;
+              var ell = c.g - LEAD + u;
+              var scale = cfg.mStar * Math.pow(R, ell) * intro; // POSITION expansion
+              var sz = Math.pow(scale, c.P); // on-screen SIZE growth (per tile)
+              var onW = t.w * L.s * sz; // target on-screen width (design px)
+              var s = onW / t.nw; // native -> screen (mostly downscale)
+              var depth = (scale < 2.4 ? scale : 2.4) * cfg.pStrength;
+              // Hide the tight central spawn cluster: tiles stay invisible while small and
+              // near centre, fading in only as they grow out toward their framed positions.
+              var fade = (scale - 0.6) / 0.4;
+              if (fade < 0) fade = 0;
+              else if (fade > 1) fade = 1;
+              c.el.style.opacity = fade;
+              var cx = L.cx + (t.dx * scale + pxv * depth) * L.s;
+              var cy = L.cy + (t.dy * scale + pyv * depth) * L.s;
+              var X = cx - onW / 2,
+                Y = cy - (t.h * L.s * sz) / 2;
+              c.el.style.zIndex = (100 + Math.round(scale * 60)) | 0;
+              c.el.style.transform =
+                "translate(" +
+                X.toFixed(1) +
+                "px," +
+                Y.toFixed(1) +
+                "px) scale(" +
+                s.toFixed(4) +
+                ")";
+            }
+          }
 
-  var cards = [];
-  for (var g = 0; g < G; g++) {
-    for (var i = 0; i < N; i++) {
-      var t = TILES[i];
-      var el = document.createElement("div");
-      el.className = cfg.cls;
-      el.style.cssText = "left:0;top:0;width:" + t.nw + "px;height:" + t.nh +
-        "px;opacity:0;transition:none;transform-origin:0 0;border-radius:" +
-        Math.round(Math.min(t.nw, t.nh) * 0.05) +
-        "px;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
-      var im = new Image();
-      im.alt = ""; im.decoding = "async"; im.loading = "eager";
-      im.style.cssText = "width:100%;height:100%;object-fit:cover;display:block";
-      im.src = A + encodeURI(t.f);
-      el.appendChild(im);
-      field.appendChild(el);
-      cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h), spd: Tspd[i], delay: Tdel[i] });
-    }
-  }
+          if (reduce) {
+            render(0, 1);
+            return;
+          }
 
-  function measure() {
-    var r = field.getBoundingClientRect();
-    L.s = r.width / DW; L.cx = r.width / 2; L.cy = r.height * cfg.originY;
-  }
-  measure();
-  window.addEventListener("resize", measure);
-
-  function render(elapsed, isStatic) {
-    for (var k = 0; k < cards.length; k++) {
-      var c = cards[k], t = c.t;
-      var u = isStatic ? 0 : (elapsed / (cfg.period * c.spd)) % 1;
-      if (!isStatic && cfg.flow) u -= (cfg.flow / 6.2831853) * Math.sin(6.2831853 * u);
-      var ell = (c.g - LEAD) + u;
-      var scale = cfg.mStar * Math.pow(R, ell);
-      if (scale > cfg.maxScale) { c.el.style.opacity = 0; continue; }
-      var vis = 1;
-      if (!isStatic) {
-        var te = elapsed - c.delay;
-        if (te <= 0) { scale *= cfg.introMin; vis = 0; }
-        else {
-          scale *= 1 - (1 - cfg.introMin) * Math.exp(-te / cfg.introTau);
-          vis = te < cfg.enterFade ? te / cfg.enterFade : 1;
-        }
-      }
-      var sz = Math.pow(scale, c.P);
-      var onW = t.w * L.s * sz, onH = t.h * L.s * sz;
-      var s = onW / t.nw;
-      var X = L.cx + t.dx * scale * L.s - onW / 2;
-      var Y = L.cy + t.dy * scale * L.s - onH / 2;
-      var bl = 0;
-      if (scale < cfg.blurNear) {
-        var bt = (cfg.blurNear - scale) / (cfg.blurNear - cfg.blurFar);
-        if (bt > 1) bt = 1; else if (bt < 0) bt = 0;
-        bl = cfg.blurMax * bt / s;
-        if (bl > 30) bl = 30;
-      }
-      c.el.style.zIndex = Math.round(scale * 2000) * 64 + k;
-      c.el.style.opacity = vis;
-      c.el.style.filter = "blur(" + bl.toFixed(2) + "px)";
-      c.el.style.transform = "translate(" + X.toFixed(1) + "px," + Y.toFixed(1) + "px) scale(" + s.toFixed(4) + ")";
-    }
-  }
-
-  if (reduce) { render(0, true); return; }
-
-  var start = 0;
-  function loop(ts) {
-    if (!start) start = ts;
-    render((ts - start) / 1000, false);
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-})();
+          var start = 0,
+            PERIOD = cfg.period,
+            TAU = cfg.introTau,
+            I0 = cfg.introMin;
+          function loop(ts) {
+            if (!start) start = ts;
+            var el = (ts - start) / 1000;
+            var u = (el / PERIOD) % 1;
+            var intro = 1 - (1 - I0) * Math.exp(-el / TAU);
+            render(u, intro);
+            requestAnimationFrame(loop);
+          }
+          requestAnimationFrame(loop);
+        })();
       }
     </script>
   </body>
