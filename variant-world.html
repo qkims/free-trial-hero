@@ -55,24 +55,36 @@
           justify-content: center;
           height: calc(72 * var(--u));
         }
-        /* Soft white halo behind the logo so the mark stays legible where the
-         photos bleed up behind it. Sits below the SVG (z-index:-1) but inside
-         the logo's stacking context, so it's above the photo field. */
+        /* Frosted-glass header band behind the logo (Figma 653:57418): a
+         full-width translucent white strip with a 2px backdrop blur, so the
+         animated photo field reads softly through it and the mark stays
+         legible. Replaces the earlier radial halo. Bottom edge feathers out so
+         the band dissolves into the photo field rather than hard-cutting.
+         Sits below the SVG (z-index:-1) but inside the logo's stacking
+         context, so it's above the photo field. */
         .v7-logo::before {
           content: "";
           position: absolute;
-          left: 50%;
-          top: calc(36 * var(--u));
-          transform: translate(-50%, -50%);
-          width: calc(380 * var(--u));
-          height: calc(132 * var(--u));
+          left: 0;
+          right: 0;
+          top: 0;
+          height: calc(109 * var(--u));
           z-index: -1;
           pointer-events: none;
-          background: radial-gradient(
-            ellipse at center,
-            rgba(255, 255, 255, 0.95) 0%,
-            rgba(255, 255, 255, 0.7) 32%,
-            rgba(255, 255, 255, 0) 72%
+          background: rgba(255, 255, 255, 0.7);
+          -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
+          -webkit-mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 62%,
+            transparent 100%
+          );
+          mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 62%,
+            transparent 100%
           );
         }
         .v7-logo .shopify-logo {
@@ -290,23 +302,32 @@
           justify-content: center;
           height: calc(72 * var(--u));
         }
-        /* Soft white halo behind the logo so the mark stays legible over the
-         photo that bleeds up to the top edge behind it. */
+        /* Frosted-glass header band behind the logo (Figma 653:57418), mobile:
+         same full-width translucent white strip + 2px backdrop blur as desktop,
+         feathered at the bottom so it melts into the photo field. */
         .m7-logo::before {
           content: "";
           position: absolute;
-          left: 50%;
-          top: calc(36 * var(--u));
-          transform: translate(-50%, -50%);
-          width: calc(300 * var(--u));
-          height: calc(120 * var(--u));
+          left: 0;
+          right: 0;
+          top: 0;
+          height: calc(108 * var(--u));
           z-index: -1;
           pointer-events: none;
-          background: radial-gradient(
-            ellipse at center,
-            rgba(255, 255, 255, 0.96) 0%,
-            rgba(255, 255, 255, 0.72) 32%,
-            rgba(255, 255, 255, 0) 72%
+          background: rgba(255, 255, 255, 0.7);
+          -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
+          -webkit-mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 62%,
+            transparent 100%
+          );
+          mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 62%,
+            transparent 100%
           );
         }
         .m7-logo .shopify-logo {
@@ -1383,6 +1404,7 @@
             period: 135,
             introTau: 0.45,
             introMin: 0.03,
+            introStagger: 0.4,
             pSmall: 0.92,
             pBig: 0.5,
             pLoD: 26,
@@ -1553,7 +1575,9 @@
           // has moved off-frame. Loops seamlessly: all quantities are functions of L=(g-LEAD)+u.
           var L = { s: 1, cx: 0, cy: 0 };
           var pxv = 0,
-            pyv = 0;
+            pyv = 0,
+            pxT = 0,
+            pyT = 0;
           var cards = [];
           for (var g = 0; g < G; g++) {
             for (var i = 0; i < N; i++) {
@@ -1575,7 +1599,18 @@
               im.src = A + encodeURI(t.f);
               el.appendChild(im);
               field.appendChild(el);
-              cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h) });
+              cards.push({
+                el: el,
+                t: t,
+                g: g,
+                P: tileP(t.w, t.h),
+                // Golden-ratio spread over [0, introStagger): an even but
+                // non-sequential sprinkle of per-tile big-bang start offsets.
+                stag: ((i * 0.618033) % 1) * cfg.introStagger,
+                // Fixed stacking rank (tile index): unique within a generation so
+                // overlapping tiles never tie and never swap front/back.
+                z: i,
+              });
             }
           }
 
@@ -1591,36 +1626,53 @@
           if (hero && !reduce) {
             hero.addEventListener("pointermove", function (e) {
               var r = hero.getBoundingClientRect();
-              pxv = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
-              pyv = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
+              pxT = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
+              pyT = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
             });
             hero.addEventListener("pointerleave", function () {
-              pxv = 0;
-              pyv = 0;
+              pxT = 0;
+              pyT = 0;
             });
           }
 
-          function render(u, intro) {
+          function render(u, eb) {
+            // Ease the parallax toward the cursor target each frame so it glides with inertia
+            // instead of snapping 1:1 (lower factor = looser/smoother, higher = snappier).
+            pxv += (pxT - pxv) * 0.08;
+            pyv += (pyT - pyv) * 0.08;
             for (var k = 0; k < cards.length; k++) {
               var c = cards[k],
                 t = c.t;
               var ell = c.g - LEAD + u;
+              // Each tile's intro ramp starts at its own stagger offset (eb is
+              // elapsed seconds), so the big-bang sprinkles in rather than
+              // every tile popping on the same frame.
+              var te = eb - c.stag;
+              var intro =
+                te > 0
+                  ? 1 - (1 - cfg.introMin) * Math.exp(-te / cfg.introTau)
+                  : cfg.introMin;
               var scale = cfg.mStar * Math.pow(R, ell) * intro; // POSITION expansion
-              var sz = Math.pow(scale, c.P); // on-screen SIZE growth (per tile)
+              // Tiles grow from a sub-px point at centre up to full size by the resting frame
+              // (scale 1), so they emerge by SCALING — opacity stays 1, no ghosted fade-in, and
+              // the centre stays clean because a sub-px point is invisible (not a cluster).
+              var emerge = (scale - 0.1) / 0.9;
+              if (emerge < 0) emerge = 0;
+              else if (emerge > 1) emerge = 1;
+              var sz = Math.pow(scale, c.P) * emerge; // on-screen SIZE growth (per tile)
               var onW = t.w * L.s * sz; // target on-screen width (design px)
               var s = onW / t.nw; // native -> screen (mostly downscale)
+              c.el.style.borderRadius = (s > 0.001 ? 8 / s : 0).toFixed(1) + "px"; // ~8px on screen
               var depth = (scale < 2.4 ? scale : 2.4) * cfg.pStrength;
-              // Hide the tight central spawn cluster: tiles stay invisible while small and
-              // near centre, fading in only as they grow out toward their framed positions.
-              var fade = (scale - 0.6) / 0.4;
-              if (fade < 0) fade = 0;
-              else if (fade > 1) fade = 1;
-              c.el.style.opacity = fade;
               var cx = L.cx + (t.dx * scale + pxv * depth) * L.s;
               var cy = L.cy + (t.dy * scale + pyv * depth) * L.s;
               var X = cx - onW / 2,
                 Y = cy - (t.h * L.s * sz) / 2;
-              c.el.style.zIndex = (100 + Math.round(scale * 60)) | 0;
+              // Stable z-order: generation first (the higher generation always
+              // has a larger ell, so it's always the more-expanded/closer batch),
+              // then the tile's fixed rank. Independent of the live scale, so a
+              // staggered tile can't momentarily outrank a neighbour and flicker.
+              c.el.style.zIndex = 100 + c.g * 1000 + c.z;
               c.el.style.transform =
                 "translate(" +
                 X.toFixed(1) +
@@ -1633,20 +1685,19 @@
           }
 
           if (reduce) {
-            render(0, 1);
+            render(0, 1e6);
             return;
           }
 
           var start = 0,
-            PERIOD = cfg.period,
-            TAU = cfg.introTau,
-            I0 = cfg.introMin;
+            PERIOD = cfg.period;
           function loop(ts) {
             if (!start) start = ts;
             var el = (ts - start) / 1000;
             var u = (el / PERIOD) % 1;
-            var intro = 1 - (1 - I0) * Math.exp(-el / TAU);
-            render(u, intro);
+            // Pass elapsed seconds; render() applies each tile's own staggered
+            // intro ramp so the big-bang sprinkles in rather than popping at once.
+            render(u, el);
             requestAnimationFrame(loop);
           }
           requestAnimationFrame(loop);
@@ -1667,6 +1718,7 @@
             period: 135,
             introTau: 0.45,
             introMin: 0.03,
+            introStagger: 0.4,
             pSmall: 0.92,
             pBig: 0.5,
             pLoD: 26,
@@ -1685,135 +1737,145 @@
           // dx,dy,w,h: design-px layout (centre-relative). nw,nh: the image's NATIVE pixel size,
           // used so each tile is rasterised at full resolution and only ever scaled DOWN (crisp).
           var TILES = [
-            // Mobile composition — matches the designed portrait frame; tiles expand outward from here.
-            // 15 unique tiles (was 8) so the field doesn't visibly repeat as it loops.
+            // Mobile composition — 7 featured photos visible at rest, generously spaced; the other
+            // 8 sit behind/below the card (hidden at rest, still expand into the looping animation).
+            // VISIBLE (7): top row + an even mid tier + two above the card, lots of breathing room.
             {
               f: "Image 9.png",
-              dx: -118,
-              dy: -306,
-              w: 165,
-              h: 236,
+              dx: -120,
+              dy: -298,
+              w: 168,
+              h: 240,
               nw: 420,
               nh: 600,
-            }, // overalls + art (top-left)
+            }, // overalls + art (top-left, big)
             {
               f: "NorAm_FTC_02105.png",
-              dx: 123,
-              dy: -276,
+              dx: 150,
+              dy: -280,
               w: 150,
               h: 113,
               nw: 798,
               nh: 600,
             }, // hand + phone (top-right)
             {
-              f: "IMG-2.png",
-              dx: 4,
-              dy: -332,
-              w: 120,
-              h: 93,
-              nw: 772,
-              nh: 600,
-            }, // top-center fill
-            {
               f: "IMG-1.png",
-              dx: -126,
-              dy: -156,
-              w: 70,
-              h: 93,
+              dx: -156,
+              dy: -118,
+              w: 84,
+              h: 112,
               nw: 453,
               nh: 600,
-            }, // leopard bookend (left)
-            {
-              f: "NorAm_EF_2254.png",
-              dx: -168,
-              dy: -28,
-              w: 104,
-              h: 70,
-              nw: 888,
-              nh: 600,
-            }, // left-mid fill
-            {
-              f: "Image1.png",
-              dx: 150,
-              dy: -132,
-              w: 112,
-              h: 70,
-              nw: 966,
-              nh: 600,
-            }, // right-upper fill
+            }, // leopard bookend (left-mid)
             {
               f: "Image1-3.png",
-              dx: -46,
-              dy: -126,
-              w: 80,
-              h: 57,
+              dx: -16,
+              dy: -140,
+              w: 108,
+              h: 77,
               nw: 844,
               nh: 600,
-            }, // two people on bench (center-left, above card)
+            }, // two people on bench (center-mid)
+            {
+              f: "Image1.png",
+              dx: 152,
+              dy: -95,
+              w: 124,
+              h: 78,
+              nw: 966,
+              nh: 600,
+            }, // picnic (right-mid)
             {
               f: "Image1-2.png",
-              dx: 58,
-              dy: -126,
+              dx: -112,
+              dy: 10,
               w: 120,
               h: 85,
               nw: 833,
               nh: 592,
-            }, // woman at counter (center, above card)
+            }, // woman at counter (lower-left, above card)
             {
               f: "Image 6.png",
-              dx: 158,
-              dy: 34,
-              w: 120,
-              h: 72,
+              dx: 66,
+              dy: 18,
+              w: 130,
+              h: 78,
               nw: 996,
               nh: 600,
-            }, // right-mid fill
+            }, // storefront (lower-center, above card)
+            // HIDDEN AT REST (8): behind/below the card, distributed so they expand from all sides.
+            {
+              f: "IMG-2.png",
+              dx: 30,
+              dy: 175,
+              w: 112,
+              h: 87,
+              nw: 772,
+              nh: 600,
+            }, // phone/desk
+            {
+              f: "NorAm_EF_2254.png",
+              dx: -110,
+              dy: 185,
+              w: 104,
+              h: 70,
+              nw: 888,
+              nh: 600,
+            }, // wide scene
+            {
+              f: "IMG.png",
+              dx: 118,
+              dy: 205,
+              w: 105,
+              h: 137,
+              nw: 461,
+              nh: 600,
+            }, // woman green top
             {
               f: "Image 8.png",
-              dx: -150,
-              dy: 118,
-              w: 80,
-              h: 111,
+              dx: 100,
+              dy: 305,
+              w: 84,
+              h: 116,
               nw: 433,
               nh: 600,
-            }, // left-lower fill
-            {
-              f: "MIB_FEYI_0289.png",
-              dx: -126,
-              dy: 274,
-              w: 150,
-              h: 209,
-              nw: 431,
-              nh: 600,
-            }, // sneakers in box (bottom-left)
-            { f: "IMG.png", dx: 53, dy: 264, w: 105, h: 137, nw: 461, nh: 600 }, // woman green top (bottom-center)
+            }, // tall
             {
               f: "Image 10.png",
-              dx: 150,
-              dy: 168,
+              dx: -108,
+              dy: 305,
               w: 80,
               h: 110,
               nw: 438,
               nh: 600,
-            }, // right-lower fill
+            }, // tall
+            {
+              f: "MIB_FEYI_0289.png",
+              dx: 8,
+              dy: 330,
+              w: 150,
+              h: 209,
+              nw: 431,
+              nh: 600,
+            }, // sneakers in box
             {
               f: "Image1-1.png",
-              dx: 133,
-              dy: 314,
+              dx: -118,
+              dy: 344,
               w: 140,
               h: 100,
               nw: 843,
               nh: 600,
-            }, // bicycle storefront (bottom-right)
+            }, // bicycle storefront
             {
               f: "Images.png",
-              dx: -34,
-              dy: 336,
+              dx: 58,
+              dy: 360,
               w: 70,
               h: 97,
               nw: 434,
               nh: 600,
-            }, // bottom-center-left fill
+            }, // bottom-center
           ];
           var N = TILES.length,
             G = cfg.gens,
@@ -1840,7 +1902,9 @@
           // has moved off-frame. Loops seamlessly: all quantities are functions of L=(g-LEAD)+u.
           var L = { s: 1, cx: 0, cy: 0 };
           var pxv = 0,
-            pyv = 0;
+            pyv = 0,
+            pxT = 0,
+            pyT = 0;
           var cards = [];
           for (var g = 0; g < G; g++) {
             for (var i = 0; i < N; i++) {
@@ -1862,7 +1926,18 @@
               im.src = A + encodeURI(t.f);
               el.appendChild(im);
               field.appendChild(el);
-              cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h) });
+              cards.push({
+                el: el,
+                t: t,
+                g: g,
+                P: tileP(t.w, t.h),
+                // Golden-ratio spread over [0, introStagger): an even but
+                // non-sequential sprinkle of per-tile big-bang start offsets.
+                stag: ((i * 0.618033) % 1) * cfg.introStagger,
+                // Fixed stacking rank (tile index): unique within a generation so
+                // overlapping tiles never tie and never swap front/back.
+                z: i,
+              });
             }
           }
 
@@ -1878,36 +1953,53 @@
           if (hero && !reduce) {
             hero.addEventListener("pointermove", function (e) {
               var r = hero.getBoundingClientRect();
-              pxv = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
-              pyv = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
+              pxT = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
+              pyT = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
             });
             hero.addEventListener("pointerleave", function () {
-              pxv = 0;
-              pyv = 0;
+              pxT = 0;
+              pyT = 0;
             });
           }
 
-          function render(u, intro) {
+          function render(u, eb) {
+            // Ease the parallax toward the cursor target each frame so it glides with inertia
+            // instead of snapping 1:1 (lower factor = looser/smoother, higher = snappier).
+            pxv += (pxT - pxv) * 0.08;
+            pyv += (pyT - pyv) * 0.08;
             for (var k = 0; k < cards.length; k++) {
               var c = cards[k],
                 t = c.t;
               var ell = c.g - LEAD + u;
+              // Each tile's intro ramp starts at its own stagger offset (eb is
+              // elapsed seconds), so the big-bang sprinkles in rather than
+              // every tile popping on the same frame.
+              var te = eb - c.stag;
+              var intro =
+                te > 0
+                  ? 1 - (1 - cfg.introMin) * Math.exp(-te / cfg.introTau)
+                  : cfg.introMin;
               var scale = cfg.mStar * Math.pow(R, ell) * intro; // POSITION expansion
-              var sz = Math.pow(scale, c.P); // on-screen SIZE growth (per tile)
+              // Tiles grow from a sub-px point at centre up to full size by the resting frame
+              // (scale 1), so they emerge by SCALING — opacity stays 1, no ghosted fade-in, and
+              // the centre stays clean because a sub-px point is invisible (not a cluster).
+              var emerge = (scale - 0.1) / 0.9;
+              if (emerge < 0) emerge = 0;
+              else if (emerge > 1) emerge = 1;
+              var sz = Math.pow(scale, c.P) * emerge; // on-screen SIZE growth (per tile)
               var onW = t.w * L.s * sz; // target on-screen width (design px)
               var s = onW / t.nw; // native -> screen (mostly downscale)
+              c.el.style.borderRadius = (s > 0.001 ? 8 / s : 0).toFixed(1) + "px"; // ~8px on screen
               var depth = (scale < 2.4 ? scale : 2.4) * cfg.pStrength;
-              // Hide the tight central spawn cluster: tiles stay invisible while small and
-              // near centre, fading in only as they grow out toward their framed positions.
-              var fade = (scale - 0.6) / 0.4;
-              if (fade < 0) fade = 0;
-              else if (fade > 1) fade = 1;
-              c.el.style.opacity = fade;
               var cx = L.cx + (t.dx * scale + pxv * depth) * L.s;
               var cy = L.cy + (t.dy * scale + pyv * depth) * L.s;
               var X = cx - onW / 2,
                 Y = cy - (t.h * L.s * sz) / 2;
-              c.el.style.zIndex = (100 + Math.round(scale * 60)) | 0;
+              // Stable z-order: generation first (the higher generation always
+              // has a larger ell, so it's always the more-expanded/closer batch),
+              // then the tile's fixed rank. Independent of the live scale, so a
+              // staggered tile can't momentarily outrank a neighbour and flicker.
+              c.el.style.zIndex = 100 + c.g * 1000 + c.z;
               c.el.style.transform =
                 "translate(" +
                 X.toFixed(1) +
@@ -1920,20 +2012,19 @@
           }
 
           if (reduce) {
-            render(0, 1);
+            render(0, 1e6);
             return;
           }
 
           var start = 0,
-            PERIOD = cfg.period,
-            TAU = cfg.introTau,
-            I0 = cfg.introMin;
+            PERIOD = cfg.period;
           function loop(ts) {
             if (!start) start = ts;
             var el = (ts - start) / 1000;
             var u = (el / PERIOD) % 1;
-            var intro = 1 - (1 - I0) * Math.exp(-el / TAU);
-            render(u, intro);
+            // Pass elapsed seconds; render() applies each tile's own staggered
+            // intro ramp so the big-bang sprinkles in rather than popping at once.
+            render(u, el);
             requestAnimationFrame(loop);
           }
           requestAnimationFrame(loop);

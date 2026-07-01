@@ -313,15 +313,19 @@
           z-index: 0;
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          gap: 12px; /* 12px between rows */
+          justify-content: flex-start;
+          gap: 10px; /* 10px between rows */
           transform: none;
           transform-origin: center center;
           background: #ebebeb; /* light gap colour, exploratory */
         }
         .mzc-row {
           position: relative;
-          flex: 1 1 0;
+          /* 2 rows, each ~27% of the hero (top-aligned) so the strip
+             renders zoomed-in (~3 tiles visible) rather than filling half
+             the screen; the lower portion sits behind the copy card. */
+          flex: none;
+          height: 27%;
           overflow: hidden;
         }
         .mzc-track {
@@ -408,6 +412,12 @@
           .mzc-row--3 .mzc-track {
             animation: mzc-left 145s linear infinite;
           }
+          .mzc-row--4 .mzc-track {
+            animation: mzc-right 170s linear infinite;
+          }
+          .mzc-row--5 .mzc-track {
+            animation: mzc-left 135s linear infinite;
+          }
         }
         /* Overlay scrim — exact gradient from Figma 375:43909. Not rotated;
          spans the whole hero, above the mosaic (z1) and below the copy. */
@@ -429,6 +439,30 @@
               rgba(0, 0, 0, 0) 87.832%
             );
         }
+      }
+    </style>
+    <style>
+      /* Pre-composed row strips (Top row.png / Bottom row.png) replace the
+         individual mosaic tiles. Each strip is duplicated x4 in its track so
+         the -50% loop always covers the viewport; 12px margin matches the
+         inter-tile gap and creates a uniform seam at each repeat. */
+      .mzc-strip {
+        display: block;
+        flex: none;
+        height: 100%;
+        width: auto;
+        margin-right: 12px;
+      }
+      /* Soft load: the photo field starts transparent and fades in once its
+         images have decoded (the .is-ready class is added by the bootstrap
+         script), so the marquee never animates over empty boxes or shows
+         images popping in one at a time. */
+      .hero__mosaic {
+        opacity: 0;
+        transition: opacity 0.6s ease;
+      }
+      .hero__mosaic.is-ready {
+        opacity: 1;
       }
     </style>
   </head>
@@ -454,114 +488,18 @@
         <div class="hero__mosaic" aria-hidden="true">
           <div class="mzc-row mzc-row--1">
             <div class="mzc-track">
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%201.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.715">
-              <img src="assets/Marquee-behind/NorAm_EF_2254.png" alt="" style="height:calc((100% - 12px) * 0.676)" />
-              <img src="assets/Marquee-behind/NorAm_FTC_02105.png" alt="" style="height:calc((100% - 12px) * 0.324)" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%202.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--duo">
-              <div class="mzc-duo-top">
-                <img src="assets/Marquee-behind/IMG.png" alt="" />
-                <img src="assets/Marquee-behind/IMG-1.png" alt="" />
-              </div>
-              <div class="mzc-duo-bot">
-                <img src="assets/Marquee-behind/Image%203.png" alt="" />
-              </div>
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%204.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.943">
-              <img src="assets/Marquee-behind/Image%205.png" alt="" style="height:calc((100% - 12px) * 0.568)" />
-              <img src="assets/Marquee-behind/IMG-2.png" alt="" style="height:calc((100% - 12px) * 0.432)" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%201.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.715">
-              <img src="assets/Marquee-behind/NorAm_EF_2254.png" alt="" style="height:calc((100% - 12px) * 0.676)" />
-              <img src="assets/Marquee-behind/NorAm_FTC_02105.png" alt="" style="height:calc((100% - 12px) * 0.324)" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%202.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--duo">
-              <div class="mzc-duo-top">
-                <img src="assets/Marquee-behind/IMG.png" alt="" />
-                <img src="assets/Marquee-behind/IMG-1.png" alt="" />
-              </div>
-              <div class="mzc-duo-bot">
-                <img src="assets/Marquee-behind/Image%203.png" alt="" />
-              </div>
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%204.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.943">
-              <img src="assets/Marquee-behind/Image%205.png" alt="" style="height:calc((100% - 12px) * 0.568)" />
-              <img src="assets/Marquee-behind/IMG-2.png" alt="" style="height:calc((100% - 12px) * 0.432)" />
-            </div>
+              <img class="mzc-strip" src="assets/Marquee-behind/Top%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Top%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Top%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Top%20row.png" alt="" />
             </div>
           </div>
           <div class="mzc-row mzc-row--2">
             <div class="mzc-track">
-            <div class="mzc-cell mzc-cell--duo">
-              <div class="mzc-duo-top">
-                <img src="assets/Marquee-behind/IMG-3.png" alt="" />
-                <img src="assets/Marquee-behind/IMG-4.png" alt="" />
-              </div>
-              <div class="mzc-duo-bot">
-                <img src="assets/Marquee-behind/Image%203-1.png" alt="" />
-              </div>
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%201-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.715">
-              <img src="assets/Marquee-behind/NorAm_EF_2254-1.png" alt="" style="height:calc((100% - 12px) * 0.368)" />
-              <img src="assets/Marquee-behind/NorAm_FTC_02105-1.png" alt="" style="height:calc((100% - 12px) * 0.632)" />
-            </div>
-            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.943">
-              <img src="assets/Marquee-behind/Image%205-1.png" alt="" style="height:calc((100% - 12px) * 0.568)" />
-              <img src="assets/Marquee-behind/IMG-5.png" alt="" style="height:calc((100% - 12px) * 0.432)" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/IMG-6.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%202-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--duo">
-              <div class="mzc-duo-top">
-                <img src="assets/Marquee-behind/IMG-3.png" alt="" />
-                <img src="assets/Marquee-behind/IMG-4.png" alt="" />
-              </div>
-              <div class="mzc-duo-bot">
-                <img src="assets/Marquee-behind/Image%203-1.png" alt="" />
-              </div>
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%201-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.715">
-              <img src="assets/Marquee-behind/NorAm_EF_2254-1.png" alt="" style="height:calc((100% - 12px) * 0.368)" />
-              <img src="assets/Marquee-behind/NorAm_FTC_02105-1.png" alt="" style="height:calc((100% - 12px) * 0.632)" />
-            </div>
-            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.943">
-              <img src="assets/Marquee-behind/Image%205-1.png" alt="" style="height:calc((100% - 12px) * 0.568)" />
-              <img src="assets/Marquee-behind/IMG-5.png" alt="" style="height:calc((100% - 12px) * 0.432)" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/IMG-6.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%202-1.png" alt="" />
-            </div>
+              <img class="mzc-strip" src="assets/Marquee-behind/Bottom%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Bottom%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Bottom%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Bottom%20row.png" alt="" />
             </div>
           </div>
         </div>
@@ -1014,104 +952,18 @@
         <div class="hero__mosaic" aria-hidden="true">
           <div class="mzc-row mzc-row--1">
             <div class="mzc-track">
-            <div class="mzc-cell mzc-cell--duo">
-              <div class="mzc-duo-top">
-                <img src="assets/Marquee-behind/IMG.png" alt="" />
-                <img src="assets/Marquee-behind/IMG-1.png" alt="" />
-              </div>
-              <div class="mzc-duo-bot">
-                <img src="assets/Marquee-behind/Image%203.png" alt="" />
-              </div>
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%201.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/NorAm_EF_2254.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--duo">
-              <div class="mzc-duo-top">
-                <img src="assets/Marquee-behind/IMG.png" alt="" />
-                <img src="assets/Marquee-behind/IMG-1.png" alt="" />
-              </div>
-              <div class="mzc-duo-bot">
-                <img src="assets/Marquee-behind/Image%203.png" alt="" />
-              </div>
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%201.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/NorAm_EF_2254.png" alt="" />
-            </div>
+              <img class="mzc-strip" src="assets/Marquee-behind/Top%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Top%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Top%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Top%20row.png" alt="" />
             </div>
           </div>
           <div class="mzc-row mzc-row--2">
             <div class="mzc-track">
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%201-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/IMG-6.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%202-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%202.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%201-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/IMG-6.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%202-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%202.png" alt="" />
-            </div>
-            </div>
-          </div>
-          <div class="mzc-row mzc-row--3">
-            <div class="mzc-track">
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/IMG-3.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--duo">
-              <div class="mzc-duo-top">
-                <img src="assets/Marquee-behind/IMG-5.png" alt="" />
-                <img src="assets/Marquee-behind/IMG-2.png" alt="" />
-              </div>
-              <div class="mzc-duo-bot">
-                <img src="assets/Marquee-behind/Image%203-1.png" alt="" />
-              </div>
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/NorAm_FTC_02105-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%204.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/IMG-3.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--duo">
-              <div class="mzc-duo-top">
-                <img src="assets/Marquee-behind/IMG-5.png" alt="" />
-                <img src="assets/Marquee-behind/IMG-2.png" alt="" />
-              </div>
-              <div class="mzc-duo-bot">
-                <img src="assets/Marquee-behind/Image%203-1.png" alt="" />
-              </div>
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/NorAm_FTC_02105-1.png" alt="" />
-            </div>
-            <div class="mzc-cell mzc-cell--single">
-              <img src="assets/Marquee-behind/Image%204.png" alt="" />
-            </div>
+              <img class="mzc-strip" src="assets/Marquee-behind/Bottom%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Bottom%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Bottom%20row.png" alt="" />
+              <img class="mzc-strip" src="assets/Marquee-behind/Bottom%20row.png" alt="" />
             </div>
           </div>
         </div>
@@ -1569,6 +1421,47 @@
           s.async = false;
           document.body.appendChild(s);
         });
+
+        // Soft load: keep the photo field transparent until its images have
+        // decoded, then fade it in (.is-ready) so you never see the marquee
+        // animating over empty boxes or images popping in one by one. A 3s
+        // timeout guarantees the field can never be left blank.
+        Array.prototype.slice
+          .call(document.querySelectorAll(".hero__mosaic"))
+          .forEach(function (field) {
+            var imgs = Array.prototype.slice.call(
+              field.querySelectorAll("img"),
+            );
+            var revealed = false;
+            var reveal = function () {
+              if (revealed) return;
+              revealed = true;
+              field.classList.add("is-ready");
+            };
+            if (!imgs.length) return reveal();
+            var left = imgs.length;
+            var one = function () {
+              if (--left <= 0) reveal();
+            };
+            imgs.forEach(function (img) {
+              var p = img.decode ? img.decode() : null;
+              if (p && p.then) {
+                p.then(one, function () {
+                  if (img.complete) one();
+                  else {
+                    img.addEventListener("load", one, { once: true });
+                    img.addEventListener("error", one, { once: true });
+                  }
+                });
+              } else if (img.complete) {
+                one();
+              } else {
+                img.addEventListener("load", one, { once: true });
+                img.addEventListener("error", one, { once: true });
+              }
+            });
+            setTimeout(reveal, 3000);
+          });
       })();
     </script>
   </body>

@@ -77,7 +77,6 @@
           margin-right: 16px; /* 16px between each image + uniform loop seam */
           border: 0;
           outline: 0;
-          border-radius: 16px; /* rounded tile corners */
           object-fit: cover;
         }
         @keyframes mzc-left {
@@ -307,7 +306,6 @@
           margin-right: 8px; /* 8px loop seam — matches the strips' baked-in 8px image spacing */
           border: 0;
           outline: 0;
-          border-radius: 16px; /* rounded tile corners */
           object-fit: cover;
         }
         @keyframes mzc-left {
@@ -377,6 +375,19 @@
               rgba(0, 0, 0, 0) 90.72%
             );
         }
+      }
+    </style>
+    <style>
+      /* Soft load: the photo field starts transparent and fades in once its
+         images have decoded (the .is-ready class is added by the bootstrap
+         script), so the mosaic never animates over empty boxes or shows
+         images popping in one at a time. */
+      .hero__mosaic {
+        opacity: 0;
+        transition: opacity 0.6s ease;
+      }
+      .hero__mosaic.is-ready {
+        opacity: 1;
       }
     </style>
   </head>
@@ -1389,6 +1400,47 @@
           s.async = false;
           document.body.appendChild(s);
         });
+
+        // Soft load: keep the photo field transparent until its images have
+        // decoded, then fade it in (.is-ready) so you never see the mosaic
+        // animating over empty boxes or images popping in one by one. A 3s
+        // timeout guarantees the field can never be left blank.
+        Array.prototype.slice
+          .call(document.querySelectorAll(".hero__mosaic"))
+          .forEach(function (field) {
+            var imgs = Array.prototype.slice.call(
+              field.querySelectorAll("img"),
+            );
+            var revealed = false;
+            var reveal = function () {
+              if (revealed) return;
+              revealed = true;
+              field.classList.add("is-ready");
+            };
+            if (!imgs.length) return reveal();
+            var left = imgs.length;
+            var one = function () {
+              if (--left <= 0) reveal();
+            };
+            imgs.forEach(function (img) {
+              var p = img.decode ? img.decode() : null;
+              if (p && p.then) {
+                p.then(one, function () {
+                  if (img.complete) one();
+                  else {
+                    img.addEventListener("load", one, { once: true });
+                    img.addEventListener("error", one, { once: true });
+                  }
+                });
+              } else if (img.complete) {
+                one();
+              } else {
+                img.addEventListener("load", one, { once: true });
+                img.addEventListener("error", one, { once: true });
+              }
+            });
+            setTimeout(reveal, 3000);
+          });
       })();
     </script>
   </body>
