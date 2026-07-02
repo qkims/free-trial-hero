@@ -1394,7 +1394,7 @@
     heroSel: ".v7-hero", fieldId: "v7-field", cls: "v7-card",
     gens: 3, lead: 2, ratio: 10.0, mStar: 1.0,
     period: 108, flow: 0.7,                                // slow desktop cycle
-    introMin: 0.04, introTau: 0.5, stagger: 0.8, enterFade: 0.5,  // mobile-style emergence: phase-aligned boom, outer tiles first
+    introMin: 0.85, introTau: 0.5, stagger: 0.8, enterFade: 0.5,  // gentle settle load-in: tiles start near full size and ease in (was 0.04 boom)
     pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 400,
     speedLo: 0.82, speedHi: 1.4,                           // wide spread → tiles desync into steady density (mobile-style)
     blurMax: 7.0, blurClear: 0.62, blurFar: 0.20, blurCap: 22,  // DoF: only the deep back is soft, crisp from blurClear onward
@@ -1582,7 +1582,7 @@
   var cfg = {
     heroSel: ".m7-hero", fieldId: "m7-field", cls: "m7-card",
     gens: 3, lead: 2, ratio: 10.0, mStar: 1.0,
-    period: 70, flow: 0.7, introTau: 0.4, introMin: 0.03,
+    period: 70, flow: 0.7, introTau: 0.4, introMin: 0.85,
     pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 200,
     stagger: 0.7, enterFade: 0.5,
     speedLo: 0.82, speedHi: 1.4,

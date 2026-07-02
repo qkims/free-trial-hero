@@ -1513,7 +1513,7 @@
     heroSel: ".v7-hero", fieldId: "v7-field", cls: "v7-card",
     gens: 5, lead: 4, ratio: 10.0, mStar: 1.0,             // deep stack → several decades of distance; far copies drift up out of the blur
     period: 108, flow: 0.7,                                // slow desktop cycle
-    introMin: 0.04, introTau: 0.5, stagger: 0.8, enterFade: 0.6, emDur: 1.4,  // load-in boom: outer tiles first, shaped by the selected curve
+    introMin: 0.85, introTau: 0.5, stagger: 0.8, enterFade: 0.6, emDur: 1.4,  // gentle settle load-in: tiles start near full size and ease in (was 0.04 boom)
     settleBoost: 4.0, settleDur: 3.0,                     // follow-through: entrance eases into the cruise over 3s instead of stopping dead
     pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 400,
     speedLo: 0.82, speedHi: 1.4,                           // wide spread → tiles desync into steady density (mobile-style)
@@ -1721,7 +1721,7 @@
   var cfg = {
     heroSel: ".m7-hero", fieldId: "m7-field", cls: "m7-card",
     gens: 4, lead: 3, ratio: 10.0, mStar: 1.0,            // deeper stack → more blurred photos emerging from the back
-    period: 70, flow: 0.7, introTau: 0.4, introMin: 0.03,
+    period: 70, flow: 0.7, introTau: 0.4, introMin: 0.85,
     pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 200,
     stagger: 0.7, enterFade: 0.6, emDur: 1.2,
     settleBoost: 3.5, settleDur: 2.5,                     // follow-through: entrance eases into the cruise instead of stopping dead
