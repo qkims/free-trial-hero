@@ -1735,11 +1735,6 @@
                 flipY:
                   (Math.random() < 0.5 ? -1 : 1) *
                   (1 + Math.floor(Math.random() * 2)),
-                // Hover-flip axis: a random in-plane axis (rotate3d normalises
-                // it) so each coin turns over on its OWN orientation — some
-                // left-right, some top-over-bottom, some diagonal — and hovering
-                // rolls it right over to reveal every side.
-                spinPhi: Math.random() * 6.2831853,
               });
             }
           }
@@ -1863,18 +1858,12 @@
                   if (pr > 0) target = pr * pr;
                 }
                 c.spinE += (target - c.spinE) * Math.min(1, dt * c.spinResp);
-                // Hover whirl: while energized, accrue rotation about the coin's
-                // own 3D axis so it turns right over (front → edge → back → …),
-                // letting you see every side. When the energy fades, ease the
-                // angle back to the nearest full turn so it always settles
-                // face-on and never rests edge-on (which would be invisible).
+                // Hover spin: in-plane (Z-axis) rotation only, so the coin keeps
+                // its round shape while spinning — it never flips edge-on or
+                // foreshortens. Speed/direction vary per coin and the amount is
+                // scaled by the eased proximity energy.
                 c.spinAng +=
                   c.spinDir * c.spinE * c.spinRate * cfg.spinSpeed * 360 * dt;
-                var settle = 1 - c.spinE;
-                if (settle > 0.001) {
-                  var flat = Math.round(c.spinAng / 360) * 360;
-                  c.spinAng += (flat - c.spinAng) * Math.min(1, dt * 3) * settle;
-                }
                 // Entrance 2D whirl, unwinding as the Snap ramp completes.
                 var introRot = c.introDir * c.introTurns * 360 * (1 - ip);
                 // Orbit: while energized, the coin also drifts around its own
@@ -1889,14 +1878,10 @@
                 var ox = (ex * ct - ey * stt) * c.spinE;
                 var oy = (ex * stt + ey * ct) * c.spinE;
                 // Entrance tumble: per-coin X/Y half-turns that unwind to flat as
-                // the coin zooms in.
+                // the coin zooms in (load-in only). After landing, fx/fy are 0 so
+                // the coin sits flat and only spins in-plane on hover.
                 var fx = c.flipX * 180 * (1 - ip);
                 var fy = c.flipY * 180 * (1 - ip);
-                // Hover flip about this coin's own in-plane axis (rotate3d
-                // normalises the vector) — the direction differs per coin, so
-                // they turn over on different orientations and reveal all sides.
-                var axX = Math.cos(c.spinPhi),
-                  axY = Math.sin(c.spinPhi);
                 c.coin.style.transform =
                   "perspective(700px) translate(" +
                   ox.toFixed(2) +
@@ -1906,14 +1891,8 @@
                   fx.toFixed(2) +
                   "deg) rotateY(" +
                   fy.toFixed(2) +
-                  "deg) rotate3d(" +
-                  axX.toFixed(4) +
-                  "," +
-                  axY.toFixed(4) +
-                  ",0," +
-                  c.spinAng.toFixed(2) +
                   "deg) rotate(" +
-                  introRot.toFixed(2) +
+                  (introRot + c.spinAng).toFixed(2) +
                   "deg)";
               }
             }
@@ -2277,11 +2256,6 @@
                 flipY:
                   (Math.random() < 0.5 ? -1 : 1) *
                   (1 + Math.floor(Math.random() * 2)),
-                // Hover-flip axis: a random in-plane axis (rotate3d normalises
-                // it) so each coin turns over on its OWN orientation — some
-                // left-right, some top-over-bottom, some diagonal — and hovering
-                // rolls it right over to reveal every side.
-                spinPhi: Math.random() * 6.2831853,
               });
             }
           }
@@ -2405,18 +2379,12 @@
                   if (pr > 0) target = pr * pr;
                 }
                 c.spinE += (target - c.spinE) * Math.min(1, dt * c.spinResp);
-                // Hover whirl: while energized, accrue rotation about the coin's
-                // own 3D axis so it turns right over (front → edge → back → …),
-                // letting you see every side. When the energy fades, ease the
-                // angle back to the nearest full turn so it always settles
-                // face-on and never rests edge-on (which would be invisible).
+                // Hover spin: in-plane (Z-axis) rotation only, so the coin keeps
+                // its round shape while spinning — it never flips edge-on or
+                // foreshortens. Speed/direction vary per coin and the amount is
+                // scaled by the eased proximity energy.
                 c.spinAng +=
                   c.spinDir * c.spinE * c.spinRate * cfg.spinSpeed * 360 * dt;
-                var settle = 1 - c.spinE;
-                if (settle > 0.001) {
-                  var flat = Math.round(c.spinAng / 360) * 360;
-                  c.spinAng += (flat - c.spinAng) * Math.min(1, dt * 3) * settle;
-                }
                 // Entrance 2D whirl, unwinding as the Snap ramp completes.
                 var introRot = c.introDir * c.introTurns * 360 * (1 - ip);
                 // Orbit: while energized, the coin also drifts around its own
@@ -2431,14 +2399,10 @@
                 var ox = (ex * ct - ey * stt) * c.spinE;
                 var oy = (ex * stt + ey * ct) * c.spinE;
                 // Entrance tumble: per-coin X/Y half-turns that unwind to flat as
-                // the coin zooms in.
+                // the coin zooms in (load-in only). After landing, fx/fy are 0 so
+                // the coin sits flat and only spins in-plane on hover.
                 var fx = c.flipX * 180 * (1 - ip);
                 var fy = c.flipY * 180 * (1 - ip);
-                // Hover flip about this coin's own in-plane axis (rotate3d
-                // normalises the vector) — the direction differs per coin, so
-                // they turn over on different orientations and reveal all sides.
-                var axX = Math.cos(c.spinPhi),
-                  axY = Math.sin(c.spinPhi);
                 c.coin.style.transform =
                   "perspective(700px) translate(" +
                   ox.toFixed(2) +
@@ -2448,14 +2412,8 @@
                   fx.toFixed(2) +
                   "deg) rotateY(" +
                   fy.toFixed(2) +
-                  "deg) rotate3d(" +
-                  axX.toFixed(4) +
-                  "," +
-                  axY.toFixed(4) +
-                  ",0," +
-                  c.spinAng.toFixed(2) +
                   "deg) rotate(" +
-                  introRot.toFixed(2) +
+                  (introRot + c.spinAng).toFixed(2) +
                   "deg)";
               }
             }
