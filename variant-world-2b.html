@@ -1415,10 +1415,10 @@
             pHiD: 400,
             pStrength: 0.5,
             amp: 26,
-            // Load-in duration for the Snap easing curve (replaces the old
-            // exp introTau/introOver bounce): each tile eases size 0→1 over this.
-            // Slowed from 0.55 so the whole field unfurls more deliberately.
-            introDur: 1.15,
+            // Load-in duration for the Snap easing curve. Matched to World 3's
+            // Snap+Normal load-in (its emDur 1.4) so images zoom in at the same
+            // pace, then hold still — no continuous breathe (morphAmp 0 below).
+            introDur: 1.4,
             // Coin spin is proximity-driven: spinRadius is how close (in CSS px)
             // the cursor must come to an individual coin before THAT coin whirls.
             // Its spin energy falls off to 0 at the edge of this radius, so only
@@ -1430,7 +1430,9 @@
             // Slight continuous "morph" (like World): a slow, gentle in/out
             // breathe of the whole field. morphAmp is in u (R^u scale), so
             // 0.04 → ~10% scale sway; morphPeriod is seconds per breathe cycle.
-            morphAmp: 0.04,
+            // Breathe disabled: the field holds still after the load-in, so
+            // there is no continuous zoom in/out on the images or coins.
+            morphAmp: 0,
             morphPeriod: 26,
           };
           var hero = document.querySelector(cfg.heroSel);
@@ -1950,10 +1952,10 @@
             pHiD: 200,
             pStrength: 0.5,
             amp: 18,
-            // Load-in duration for the Snap easing curve (replaces the old
-            // exp introTau/introOver bounce): each tile eases size 0→1 over this.
-            // Slowed from 0.55 so the whole field unfurls more deliberately.
-            introDur: 1.15,
+            // Load-in duration for the Snap easing curve. Matched to World 3's
+            // Snap+Normal load-in (its mobile emDur 1.2) so images zoom in at
+            // the same pace, then hold still — no continuous breathe (morphAmp 0).
+            introDur: 1.2,
             // Coin spin is proximity-driven: spinRadius is how close (in CSS px)
             // the cursor must come to an individual coin before THAT coin whirls.
             // Its spin energy falls off to 0 at the edge of this radius, so only
@@ -1966,7 +1968,9 @@
             // Slight continuous "morph" (like World): a slow, gentle in/out
             // breathe of the whole field. morphAmp is in u (R^u scale), so
             // 0.04 → ~10% scale sway; morphPeriod is seconds per breathe cycle.
-            morphAmp: 0.04,
+            // Breathe disabled: the field holds still after the load-in, so
+            // there is no continuous zoom in/out on the images or coins.
+            morphAmp: 0,
             morphPeriod: 26,
           };
           var hero = document.querySelector(cfg.heroSel);
