@@ -488,27 +488,27 @@
       @keyframes mzc-cell-in-r {
         from {
           opacity: 0;
-          transform: translate3d(24%, 5%, 0) scale(var(--s0, 1));
+          transform: translate3d(24%, 5%, 0);
         }
         55% {
           opacity: 1;
         }
         to {
           opacity: 1;
-          transform: translate3d(0, 0, 0) scale(1);
+          transform: translate3d(0, 0, 0);
         }
       }
       @keyframes mzc-cell-in-l {
         from {
           opacity: 0;
-          transform: translate3d(-24%, 5%, 0) scale(var(--s0, 1));
+          transform: translate3d(-24%, 5%, 0);
         }
         55% {
           opacity: 1;
         }
         to {
           opacity: 1;
-          transform: translate3d(0, 0, 0) scale(1);
+          transform: translate3d(0, 0, 0);
         }
       }
     </style>
@@ -1671,10 +1671,6 @@
               var pos = reverse ? half - 1 - k : k;
               var d = ri * 0.08 + pos * 0.07; // row offset + per-tile step
               cell.style.setProperty("--d", d.toFixed(3) + "s");
-              // Only the first few tiles to arrive (smallest delay, on-screen
-              // copy) get a slight scale-up as an intro accent (--s0 < 1);
-              // every later tile keeps --s0 = 1 and just slides + fades in.
-              if (i < half && d < 0.16) cell.style.setProperty("--s0", "0.9");
             });
           });
 
