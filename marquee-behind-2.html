@@ -447,7 +447,8 @@
 
          The field stays hidden until its images decode (.is-ready, added by
          the bootstrap script). Then each TILE animates in on its own — a
-         short directional slide + scale-up with a slight per-tile delay — so
+         short directional slide + fade with a slight per-tile delay (no
+         scale/zoom — pure translate + opacity) — so
          the mosaic assembles as a travelling cascade rather than two solid
          rows sliding in as chunks. Odd rows enter from the right, even rows
          from the left (each matching its own marquee direction), and the
