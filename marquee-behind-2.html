@@ -458,10 +458,7 @@
          fight. Each cell's delay is the CSS var --d, assigned in JS.
 
          Easing = "Snap" from World 3: cubic-bezier(0.10,0.85,0.25,1.00), a
-         quick lead-out that decelerates hard into place. As a tile settles,
-         its image also MORPHS shape — border-radius eases from a soft blob
-         down to the resting 16px tile corner — so the picture reads as
-         forming rather than merely arriving. */
+         quick lead-out that decelerates hard into place. */
       .hero__mosaic {
         opacity: 0;
       }
@@ -485,12 +482,6 @@
         .hero__mosaic.is-ready .mzc-row--2 .mzc-cell,
         .hero__mosaic.is-ready .mzc-row--4 .mzc-cell {
           animation: mzc-cell-in-l 0.9s cubic-bezier(0.1, 0.85, 0.25, 1) both;
-          animation-delay: var(--d, 0s);
-        }
-        /* Shape morph: the picture rounds off from a soft blob to the tile
-           corner as it scales in. Runs on the same per-tile delay. */
-        .hero__mosaic.is-ready .mzc-cell img {
-          animation: mzc-shape-morph 0.9s cubic-bezier(0.1, 0.85, 0.25, 1) both;
           animation-delay: var(--d, 0s);
         }
       }
@@ -518,18 +509,6 @@
         to {
           opacity: 1;
           transform: translate3d(0, 0, 0) scale(1);
-        }
-      }
-      @keyframes mzc-shape-morph {
-        from {
-          /* Per-tile start blob (--mr, set in JS): mild for the first tiles,
-             strongly rounded + irregular for ones that arrive later, so the
-             morph into the square 16px corner gets more obvious down the
-             cascade. Falls back to the mild blob if --mr is unset. */
-          border-radius: var(--mr, 46% 46% 42% 42% / 56% 56% 48% 48%);
-        }
-        to {
-          border-radius: 16px;
         }
       }
     </style>
@@ -1692,33 +1671,6 @@
               var pos = reverse ? half - 1 - k : k;
               var d = ri * 0.08 + pos * 0.07; // row offset + per-tile step
               cell.style.setProperty("--d", d.toFixed(3) + "s");
-              // Morph intensity ramps with cascade position: tiles that arrive
-              // later start from a rounder, more irregular blob, so their morph
-              // into the square tile corner is more pronounced than the first
-              // few. w = 0 for the earliest tile in the copy, 1 for the last.
-              var w = half > 1 ? pos / (half - 1) : 0;
-              var lerp = function (a, b) {
-                return (a + (b - a) * w).toFixed(1);
-              };
-              cell.style.setProperty(
-                "--mr",
-                lerp(46, 66) +
-                  "% " +
-                  lerp(46, 60) +
-                  "% " +
-                  lerp(42, 70) +
-                  "% " +
-                  lerp(42, 64) +
-                  "% / " +
-                  lerp(56, 78) +
-                  "% " +
-                  lerp(56, 70) +
-                  "% " +
-                  lerp(48, 74) +
-                  "% " +
-                  lerp(48, 82) +
-                  "%",
-              );
             });
           });
 
