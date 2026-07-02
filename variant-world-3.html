@@ -55,36 +55,24 @@
           justify-content: center;
           height: calc(72 * var(--u));
         }
-        /* Frosted-glass header band behind the logo (Figma 653:57418): a
-         full-width translucent white strip with a 2px backdrop blur, so the
-         animated photo field reads softly through it and the mark stays
-         legible. Replaces the earlier radial halo. Bottom edge feathers out so
-         the band dissolves into the photo field rather than hard-cutting.
-         Sits below the SVG (z-index:-1) but inside the logo's stacking
-         context, so it's above the photo field. */
+        /* Soft white halo behind the logo so the mark stays legible where the
+         photos bleed up behind it. Sits below the SVG (z-index:-1) but inside
+         the logo's stacking context, so it's above the photo field. */
         .v7-logo::before {
           content: "";
           position: absolute;
-          left: 0;
-          right: 0;
-          top: 0;
-          height: calc(109 * var(--u));
+          left: 50%;
+          top: calc(36 * var(--u));
+          transform: translate(-50%, -50%);
+          width: calc(380 * var(--u));
+          height: calc(132 * var(--u));
           z-index: -1;
           pointer-events: none;
-          background: rgba(255, 255, 255, 0.7);
-          -webkit-backdrop-filter: blur(2px);
-          backdrop-filter: blur(2px);
-          -webkit-mask-image: linear-gradient(
-            to bottom,
-            #000 0%,
-            #000 62%,
-            transparent 100%
-          );
-          mask-image: linear-gradient(
-            to bottom,
-            #000 0%,
-            #000 62%,
-            transparent 100%
+          background: radial-gradient(
+            ellipse at center,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(255, 255, 255, 0.7) 32%,
+            rgba(255, 255, 255, 0) 72%
           );
         }
         .v7-logo .shopify-logo {
@@ -117,6 +105,14 @@
           inset: 0;
           overflow: hidden;
           z-index: 0;
+        }
+        /* Edge frame disabled — photos run clean to the screen edge (no white feather). */
+        .v7-edge {
+          position: absolute;
+          inset: 0;
+          z-index: 3;
+          pointer-events: none;
+          background: none;
         }
         .v7-tier {
           position: absolute;
@@ -302,32 +298,23 @@
           justify-content: center;
           height: calc(72 * var(--u));
         }
-        /* Frosted-glass header band behind the logo (Figma 653:57418), mobile:
-         same full-width translucent white strip + 2px backdrop blur as desktop,
-         feathered at the bottom so it melts into the photo field. */
+        /* Soft white halo behind the logo so the mark stays legible over the
+         photo that bleeds up to the top edge behind it. */
         .m7-logo::before {
           content: "";
           position: absolute;
-          left: 0;
-          right: 0;
-          top: 0;
-          height: calc(108 * var(--u));
+          left: 50%;
+          top: calc(36 * var(--u));
+          transform: translate(-50%, -50%);
+          width: calc(300 * var(--u));
+          height: calc(120 * var(--u));
           z-index: -1;
           pointer-events: none;
-          background: rgba(255, 255, 255, 0.7);
-          -webkit-backdrop-filter: blur(2px);
-          backdrop-filter: blur(2px);
-          -webkit-mask-image: linear-gradient(
-            to bottom,
-            #000 0%,
-            #000 62%,
-            transparent 100%
-          );
-          mask-image: linear-gradient(
-            to bottom,
-            #000 0%,
-            #000 62%,
-            transparent 100%
+          background: radial-gradient(
+            ellipse at center,
+            rgba(255, 255, 255, 0.96) 0%,
+            rgba(255, 255, 255, 0.72) 32%,
+            rgba(255, 255, 255, 0) 72%
           );
         }
         .m7-logo .shopify-logo {
@@ -350,6 +337,14 @@
           inset: 0;
           overflow: hidden;
           z-index: 0;
+        }
+        /* Edge frame disabled — no white feather (see desktop note). */
+        .m7-edge {
+          position: absolute;
+          inset: 0;
+          z-index: 3;
+          pointer-events: none;
+          background: none;
         }
         .m7-tier {
           position: absolute;
@@ -514,6 +509,7 @@
            downward and loop seamlessly, built by the inline script below. The
            field clips the hero so cards bleed off its edges. -->
         <div class="v7-field" id="v7-field" aria-hidden="true"></div>
+        <div class="v7-edge" aria-hidden="true"></div>
 
         <!-- Logo overlaid on a transparent strip (photos show to its sides) -->
         <div class="v7-logo">
@@ -947,6 +943,7 @@
            downward and loop seamlessly, built by the inline script below. The
            field clips the hero so cards bleed off its edges. -->
         <div class="m7-field" id="m7-field" aria-hidden="true"></div>
+        <div class="m7-edge" aria-hidden="true"></div>
 
         <!-- Logo overlaid on a transparent strip (photos show to its sides) -->
         <div class="m7-logo">
@@ -1391,1101 +1388,521 @@
       })();
     </script>
     <script>
+      // ---- World-3: cubic-bezier zoom easing + live curve picker --------------
+      // The field is an infinite loop, so the phase curve must be loop-safe:
+      // its velocity at the u=1 seam has to match u=0 or the wrap stutters.
+      // Symmetric ease-in-out beziers (x2 = 1-x1, y2 = 1-y1) guarantee that,
+      // so every curve below stays seamless while feeling distinctly different.
+      (function () {
+        function mkBezier(x1, y1, x2, y2) {
+          if (x1 === y1 && x2 === y2) return function (t) { return t; };   // linear
+          function A(a, b) { return 1 - 3 * b + 3 * a; }
+          function B(a, b) { return 3 * b - 6 * a; }
+          function C(a) { return 3 * a; }
+          function calc(t, a, b) { return ((A(a, b) * t + B(a, b)) * t + C(a)) * t; }
+          function slope(t, a, b) { return 3 * A(a, b) * t * t + 2 * B(a, b) * t + C(a); }
+          function tForX(x) {
+            var t = x, i, xs, d;
+            for (i = 0; i < 8; i++) {                                       // Newton–Raphson
+              xs = calc(t, x1, x2) - x;
+              if (xs > -1e-6 && xs < 1e-6) return t;
+              d = slope(t, x1, x2);
+              if (d > -1e-6 && d < 1e-6) break;
+              t -= xs / d;
+            }
+            var lo = 0, hi = 1; t = x;                                      // bisection fallback
+            while (lo < hi) {
+              xs = calc(t, x1, x2);
+              if (xs - x > -1e-6 && xs - x < 1e-6) break;
+              if (x > xs) lo = t; else hi = t;
+              t = (lo + hi) / 2;
+            }
+            return t;
+          }
+          return function (t) { return t <= 0 ? 0 : t >= 1 ? 1 : calc(tForX(t), y1, y2); };
+        }
+        // These shape the LOAD-IN boom (a one-shot entrance), so dynamic shapes with
+        // overshoot / anticipation / spring are fine here — undershoot & overshoot are
+        // guarded in render(). Glide + Drift are the smooth pair; Pop/Wind/Spring add energy.
+        var CURVES = [
+          { name: "Glide",  c: [0.33, 1.00, 0.68, 1.00] },   // ease-out-cubic: smooth, confident, eases to a stop
+          { name: "Drift",  c: [0.37, 0.00, 0.63, 1.00] },   // ease-in-out-sine: balanced, calm S
+          { name: "Snap",   c: [0.10, 0.85, 0.25, 1.00] },   // expo-out: punches to size fast, then a soft settle — no bounce
+          { name: "Reveal", c: [0.76, 0.00, 0.24, 1.00] },   // ease-in-out-quart: holds tiny, rises, then settles — a graceful reveal
+          { name: "Float",  c: [0.61, 1.00, 0.88, 1.00] }    // ease-out-sine: gentlest, dreamiest, feathery expansion
+        ];
+        var W3 = window.__W3 = {
+          curves: CURVES,
+          fns: CURVES.map(function (b) { return b.fn || mkBezier(b.c[0], b.c[1], b.c[2], b.c[3]); }),
+          idx: 2,
+          speed: 1   // zoom-rate multiplier, set by the speed picker (independent of the easing curve)
+        };
+        function buildPicker() {
+          if (document.querySelector(".w3-ease")) return;
+          var host = document.querySelector(".v7-hero") || document.querySelector(".m7-hero") || document.body;
+          var bar = document.createElement("div");
+          bar.className = "w3-ease";
+          bar.setAttribute("aria-label", "Easing curve");
+          bar.style.cssText = "position:absolute;left:12px;top:12px;z-index:99999;display:flex;gap:6px;" +
+            "padding:6px;border-radius:999px;background:rgba(0,0,0,0.55);" +
+            "-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);" +
+            "font:600 12px/1 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;" +
+            "box-shadow:0 4px 16px rgba(0,0,0,.25)";
+          function setActive(i, replay) {
+            W3.idx = i;
+            [].forEach.call(bar.children, function (el, j) {
+              var on = j === i;
+              el.style.background = on ? "#fff" : "transparent";
+              el.style.color = on ? "#000" : "#fff";
+            });
+            if (replay && W3.resets) W3.resets.forEach(function (fn) { fn(); });   // reload the hero under this curve
+          }
+          W3.curves.forEach(function (cv, i) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.textContent = cv.name;
+            b.title = cv.c ? "cubic-bezier(" + cv.c.join(", ") + ")" : cv.name + " · custom easing";
+            b.style.cssText = "border:0;cursor:pointer;padding:7px 12px;border-radius:999px;color:#fff;" +
+              "background:transparent;transition:background .15s,color .15s";
+            b.addEventListener("click", function () { setActive(i, true); });
+            bar.appendChild(b);
+          });
+          host.appendChild(bar);
+          setActive(W3.idx, false);
+
+          // --- speed picker: scales the zoom rate, independent of the easing curve ---
+          var SPEEDS = [{ name: "Slow", v: 0.5 }, { name: "Normal", v: 1 }, { name: "Fast", v: 2 }];
+          var sbar = document.createElement("div");
+          sbar.className = "w3-speed";
+          sbar.setAttribute("aria-label", "Zoom speed");
+          sbar.style.cssText = "position:absolute;left:12px;top:52px;z-index:99999;display:flex;gap:6px;" +
+            "padding:6px;border-radius:999px;background:rgba(0,0,0,0.55);" +
+            "-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);" +
+            "font:600 12px/1 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;" +
+            "box-shadow:0 4px 16px rgba(0,0,0,.25)";
+          function setSpeed(i, replay) {
+            W3.speed = SPEEDS[i].v;
+            [].forEach.call(sbar.children, function (el, j) {
+              var on = j === i;
+              el.style.background = on ? "#fff" : "transparent";
+              el.style.color = on ? "#000" : "#fff";
+            });
+            if (replay && W3.resets) W3.resets.forEach(function (fn) { fn(); });   // replay the load so the new speed reads from t=0
+          }
+          SPEEDS.forEach(function (sp, i) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.textContent = sp.name;
+            b.title = sp.v + "× zoom speed";
+            b.style.cssText = "border:0;cursor:pointer;padding:7px 12px;border-radius:999px;color:#fff;" +
+              "background:transparent;transition:background .15s,color .15s";
+            b.addEventListener("click", function () { setSpeed(i, true); });
+            sbar.appendChild(b);
+          });
+          host.appendChild(sbar);
+          setSpeed(1, false);   // default Normal (1×), no replay on init
+        }
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", buildPicker);
+        else buildPicker();
+      })();
+    </script>
+    <script>
       if (!window.__VP_MOBILE__) {
-        (function () {
-          var cfg = {
-            heroSel: ".v7-hero",
-            fieldId: "v7-field",
-            cls: "v7-card",
-            gens: 2,
-            lead: 1,
-            ratio: 10.0,
-            mStar: 1.0,
-            period: 135,
-            introTau: 0.16,
-            introMin: 0.03,
-            introStagger: 0.16,
-            introOver: 1.15,
-            hoverAmp: 8,
-            hoverDelay: 0.9,
-            hoverEase: 0.8,
-            pSmall: 0.92,
-            pBig: 0.5,
-            pLoD: 26,
-            pHiD: 400,
-            pStrength: 0.5,
-            amp: 26,
-            // Load-in duration for the Snap easing curve (replaces the old
-            // exp introTau/introOver bounce): each tile eases size 0→1 over this.
-            // Slowed from 0.55 so the whole field unfurls more deliberately.
-            introDur: 1.15,
-            // Coin spin is proximity-driven: spinRadius is how close (in CSS px)
-            // the cursor must come to an individual coin before THAT coin whirls.
-            // Its spin energy falls off to 0 at the edge of this radius, so only
-            // coins near the pointer spin — the rest stay still.
-            spinRadius: 260,
-            // How fast a fully-hovered coin whirls — a multiplier on each coin's
-            // own random rate. Higher = more spin under the cursor.
-            spinSpeed: 1.7,
-            // Slight continuous "morph" (like World): a slow, gentle in/out
-            // breathe of the whole field. morphAmp is in u (R^u scale), so
-            // 0.04 → ~10% scale sway; morphPeriod is seconds per breathe cycle.
-            morphAmp: 0.04,
-            morphPeriod: 26,
-          };
-          var hero = document.querySelector(cfg.heroSel);
-          var field = document.getElementById(cfg.fieldId);
-          if (!field) return;
-          var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-          var A = "assets/world-two/";
-          // Cubic-bezier easing (Newton–Raphson + bisection), same impl as World-3.
-          // "snap" is World-3's Snap curve (0.10,0.85,0.25,1.00): punches to size
-          // fast, then a soft settle — no overshoot, so no bounce. Used both to
-          // shape the load-in and to unwind each coin's entrance spin.
-          function mkBezier(x1, y1, x2, y2) {
-            if (x1 === y1 && x2 === y2)
-              return function (t) {
-                return t;
-              };
-            function A2(a, b) {
-              return 1 - 3 * b + 3 * a;
-            }
-            function B2(a, b) {
-              return 3 * b - 6 * a;
-            }
-            function C2(a) {
-              return 3 * a;
-            }
-            function calc(t, a, b) {
-              return ((A2(a, b) * t + B2(a, b)) * t + C2(a)) * t;
-            }
-            function slope(t, a, b) {
-              return 3 * A2(a, b) * t * t + 2 * B2(a, b) * t + C2(a);
-            }
-            function tForX(x) {
-              var t = x,
-                i,
-                xs,
-                d;
-              for (i = 0; i < 8; i++) {
-                xs = calc(t, x1, x2) - x;
-                if (xs > -1e-6 && xs < 1e-6) return t;
-                d = slope(t, x1, x2);
-                if (d > -1e-6 && d < 1e-6) break;
-                t -= xs / d;
-              }
-              var lo = 0,
-                hi = 1;
-              t = x;
-              while (lo < hi) {
-                xs = calc(t, x1, x2);
-                if (xs - x > -1e-6 && xs - x < 1e-6) break;
-                if (x > xs) lo = t;
-                else hi = t;
-                t = (lo + hi) / 2;
-              }
-              return t;
-            }
-            return function (t) {
-              return t <= 0 ? 0 : t >= 1 ? 1 : calc(tForX(t), y1, y2);
-            };
-          }
-          var snap = mkBezier(0.1, 0.85, 0.25, 1.0);
-          var DW = 1440;
+(function () {
+  var cfg = {
+    heroSel: ".v7-hero", fieldId: "v7-field", cls: "v7-card",
+    gens: 5, lead: 4, ratio: 10.0, mStar: 1.0,             // deep stack → several decades of distance; far copies drift up out of the blur
+    period: 108, flow: 0.7,                                // slow desktop cycle
+    introMin: 0.04, introTau: 0.5, stagger: 0.8, enterFade: 0.6, emDur: 1.4,  // load-in boom: outer tiles first, shaped by the selected curve
+    settleBoost: 4.0, settleDur: 3.0,                     // follow-through: entrance eases into the cruise over 3s instead of stopping dead
+    pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 400,
+    speedLo: 0.82, speedHi: 1.4,                           // wide spread → tiles desync into steady density (mobile-style)
+    blurMax: 9.5, blurClear: 0.85, blurFar: 0.12, blurCap: 30,  // DoF: deeper, more gradual focus gradient → stronger sense of distance
+    hazeSat: 0.55, hazeFade: 0.5,                         // aerial perspective: far tiles desaturate + wash toward the white bg
+    maxScale: 8, fadeInLo: 0.0025, fadeInHi: 0.03, fadeOutLo: 5.0, fadeOutHi: 8.0,  // depth envelope: emerge from the far distance, dissolve as it passes the camera
+    count: 12, rMin: 130, rMax: 780, yScale: 0.62,
+    sizeLo: 148, sizeHi: 252, sepK: 1.0, sepPad: 34,      // size-aware spacing (uses each tile's long axis)
+    exRX: 300, exRY: 195, exM: 1.12,                      // keep the centred signup clear
+    parallax: true, amp: 42, pDepth: 0.52, panLerp: 0.07  // mouse parallax, depth-scaled → stronger layer separation
+  };
+  var hero = document.querySelector(cfg.heroSel);
+  var field = document.getElementById(cfg.fieldId);
+  if (!field) return;
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var A = "assets/world-new/";
+  var DW = 1440;
 
-          // ---- Exact composition from Figma (file SwnQ7M7I5DG7o0QcZTncet, node 546:36120) -------
-          // dx,dy,w,h: design-px layout (centre-relative). nw,nh: the image's NATIVE pixel size,
-          // used so each tile is rasterised at full resolution and only ever scaled DOWN (crisp).
-          var TILES = [
-            // Composition matched to the reference: 4 photos + 3 coins.
-            // Photos carry a `hover` twin (cross-fades on hover); coins do not.
-            // Coins are front (higher index = higher z). w/h track native aspect.
-            {
-              f: "NORAM_FTC_2511_0008 1.png",
-              hover: "NORAM_FTC_2511_0008 2.png",
-              name: "FTC",
-              dx: -322,
-              dy: -181,
-              w: 235,
-              h: 157,
-              nw: 690,
-              nh: 460,
-            },
-            {
-              f: "MIB_CASSIDY_1781 1.png",
-              hover: "MIB_CASSIDY_1781 3.png",
-              name: "Hutch Cassidy",
-              dx: 497,
-              dy: -225,
-              w: 250,
-              h: 374,
-              nw: 485,
-              nh: 726,
-            },
-            {
-              f: "MIB_CASSIDY_1781 2.png",
-              hover: "MIB_CASSIDY_1781 4.png",
-              name: "feYi",
-              dx: -443,
-              dy: 96,
-              w: 201,
-              h: 301,
-              nw: 484,
-              nh: 726,
-            },
-            {
-              f: "Image1.png",
-              hover: "Image1-1.png",
-              name: "Jitensha",
-              dx: 454,
-              dy: 297,
-              w: 292,
-              h: 208,
-              nw: 690,
-              nh: 492,
-            },
-            // ---- 4 coins, arranged to match the reference screenshot ----
-            // image 4171: bright frontal 3/4 coin, top-left over the FTC photo.
-            {
-              f: "image 4171.png",
-              dx: -376,
-              dy: -268,
-              w: 115,
-              h: 125,
-              nw: 699,
-              nh: 759,
-            },
-            // image 4633: thin edge-on coin, right of the CTA card.
-            {
-              f: "image 4633.png",
-              dx: 253,
-              dy: -83,
-              w: 62,
-              h: 82,
-              nw: 312,
-              nh: 414,
-            },
-            // image 4631: big dark-face coin, lower-left over the florist photo.
-            {
-              f: "image 4631.png",
-              dx: -408,
-              dy: 259,
-              w: 192,
-              h: 201,
-              nw: 1111,
-              nh: 1165,
-            },
-            // image 4632: flatter-tilt coin, lower-right on the bike photo.
-            {
-              f: "image 4632.png",
-              dx: 324,
-              dy: 174,
-              w: 89,
-              h: 96,
-              nw: 372,
-              nh: 402,
-            },
-          ];
+  var IMAGES = [
+    { f: "Image1.png",          nw: 966, nh: 600 },
+    { f: "Images.png",          nw: 434, nh: 600 },
+    { f: "IMG-2.png",           nw: 772, nh: 600 },
+    { f: "Image 6.png",         nw: 996, nh: 600 },
+    { f: "Image 8.png",         nw: 433, nh: 600 },
+    { f: "Image1-3.png",        nw: 844, nh: 600 },
+    { f: "IMG-1.png",           nw: 453, nh: 600 },
+    { f: "IMG.png",             nw: 461, nh: 600 },
+    { f: "Image1-2.png",        nw: 833, nh: 592 },
+    { f: "NorAm_EF_2254.png",   nw: 888, nh: 600 },
+    { f: "Image1-1.png",        nw: 843, nh: 600 },
+    { f: "MIB_FEYI_0289.png",   nw: 431, nh: 600 },
+    { f: "NorAm_FTC_02105.png", nw: 798, nh: 600 },
+    { f: "Image 9.png",         nw: 420, nh: 600 },
+    { f: "Image 10.png",        nw: 438, nh: 600 }
+  ];
 
-          var N = TILES.length,
-            G = cfg.gens,
-            R = cfg.ratio,
-            LEAD = cfg.lead;
+  var rnd = function (a, b) { return a + Math.random() * (b - a); };
 
-          // Per-tile size-growth power. Small images grow nearly in step with the expansion so they
-          // stay embedded in the cluster and leave WITH the group; big images grow slowly so they
-          // neither balloon into "one zoomed photo" nor blur.
-          function tileP(w, h) {
-            var d = Math.sqrt(w * h),
-              x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
-            if (x < 0) x = 0;
-            else if (x > 1) x = 1;
-            return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
-          }
+  // Even areal scatter (golden-angle sunflower) + jitter; random image + size per tile.
+  var GA = Math.PI * (3 - Math.sqrt(5));
+  var TILES = [];
+  for (var i = 0; i < cfg.count; i++) {
+    var ang = i * GA + rnd(-0.07, 0.07);
+    var rad = cfg.rMin + (cfg.rMax - cfg.rMin) * Math.sqrt((i + 0.5) / cfg.count);
+    var im = i < IMAGES.length ? IMAGES[i] : IMAGES[(Math.random() * IMAGES.length) | 0];
+    var w = rnd(cfg.sizeLo, cfg.sizeHi);
+    var h = w * im.nh / im.nw;
+    TILES.push({
+      f: im.f, nw: im.nw, nh: im.nh, w: w, h: h,
+      rHalf: 0.5 * Math.max(w, h),                        // half the long axis -> spacing radius
+      dx: Math.cos(ang) * rad, dy: Math.sin(ang) * rad * cfg.yScale
+    });
+  }
+  // Push tiles apart by a size-aware minimum so neither big landscapes nor tall
+  // portraits ever crowd each other (small tiles may sit closer, filling gaps).
+  for (var pass = 0; pass < 12; pass++) {
+    for (var a = 0; a < TILES.length; a++) {
+      for (var b = a + 1; b < TILES.length; b++) {
+        var Ta = TILES[a], Tb = TILES[b];
+        var rx = Tb.dx - Ta.dx, ry = Tb.dy - Ta.dy;
+        var rd = Math.sqrt(rx * rx + ry * ry) || 0.0001;
+        var need = (Ta.rHalf + Tb.rHalf) * cfg.sepK + cfg.sepPad;
+        if (rd < need) {
+          var pu = (need - rd) * 0.5, ux = rx / rd, uy = ry / rd;
+          Ta.dx -= ux * pu; Ta.dy -= uy * pu;
+          Tb.dx += ux * pu; Tb.dy += uy * pu;
+        }
+      }
+    }
+  }
+  for (var pp = 0; pp < TILES.length; pp++) {
+    var tp = TILES[pp];
+    var q = Math.sqrt((tp.dx / cfg.exRX) * (tp.dx / cfg.exRX) + (tp.dy / cfg.exRY) * (tp.dy / cfg.exRY));
+    if (q < cfg.exM) { var push = cfg.exM / (q || 0.0001); tp.dx *= push; tp.dy *= push; }
+  }
 
-          // ---- Expanding-universe loop -----------------------------------------------------------
-          // POSITION expands by scale = mStar*R^L*intro; on-screen SIZE grows by scale^P (per tile).
-          // Each element is sized to the image's NATIVE px and positioned with translate + a scale
-          // that maps native -> on-screen (almost always < 1, so downscaling keeps it sharp).
-          // opacity is always 1 (no fade). Two instances spaced by a large R: the incoming batch is
-          // a sub-px point behind the card during the boom and only grows out after the first batch
-          // has moved off-frame. Loops seamlessly: all quantities are functions of L=(g-LEAD)+u.
-          var L = { s: 1, cx: 0, cy: 0 };
-          var pxv = 0,
-            pyv = 0,
-            pxT = 0,
-            pyT = 0;
-          // Coin-spin state: (mx,my) is the cursor's field-local position; each
-          // coin spins only while the cursor is within cfg.spinRadius of it (see
-          // render). pointerIn gates all spin off once the cursor leaves. lastEb
-          // tracks the previous frame time so render() can derive dt.
-          var mx = -1e5,
-            my = -1e5,
-            pointerIn = false,
-            lastEb = -1;
-          var cards = [];
-          for (var g = 0; g < G; g++) {
-            for (var i = 0; i < N; i++) {
-              var t = TILES[i];
-              var el = document.createElement("div");
-              el.className = cfg.cls;
-              el.style.cssText =
-                "left:0;top:0;width:" +
-                t.nw +
-                "px;height:" +
-                t.nh +
-                "px;opacity:1;transition:none;transform-origin:0 0;border-radius:0;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
-              var im = new Image();
-              im.alt = "";
-              im.decoding = "async";
-              im.loading = "eager";
-              im.style.cssText =
-                "width:100%;height:100%;object-fit:cover;display:block";
-              im.src = A + encodeURI(t.f);
-              el.appendChild(im);
-              // Photos carry a hover twin that cross-fades in on pointer hover.
-              // Coins have no t.hover, so they never swap.
-              if (t.hover) {
-                var imh = new Image();
-                imh.alt = "";
-                imh.decoding = "async";
-                imh.loading = "eager";
-                imh.style.cssText =
-                  "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 0.35s ease";
-                imh.src = A + encodeURI(t.hover);
-                el.appendChild(imh);
-                el.__imh = imh;
-                // 50% black scrim + white business name, revealed on hover.
-                // Font is sized in the tile's NATIVE px space (nw/w) so it renders
-                // at a consistent on-screen size regardless of each tile's scale.
-                var ov = document.createElement("div");
-                var fs = Math.round((22 * t.nw) / t.w);
-                ov.style.cssText =
-                  "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8%;box-sizing:border-box;background:rgba(0,0,0,0.5);color:#fff;font-weight:600;line-height:1.15;opacity:0;transition:opacity 0.35s ease;font-size:" +
-                  fs +
-                  "px";
-                ov.textContent = t.name || "";
-                el.appendChild(ov);
-                el.__ov = ov;
-                el.style.cursor = "pointer";
-                el.addEventListener("pointerenter", function () {
-                  this.__imh.style.opacity = "1";
-                  if (this.__ov) this.__ov.style.opacity = "1";
-                });
-                el.addEventListener("pointerleave", function () {
-                  this.__imh.style.opacity = "0";
-                  if (this.__ov) this.__ov.style.opacity = "0";
-                });
-              } else {
-                // Coin (no hover twin): let it spin freely. Drop the clip box so
-                // rotation never crops the corners, and rotate the <img> about its
-                // own centre — the outer tile keeps doing translate+scale from 0,0.
-                el.style.overflow = "visible";
-                im.style.transformOrigin = "50% 50%";
-                im.style.willChange = "transform";
-                el.__coin = im;
-              }
-              field.appendChild(el);
-              cards.push({
-                el: el,
-                t: t,
-                g: g,
-                P: tileP(t.w, t.h),
-                // Golden-ratio spread over [0, introStagger): an even but
-                // non-sequential sprinkle of per-tile big-bang start offsets.
-                stag: ((i * 0.618033) % 1) * cfg.introStagger,
-                // Fixed stacking rank (tile index): unique within a generation so
-                // overlapping tiles never tie and never swap front/back.
-                z: i,
-                // Per-tile hover: a slow bob at its own speed/phase so the field
-                // breathes rather than pulsing in lockstep.
-                hspeed: 0.5 + ((i * 0.377) % 1) * 0.5,
-                hphase: (i * 2.39996323) % 6.28318,
-                // Coin spin. coin: the <img> to rotate (null for photos). Each
-                // coin gets a random direction + steady-state rate so, on cursor
-                // interaction, they whirl every which way rather than in lockstep;
-                // introTurns/introDir seed the one-shot unwind during the zoom-in.
-                coin: el.__coin || null,
-                spinDir: Math.random() < 0.5 ? -1 : 1,
-                spinRate: 0.6 + Math.random() * 0.9,
-                introDir: Math.random() < 0.5 ? -1 : 1,
-                introTurns: 0.75 + Math.random() * 0.9,
-                spinAng: 0,
-                // Live proximity spin energy (0..1) + how fast this coin chases
-                // the cursor's proximity — randomized so each coin spins up and
-                // winds down at its own pace, reacting differently to the cursor.
-                spinE: 0,
-                spinResp: 3.5 + Math.random() * 5,
-                // Orbit (only while cursor-energized): each coin drifts around
-                // its OWN little ellipse — distinct radius, tilt, speed, phase
-                // and direction — so interaction sends them into different orbits
-                // rather than all spinning in place alike.
-                orbitR: 10 + Math.random() * 22,
-                orbitSpeed: 0.7 + Math.random() * 1.9,
-                orbitDir: Math.random() < 0.5 ? -1 : 1,
-                orbitSquish: 0.45 + Math.random() * 0.5,
-                orbitTilt: Math.random() * 6.2831853,
-                orbitAng: Math.random() * 6.2831853,
-                // Entrance tumble: signed half-turns on X and Y (Y always
-                // non-zero) so every coin flips through a different 3D path as it
-                // zooms in, then unwinds to flat as it lands.
-                flipX:
-                  (Math.random() < 0.5 ? -1 : 1) *
-                  (Math.random() < 0.55 ? 1 + Math.floor(Math.random() * 2) : 0),
-                flipY:
-                  (Math.random() < 0.5 ? -1 : 1) *
-                  (1 + Math.floor(Math.random() * 2)),
-                // Hover-flip axis: a random in-plane axis (rotate3d normalises
-                // it) so each coin turns over on its OWN orientation — some
-                // left-right, some top-over-bottom, some diagonal — and hovering
-                // rolls it right over to reveal every side.
-                spinPhi: Math.random() * 6.2831853,
-              });
-            }
-          }
+  var N = TILES.length, G = cfg.gens, R = cfg.ratio, LEAD = cfg.lead;
 
-          function measure() {
-            var r = field.getBoundingClientRect();
-            L.s = r.width / DW;
-            L.cx = r.width / 2;
-            L.cy = r.height / 2;
-          }
-          measure();
-          window.addEventListener("resize", measure);
+  function tileP(w, h) {
+    var d = Math.sqrt(w * h), x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
+    if (x < 0) x = 0; else if (x > 1) x = 1;
+    return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
+  }
 
-          if (hero && !reduce) {
-            hero.addEventListener("pointermove", function (e) {
-              var r = hero.getBoundingClientRect();
-              pxT = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
-              pyT = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
-              // Track the cursor in the FIELD's own coordinate space so render()
-              // can measure each coin's distance to it and spin only nearby coins.
-              var fr = field.getBoundingClientRect();
-              mx = e.clientX - fr.left;
-              my = e.clientY - fr.top;
-              pointerIn = true;
-            });
-            hero.addEventListener("pointerleave", function () {
-              pxT = 0;
-              pyT = 0;
-              // Cursor gone: no coin is "near" any more, so they all coast to rest.
-              pointerIn = false;
-            });
-          }
+  var L = { s: 1, cx: 0, cy: 0 };
+  var Tspd = [];
+  for (var j = 0; j < N; j++) Tspd[j] = rnd(cfg.speedLo, cfg.speedHi);
+  var Tdel = [], ord = [];                                 // outer tiles emerge first (radial stagger, mobile-style)
+  for (var j = 0; j < N; j++) ord.push({ i: j, r: Math.sqrt(TILES[j].dx * TILES[j].dx + TILES[j].dy * TILES[j].dy) });
+  ord.sort(function (a, b) { return b.r - a.r; });
+  for (var j = 0; j < N; j++) Tdel[ord[j].i] = N <= 1 ? 0 : (j / (N - 1)) * cfg.stagger;
 
-          function render(u, eb) {
-            // Ease the parallax toward the cursor target each frame so it glides with inertia
-            // instead of snapping 1:1 (lower factor = looser/smoother, higher = snappier).
-            pxv += (pxT - pxv) * 0.08;
-            pyv += (pyT - pyv) * 0.08;
-            // Frame delta, clamped so a backgrounded tab can't jump the spin.
-            // Per-coin spin energy is eased in render's coin block, not here.
-            var dt = lastEb < 0 ? 0 : eb - lastEb;
-            if (dt < 0) dt = 0;
-            else if (dt > 0.1) dt = 0.1;
-            lastEb = eb;
-            for (var k = 0; k < cards.length; k++) {
-              var c = cards[k],
-                t = c.t;
-              var ell = c.g - LEAD + u;
-              // Each tile's intro ramp starts at its own stagger offset (eb is
-              // elapsed seconds), so the big-bang sprinkles in rather than
-              // every tile popping on the same frame.
-              var te = eb - c.stag;
-              var intro,
-                ip = 0;
-              if (te > 0) {
-                // Load-in shaped by World-3's "Snap" curve (cubic-bezier
-                // 0.10,0.85,0.25,1.00): punches to size fast, then a soft settle —
-                // no overshoot, so no bounce. ip is the eased 0→1 progress, reused
-                // below to unwind each coin's entrance spin as it lands.
-                var p = te / cfg.introDur;
-                if (p > 1) p = 1;
-                ip = snap(p);
-                intro = cfg.introMin + (1 - cfg.introMin) * ip;
-              } else {
-                intro = cfg.introMin;
-              }
-              var scale = cfg.mStar * Math.pow(R, ell) * intro; // POSITION expansion
-              // Tiles grow from a sub-px point at centre up to full size by the resting frame
-              // (scale 1), so they emerge by SCALING — opacity stays 1, no ghosted fade-in, and
-              // the centre stays clean because a sub-px point is invisible (not a cluster).
-              var emerge = (scale - 0.1) / 0.9;
-              if (emerge < 0) emerge = 0;
-              else if (emerge > 1) emerge = 1;
-              var sz = Math.pow(scale, c.P) * emerge; // on-screen SIZE growth (per tile)
-              var onW = t.w * L.s * sz; // target on-screen width (design px)
-              var s = onW / t.nw; // native -> screen (mostly downscale)
-              c.el.style.borderRadius =
-                (s > 0.001 ? 8 / s : 0).toFixed(1) + "px"; // ~8px on screen
-              var depth = (scale < 2.4 ? scale : 2.4) * cfg.pStrength;
-              // After the boom settles, each tile hovers: a slow vertical bob that
-              // eases in (hgate) once the entrance is past, so the field breathes.
-              var st = te - cfg.hoverDelay;
-              var hgate = st > 0 ? 1 - Math.exp(-st / cfg.hoverEase) : 0;
-              var hov =
-                Math.sin(eb * c.hspeed + c.hphase) * cfg.hoverAmp * hgate;
-              var cx = L.cx + (t.dx * scale + pxv * depth) * L.s;
-              var cy = L.cy + (t.dy * scale + pyv * depth + hov) * L.s;
-              var X = cx - onW / 2,
-                Y = cy - (t.h * L.s * sz) / 2;
-              // Stable z-order: generation first (the higher generation always
-              // has a larger ell, so it's always the more-expanded/closer batch),
-              // then the tile's fixed rank. Independent of the live scale, so a
-              // staggered tile can't momentarily outrank a neighbour and flicker.
-              c.el.style.zIndex = 100 + c.g * 1000 + c.z;
-              c.el.style.transform =
-                "translate(" +
-                X.toFixed(1) +
-                "px," +
-                Y.toFixed(1) +
-                "px) scale(" +
-                s.toFixed(4) +
-                ")";
-              // Coins spin: (1) entrance unwind — introTurns of rotation that
-              // bleeds off to 0 as the Snap ramp completes (ip 0→1), so each coin
-              // whirls as it zooms in and lands at its designed angle; (2) cursor
-              // whirl — spinAng accrues from the live spin energy, each coin in its
-              // own random direction/rate, easing to a stop when the cursor rests.
-              if (c.coin) {
-                // Per-coin proximity: this coin's spin target is 1 at the cursor
-                // and eases to 0 at cfg.spinRadius away (squared for a soft
-                // near-field). Its energy chases that target at its own spinResp,
-                // so only coins the cursor is near whirl — each spinning up and
-                // coasting down independently, in its own direction and at its
-                // own rate.
-                var target = 0;
-                if (pointerIn) {
-                  var ddx = mx - cx,
-                    ddy = my - cy;
-                  var pr =
-                    1 - Math.sqrt(ddx * ddx + ddy * ddy) / cfg.spinRadius;
-                  if (pr > 0) target = pr * pr;
-                }
-                c.spinE += (target - c.spinE) * Math.min(1, dt * c.spinResp);
-                // Hover whirl: while energized, accrue rotation about the coin's
-                // own 3D axis so it turns right over (front → edge → back → …),
-                // letting you see every side. When the energy fades, ease the
-                // angle back to the nearest full turn so it always settles
-                // face-on and never rests edge-on (which would be invisible).
-                c.spinAng +=
-                  c.spinDir * c.spinE * c.spinRate * cfg.spinSpeed * 360 * dt;
-                var settle = 1 - c.spinE;
-                if (settle > 0.001) {
-                  var flat = Math.round(c.spinAng / 360) * 360;
-                  c.spinAng += (flat - c.spinAng) * Math.min(1, dt * 3) * settle;
-                }
-                // Entrance 2D whirl, unwinding as the Snap ramp completes.
-                var introRot = c.introDir * c.introTurns * 360 * (1 - ip);
-                // Orbit: while energized, the coin also drifts around its own
-                // ellipse. The offset is scaled by spinE so it eases in/out with
-                // the interaction, and rotated by orbitTilt so each orbit sits at
-                // a different angle — distinct path per coin.
-                c.orbitAng += c.orbitDir * c.orbitSpeed * dt;
-                var ex = Math.cos(c.orbitAng) * c.orbitR;
-                var ey = Math.sin(c.orbitAng) * c.orbitR * c.orbitSquish;
-                var ct = Math.cos(c.orbitTilt),
-                  stt = Math.sin(c.orbitTilt);
-                var ox = (ex * ct - ey * stt) * c.spinE;
-                var oy = (ex * stt + ey * ct) * c.spinE;
-                // Entrance tumble: per-coin X/Y half-turns that unwind to flat as
-                // the coin zooms in.
-                var fx = c.flipX * 180 * (1 - ip);
-                var fy = c.flipY * 180 * (1 - ip);
-                // Hover flip about this coin's own in-plane axis (rotate3d
-                // normalises the vector) — the direction differs per coin, so
-                // they turn over on different orientations and reveal all sides.
-                var axX = Math.cos(c.spinPhi),
-                  axY = Math.sin(c.spinPhi);
-                c.coin.style.transform =
-                  "perspective(700px) translate(" +
-                  ox.toFixed(2) +
-                  "px," +
-                  oy.toFixed(2) +
-                  "px) rotateX(" +
-                  fx.toFixed(2) +
-                  "deg) rotateY(" +
-                  fy.toFixed(2) +
-                  "deg) rotate3d(" +
-                  axX.toFixed(4) +
-                  "," +
-                  axY.toFixed(4) +
-                  ",0," +
-                  c.spinAng.toFixed(2) +
-                  "deg) rotate(" +
-                  introRot.toFixed(2) +
-                  "deg)";
-              }
-            }
-          }
+  var cards = [];
+  for (var g = 0; g < G; g++) {
+    for (var i = 0; i < N; i++) {
+      var t = TILES[i];
+      var el = document.createElement("div");
+      el.className = cfg.cls;
+      el.style.cssText = "left:0;top:0;width:" + t.nw + "px;height:" + t.nh +
+        "px;opacity:0;transition:none;transform-origin:0 0;border-radius:" +
+        Math.round(Math.min(t.nw, t.nh) * 0.05) +
+        "px;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
+      var im = new Image();
+      im.alt = ""; im.decoding = "async"; im.loading = "eager";
+      im.style.cssText = "width:100%;height:100%;object-fit:cover;display:block";
+      im.src = A + encodeURI(t.f);
+      el.appendChild(im);
+      field.appendChild(el);
+      cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h), spd: Tspd[i], delay: Tdel[i] });
+    }
+  }
 
-          if (reduce) {
-            render(0, 1e6);
-            return;
-          }
+  function measure() {
+    var r = field.getBoundingClientRect();
+    L.s = r.width / DW; L.cx = r.width / 2; L.cy = r.height / 2;
+  }
+  measure();
+  window.addEventListener("resize", measure);
 
-          var start = 0,
-            PERIOD = cfg.period;
-          function loop(ts) {
-            if (!start) start = ts;
-            var el = (ts - start) / 1000;
-            // World 2: no tunnel, but a slight continuous "morph" (borrowed from
-            // the World version) so the field feels alive instead of frozen once
-            // the boom settles. A slow, bounded sinusoidal breathe of u expands
-            // and contracts the whole composition by ~10% — the images subtly
-            // drift and re-scale ("zoom") in place. Bounded + sinusoidal so it
-            // stays near the Figma composition and loops seamlessly with only two
-            // generations (unlike World's full 0→1 tunnel sweep).
-            var u = cfg.morphAmp * Math.sin(el * (6.2831853 / cfg.morphPeriod));
-            // Pass elapsed seconds; render() applies each tile's own staggered
-            // intro ramp so the big-bang sprinkles in rather than popping at once.
-            render(u, el);
-            requestAnimationFrame(loop);
-          }
-          requestAnimationFrame(loop);
-        })();
+  // Parallax: the field pans opposite the cursor; nearer (bigger) tiles shift
+  // more than distant ones, for depth. Smoothed so it eases, never jitters.
+  var panTX = 0, panTY = 0, panX = 0, panY = 0;
+  if (cfg.parallax && hero && !reduce) {
+    hero.addEventListener("pointermove", function (e) {
+      var r = hero.getBoundingClientRect();
+      panTX = -(((e.clientX - r.left) / r.width) - 0.5) * 2 * cfg.amp;
+      panTY = -(((e.clientY - r.top) / r.height) - 0.5) * 2 * cfg.amp;
+    });
+    hero.addEventListener("pointerleave", function () { panTX = 0; panTY = 0; });
+  }
+
+  function render(elapsed, isStatic) {
+    panX += (panTX - panX) * cfg.panLerp;
+    panY += (panTY - panY) * cfg.panLerp;
+    for (var k = 0; k < cards.length; k++) {
+      var c = cards[k], t = c.t;
+      var u = isStatic ? 0 : (phaseTime / (cfg.period * c.spd)) % 1;   // phase-aligned start (mobile-style): nothing begins large
+      // zoom phase stays linear → seamless loop; the selected curve drives the load-in boom below
+      var ell = (c.g - LEAD) + u;
+      var scale = cfg.mStar * Math.pow(R, ell);
+      if (scale > cfg.maxScale) { c.el.style.opacity = 0; continue; }
+      var vis = 1;
+      if (!isStatic) {                                      // mobile emergence: outer tiles boom out first, fading in
+        var te = elapsed - c.delay;
+        if (te <= 0) { scale *= cfg.introMin; vis = 0; }
+        else {
+          var p = te < cfg.emDur ? te / cfg.emDur : 1;
+          var e = window.__W3.fns[window.__W3.idx](p);      // load-in shaped by the selected cubic-bezier
+          var m = cfg.introMin + (1 - cfg.introMin) * e;    // may overshoot >1 (spring); settles to exactly 1 at te>=emDur
+          scale *= m < 0.01 ? 0.01 : m;                     // guard: never non-positive scale on undershoot
+          vis = te < cfg.enterFade ? te / cfg.enterFade : 1;
+        }
+      }
+      var env = 1;                                        // depth envelope: swell up out of the far blur, dissolve as it passes the camera
+      if (scale < cfg.fadeInHi) env = (scale - cfg.fadeInLo) / (cfg.fadeInHi - cfg.fadeInLo);
+      else if (scale > cfg.fadeOutLo) env = (cfg.fadeOutHi - scale) / (cfg.fadeOutHi - cfg.fadeOutLo);
+      if (env < 0) env = 0; else if (env > 1) env = 1;
+      var sz = Math.pow(scale, c.P);
+      var onW = t.w * L.s * sz, onH = t.h * L.s * sz;
+      var s = onW / t.nw;
+      var depth = (scale < 2.6 ? scale : 2.6) * cfg.pDepth;
+      var cx = L.cx + (t.dx * scale + panX * depth) * L.s;
+      var cy = L.cy + (t.dy * scale + panY * depth) * L.s;
+      var X = cx - onW / 2, Y = cy - onH / 2;
+      var bl = 0, sat = 1, haze = 1;                       // depth-of-field + aerial perspective: back is soft, desaturated, washed toward the bg
+      if (scale < cfg.blurClear) {
+        var bt = (cfg.blurClear - scale) / (cfg.blurClear - cfg.blurFar);
+        if (bt > 1) bt = 1; else if (bt < 0) bt = 0;
+        bl = cfg.blurMax * bt / s;                          // /s keeps SCREEN blur ~constant across depths
+        if (bl > cfg.blurCap) bl = cfg.blurCap;
+        sat = 1 - cfg.hazeSat * bt;                         // far → desaturated
+        haze = 1 - cfg.hazeFade * bt;                       // far → washes toward the white bg (aerial perspective)
+      }
+      c.el.style.zIndex = Math.round(scale * 2000) * 64 + k;
+      c.el.style.opacity = vis * env * haze;
+      c.el.style.filter = bl > 0.01 ? "blur(" + bl.toFixed(2) + "px) saturate(" + sat.toFixed(2) + ")" : "none";
+      c.el.style.transform = "translate(" + X.toFixed(1) + "px," + Y.toFixed(1) + "px) scale(" + s.toFixed(4) + ")";
+    }
+  }
+
+  if (reduce) { render(0, true); return; }
+
+  var start = 0, lastTs = 0, phaseTime = 0;   // phaseTime advances by dt*speed → speed changes are smooth (no scale jump)
+  (window.__W3.resets = window.__W3.resets || []).push(function () { start = 0; lastTs = 0; phaseTime = 0; });   // picker replays the load from t=0
+  function loop(ts) {
+    if (!start) { start = ts; lastTs = ts; }
+    var dt = (ts - lastTs) / 1000; lastTs = ts;
+    var el = (ts - start) / 1000;
+    var glide = 1;                                       // follow-through: after the load-in, keep drifting and ease down to cruise (no abrupt stop)
+    if (cfg.settleDur > 0) {
+      var gt = (el - cfg.emDur) / cfg.settleDur;         // <0 through the boom, 0 at boom end, 1 once settled
+      if (gt < 1) { if (gt < 0) gt = 0; glide = 1 + cfg.settleBoost * (1 - gt) * (1 - gt); }  // ease-out down to cruise speed
+    }
+    phaseTime += dt * (window.__W3.speed || 1) * glide;   // speed picker scales the zoom rate; load-in below stays on real time
+    render(el, false);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
       }
     </script>
     <script>
       if (window.__VP_MOBILE__) {
-        (function () {
-          var cfg = {
-            heroSel: ".m7-hero",
-            fieldId: "m7-field",
-            cls: "m7-card",
-            gens: 2,
-            lead: 1,
-            ratio: 10.0,
-            mStar: 1.0,
-            period: 135,
-            introTau: 0.16,
-            introMin: 0.03,
-            introStagger: 0.16,
-            introOver: 1.15,
-            hoverAmp: 8,
-            hoverDelay: 0.9,
-            hoverEase: 0.8,
-            pSmall: 0.92,
-            pBig: 0.5,
-            pLoD: 26,
-            pHiD: 200,
-            pStrength: 0.5,
-            amp: 18,
-            // Load-in duration for the Snap easing curve (replaces the old
-            // exp introTau/introOver bounce): each tile eases size 0→1 over this.
-            // Slowed from 0.55 so the whole field unfurls more deliberately.
-            introDur: 1.15,
-            // Coin spin is proximity-driven: spinRadius is how close (in CSS px)
-            // the cursor must come to an individual coin before THAT coin whirls.
-            // Its spin energy falls off to 0 at the edge of this radius, so only
-            // coins near the pointer spin — the rest stay still. Tighter on the
-            // small mobile field than on desktop.
-            spinRadius: 150,
-            // How fast a fully-hovered coin whirls — a multiplier on each coin's
-            // own random rate. Higher = more spin under the cursor.
-            spinSpeed: 1.7,
-            // Slight continuous "morph" (like World): a slow, gentle in/out
-            // breathe of the whole field. morphAmp is in u (R^u scale), so
-            // 0.04 → ~10% scale sway; morphPeriod is seconds per breathe cycle.
-            morphAmp: 0.04,
-            morphPeriod: 26,
-          };
-          var hero = document.querySelector(cfg.heroSel);
-          var field = document.getElementById(cfg.fieldId);
-          if (!field) return;
-          var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-          var A = "assets/world-two/";
-          // Cubic-bezier easing (Newton–Raphson + bisection), same impl as World-3.
-          // "snap" is World-3's Snap curve (0.10,0.85,0.25,1.00): punches to size
-          // fast, then a soft settle — no overshoot, so no bounce. Used both to
-          // shape the load-in and to unwind each coin's entrance spin.
-          function mkBezier(x1, y1, x2, y2) {
-            if (x1 === y1 && x2 === y2)
-              return function (t) {
-                return t;
-              };
-            function A2(a, b) {
-              return 1 - 3 * b + 3 * a;
-            }
-            function B2(a, b) {
-              return 3 * b - 6 * a;
-            }
-            function C2(a) {
-              return 3 * a;
-            }
-            function calc(t, a, b) {
-              return ((A2(a, b) * t + B2(a, b)) * t + C2(a)) * t;
-            }
-            function slope(t, a, b) {
-              return 3 * A2(a, b) * t * t + 2 * B2(a, b) * t + C2(a);
-            }
-            function tForX(x) {
-              var t = x,
-                i,
-                xs,
-                d;
-              for (i = 0; i < 8; i++) {
-                xs = calc(t, x1, x2) - x;
-                if (xs > -1e-6 && xs < 1e-6) return t;
-                d = slope(t, x1, x2);
-                if (d > -1e-6 && d < 1e-6) break;
-                t -= xs / d;
-              }
-              var lo = 0,
-                hi = 1;
-              t = x;
-              while (lo < hi) {
-                xs = calc(t, x1, x2);
-                if (xs - x > -1e-6 && xs - x < 1e-6) break;
-                if (x > xs) lo = t;
-                else hi = t;
-                t = (lo + hi) / 2;
-              }
-              return t;
-            }
-            return function (t) {
-              return t <= 0 ? 0 : t >= 1 ? 1 : calc(tForX(t), y1, y2);
-            };
-          }
-          var snap = mkBezier(0.1, 0.85, 0.25, 1.0);
-          var DW = 393;
+(function () {
+  var cfg = {
+    heroSel: ".m7-hero", fieldId: "m7-field", cls: "m7-card",
+    gens: 4, lead: 3, ratio: 10.0, mStar: 1.0,            // deeper stack → more blurred photos emerging from the back
+    period: 70, flow: 0.7, introTau: 0.4, introMin: 0.03,
+    pSmall: 0.92, pBig: 0.5, pLoD: 26, pHiD: 200,
+    stagger: 0.7, enterFade: 0.6, emDur: 1.2,
+    settleBoost: 3.5, settleDur: 2.5,                     // follow-through: entrance eases into the cruise instead of stopping dead
+    speedLo: 0.82, speedHi: 1.4,
+    blurMax: 5.0, blurNear: 1.0, blurFar: 0.10,
+    hazeSat: 0.6, hazeFade: 0.45,                         // aerial perspective: far tiles desaturate + wash toward the white bg
+    maxScale: 8, fadeInLo: 0.006, fadeInHi: 0.04, fadeOutLo: 5.0, fadeOutHi: 8.0,  // depth envelope: emerge from distance, dissolve as it passes
+    originY: 0.74,                                         // spawn point dropped lower so it stays tucked behind the signup card
+    count: 11, rMin: 90, rMax: 410, yScale: 1.45, sizeLo: 100, sizeHi: 178, minSep: 165,  // bigger photos, fanned wider across the surface; emergence hides behind the card
+    hover: false
+  };
+  var field = document.getElementById(cfg.fieldId);
+  if (!field) return;
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var A = "assets/world-new/";
+  var DW = 393;
 
-          // ---- Exact composition from Figma (file SwnQ7M7I5DG7o0QcZTncet, node 546:36120) -------
-          // dx,dy,w,h: design-px layout (centre-relative). nw,nh: the image's NATIVE pixel size,
-          // used so each tile is rasterised at full resolution and only ever scaled DOWN (crisp).
-          var TILES = [
-            // Mobile: same 7 photos/coins arranged around the card. Photos carry
-            // a `hover` twin (cross-fades on hover); coins do not.
-            {
-              f: "MIB_CASSIDY_1781 1.png",
-              hover: "MIB_CASSIDY_1781 3.png",
-              name: "Hutch Cassidy",
-              dx: -118,
-              dy: -290,
-              w: 150,
-              h: 225,
-              nw: 485,
-              nh: 726,
-            },
-            {
-              f: "NORAM_FTC_2511_0008 1.png",
-              hover: "NORAM_FTC_2511_0008 2.png",
-              name: "FTC",
-              dx: 140,
-              dy: -278,
-              w: 150,
-              h: 100,
-              nw: 690,
-              nh: 460,
-            },
-            {
-              f: "MIB_CASSIDY_1781 2.png",
-              hover: "MIB_CASSIDY_1781 4.png",
-              name: "feYi",
-              dx: -150,
-              dy: -110,
-              w: 95,
-              h: 143,
-              nw: 484,
-              nh: 726,
-            },
-            {
-              f: "Image1.png",
-              hover: "Image1-1.png",
-              name: "Jitensha",
-              dx: 40,
-              dy: -120,
-              w: 140,
-              h: 100,
-              nw: 690,
-              nh: 492,
-            },
-            {
-              f: "image 4171.png",
-              dx: 150,
-              dy: -70,
-              w: 100,
-              h: 109,
-              nw: 699,
-              nh: 759,
-            },
-            {
-              f: "image 4631.png",
-              dx: -110,
-              dy: 25,
-              w: 125,
-              h: 131,
-              nw: 1111,
-              nh: 1165,
-            },
-            {
-              f: "image 4633.png",
-              dx: 70,
-              dy: 35,
-              w: 95,
-              h: 126,
-              nw: 312,
-              nh: 414,
-            },
-          ];
+  var IMAGES = [
+    { f: "Image1.png",          nw: 966, nh: 600 },
+    { f: "Images.png",          nw: 434, nh: 600 },
+    { f: "IMG-2.png",           nw: 772, nh: 600 },
+    { f: "Image 6.png",         nw: 996, nh: 600 },
+    { f: "Image 8.png",         nw: 433, nh: 600 },
+    { f: "Image1-3.png",        nw: 844, nh: 600 },
+    { f: "IMG-1.png",           nw: 453, nh: 600 },
+    { f: "IMG.png",             nw: 461, nh: 600 },
+    { f: "Image1-2.png",        nw: 833, nh: 592 },
+    { f: "NorAm_EF_2254.png",   nw: 888, nh: 600 },
+    { f: "Image1-1.png",        nw: 843, nh: 600 },
+    { f: "MIB_FEYI_0289.png",   nw: 431, nh: 600 },
+    { f: "NorAm_FTC_02105.png", nw: 798, nh: 600 },
+    { f: "Image 9.png",         nw: 420, nh: 600 },
+    { f: "Image 10.png",        nw: 438, nh: 600 }
+  ];
 
-          var N = TILES.length,
-            G = cfg.gens,
-            R = cfg.ratio,
-            LEAD = cfg.lead;
+  var rnd = function (a, b) { return a + Math.random() * (b - a); };
 
-          // Per-tile size-growth power. Small images grow nearly in step with the expansion so they
-          // stay embedded in the cluster and leave WITH the group; big images grow slowly so they
-          // neither balloon into "one zoomed photo" nor blur.
-          function tileP(w, h) {
-            var d = Math.sqrt(w * h),
-              x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
-            if (x < 0) x = 0;
-            else if (x > 1) x = 1;
-            return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
-          }
+  // Even fan across the TOP: tiles spread left→right over a wide upward arc and
+  // zoom up into the visible top-left / top / top-right. They emerge from the low
+  // origin (behind the opaque signup card) so the spawn point stays hidden, and the
+  // radius is decorrelated from the angle so the whole top band fills evenly.
+  var SPREAD = Math.PI * 1.4;                             // ~252° fan centred straight up → reaches well into left/right
+  var TILES = [];
+  for (var i = 0; i < cfg.count; i++) {
+    var frac = (i + 0.5) / cfg.count;                     // 0..1 → left → right across the top
+    var ang = -Math.PI / 2 + (frac - 0.5) * SPREAD + rnd(-0.12, 0.12);
+    var rstep = (i * 0.61803 + 0.5) % 1;                  // golden-ratio radius, independent of angle
+    var rad = cfg.rMin + (cfg.rMax - cfg.rMin) * Math.sqrt(rstep);
+    var im = i < IMAGES.length ? IMAGES[i] : IMAGES[(Math.random() * IMAGES.length) | 0];
+    var w = rnd(cfg.sizeLo, cfg.sizeHi);
+    TILES.push({
+      f: im.f, nw: im.nw, nh: im.nh, w: w, h: w * im.nh / im.nw,
+      dx: Math.cos(ang) * rad, dy: Math.sin(ang) * rad * cfg.yScale
+    });
+  }
+  // Fill the sparse centre column: one photo straight up the middle of the fan.
+  var cim = IMAGES[12], cw = rnd(150, 185);
+  TILES.push({ f: cim.f, nw: cim.nw, nh: cim.nh, w: cw, h: cw * cim.nh / cim.nw, dx: rnd(-18, 18), dy: -320 });
+  // Spread: relax any tiles that landed too close (a few push-apart passes).
+  for (var pass = 0; pass < 8; pass++) {
+    for (var a = 0; a < TILES.length; a++) {
+      for (var b = a + 1; b < TILES.length; b++) {
+        var Ta = TILES[a], Tb = TILES[b];
+        var rx = Tb.dx - Ta.dx, ry = Tb.dy - Ta.dy;
+        var rd = Math.sqrt(rx * rx + ry * ry) || 0.0001;
+        if (rd < cfg.minSep) {
+          var pu = (cfg.minSep - rd) * 0.5, ux = rx / rd, uy = ry / rd;
+          Ta.dx -= ux * pu; Ta.dy -= uy * pu;
+          Tb.dx += ux * pu; Tb.dy += uy * pu;
+        }
+      }
+    }
+  }
 
-          // ---- Expanding-universe loop -----------------------------------------------------------
-          // POSITION expands by scale = mStar*R^L*intro; on-screen SIZE grows by scale^P (per tile).
-          // Each element is sized to the image's NATIVE px and positioned with translate + a scale
-          // that maps native -> on-screen (almost always < 1, so downscaling keeps it sharp).
-          // opacity is always 1 (no fade). Two instances spaced by a large R: the incoming batch is
-          // a sub-px point behind the card during the boom and only grows out after the first batch
-          // has moved off-frame. Loops seamlessly: all quantities are functions of L=(g-LEAD)+u.
-          var L = { s: 1, cx: 0, cy: 0 };
-          var pxv = 0,
-            pyv = 0,
-            pxT = 0,
-            pyT = 0;
-          // Coin-spin state: (mx,my) is the cursor's field-local position; each
-          // coin spins only while the cursor is within cfg.spinRadius of it (see
-          // render). pointerIn gates all spin off once the cursor leaves. lastEb
-          // tracks the previous frame time so render() can derive dt.
-          var mx = -1e5,
-            my = -1e5,
-            pointerIn = false,
-            lastEb = -1;
-          var cards = [];
-          for (var g = 0; g < G; g++) {
-            for (var i = 0; i < N; i++) {
-              var t = TILES[i];
-              var el = document.createElement("div");
-              el.className = cfg.cls;
-              el.style.cssText =
-                "left:0;top:0;width:" +
-                t.nw +
-                "px;height:" +
-                t.nh +
-                "px;opacity:1;transition:none;transform-origin:0 0;border-radius:0;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
-              var im = new Image();
-              im.alt = "";
-              im.decoding = "async";
-              im.loading = "eager";
-              im.style.cssText =
-                "width:100%;height:100%;object-fit:cover;display:block";
-              im.src = A + encodeURI(t.f);
-              el.appendChild(im);
-              // Photos carry a hover twin that cross-fades in on pointer hover.
-              // Coins have no t.hover, so they never swap.
-              if (t.hover) {
-                var imh = new Image();
-                imh.alt = "";
-                imh.decoding = "async";
-                imh.loading = "eager";
-                imh.style.cssText =
-                  "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 0.35s ease";
-                imh.src = A + encodeURI(t.hover);
-                el.appendChild(imh);
-                el.__imh = imh;
-                // 50% black scrim + white business name, revealed on hover.
-                // Font is sized in the tile's NATIVE px space (nw/w) so it renders
-                // at a consistent on-screen size regardless of each tile's scale.
-                var ov = document.createElement("div");
-                var fs = Math.round((22 * t.nw) / t.w);
-                ov.style.cssText =
-                  "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8%;box-sizing:border-box;background:rgba(0,0,0,0.5);color:#fff;font-weight:600;line-height:1.15;opacity:0;transition:opacity 0.35s ease;font-size:" +
-                  fs +
-                  "px";
-                ov.textContent = t.name || "";
-                el.appendChild(ov);
-                el.__ov = ov;
-                el.style.cursor = "pointer";
-                el.addEventListener("pointerenter", function () {
-                  this.__imh.style.opacity = "1";
-                  if (this.__ov) this.__ov.style.opacity = "1";
-                });
-                el.addEventListener("pointerleave", function () {
-                  this.__imh.style.opacity = "0";
-                  if (this.__ov) this.__ov.style.opacity = "0";
-                });
-              } else {
-                // Coin (no hover twin): let it spin freely. Drop the clip box so
-                // rotation never crops the corners, and rotate the <img> about its
-                // own centre — the outer tile keeps doing translate+scale from 0,0.
-                el.style.overflow = "visible";
-                im.style.transformOrigin = "50% 50%";
-                im.style.willChange = "transform";
-                el.__coin = im;
-              }
-              field.appendChild(el);
-              cards.push({
-                el: el,
-                t: t,
-                g: g,
-                P: tileP(t.w, t.h),
-                // Golden-ratio spread over [0, introStagger): an even but
-                // non-sequential sprinkle of per-tile big-bang start offsets.
-                stag: ((i * 0.618033) % 1) * cfg.introStagger,
-                // Fixed stacking rank (tile index): unique within a generation so
-                // overlapping tiles never tie and never swap front/back.
-                z: i,
-                // Per-tile hover: a slow bob at its own speed/phase so the field
-                // breathes rather than pulsing in lockstep.
-                hspeed: 0.5 + ((i * 0.377) % 1) * 0.5,
-                hphase: (i * 2.39996323) % 6.28318,
-                // Coin spin. coin: the <img> to rotate (null for photos). Each
-                // coin gets a random direction + steady-state rate so, on cursor
-                // interaction, they whirl every which way rather than in lockstep;
-                // introTurns/introDir seed the one-shot unwind during the zoom-in.
-                coin: el.__coin || null,
-                spinDir: Math.random() < 0.5 ? -1 : 1,
-                spinRate: 0.6 + Math.random() * 0.9,
-                introDir: Math.random() < 0.5 ? -1 : 1,
-                introTurns: 0.75 + Math.random() * 0.9,
-                spinAng: 0,
-                // Live proximity spin energy (0..1) + how fast this coin chases
-                // the cursor's proximity — randomized so each coin spins up and
-                // winds down at its own pace, reacting differently to the cursor.
-                spinE: 0,
-                spinResp: 3.5 + Math.random() * 5,
-                // Orbit (only while cursor-energized): each coin drifts around
-                // its OWN little ellipse — distinct radius, tilt, speed, phase
-                // and direction — so interaction sends them into different orbits
-                // rather than all spinning in place alike.
-                orbitR: 10 + Math.random() * 22,
-                orbitSpeed: 0.7 + Math.random() * 1.9,
-                orbitDir: Math.random() < 0.5 ? -1 : 1,
-                orbitSquish: 0.45 + Math.random() * 0.5,
-                orbitTilt: Math.random() * 6.2831853,
-                orbitAng: Math.random() * 6.2831853,
-                // Entrance tumble: signed half-turns on X and Y (Y always
-                // non-zero) so every coin flips through a different 3D path as it
-                // zooms in, then unwinds to flat as it lands.
-                flipX:
-                  (Math.random() < 0.5 ? -1 : 1) *
-                  (Math.random() < 0.55 ? 1 + Math.floor(Math.random() * 2) : 0),
-                flipY:
-                  (Math.random() < 0.5 ? -1 : 1) *
-                  (1 + Math.floor(Math.random() * 2)),
-                // Hover-flip axis: a random in-plane axis (rotate3d normalises
-                // it) so each coin turns over on its OWN orientation — some
-                // left-right, some top-over-bottom, some diagonal — and hovering
-                // rolls it right over to reveal every side.
-                spinPhi: Math.random() * 6.2831853,
-              });
-            }
-          }
+  var N = TILES.length, G = cfg.gens, R = cfg.ratio, LEAD = cfg.lead;
 
-          function measure() {
-            var r = field.getBoundingClientRect();
-            L.s = r.width / DW;
-            L.cx = r.width / 2;
-            L.cy = r.height / 2;
-          }
-          measure();
-          window.addEventListener("resize", measure);
+  function tileP(w, h) {
+    var d = Math.sqrt(w * h), x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
+    if (x < 0) x = 0; else if (x > 1) x = 1;
+    return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
+  }
 
-          if (hero && !reduce) {
-            hero.addEventListener("pointermove", function (e) {
-              var r = hero.getBoundingClientRect();
-              pxT = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
-              pyT = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
-              // Track the cursor in the FIELD's own coordinate space so render()
-              // can measure each coin's distance to it and spin only nearby coins.
-              var fr = field.getBoundingClientRect();
-              mx = e.clientX - fr.left;
-              my = e.clientY - fr.top;
-              pointerIn = true;
-            });
-            hero.addEventListener("pointerleave", function () {
-              pxT = 0;
-              pyT = 0;
-              // Cursor gone: no coin is "near" any more, so they all coast to rest.
-              pointerIn = false;
-            });
-          }
+  var L = { s: 1, cx: 0, cy: 0 };
+  var Tspd = [];
+  for (var j = 0; j < N; j++) Tspd[j] = rnd(cfg.speedLo, cfg.speedHi);
+  var Tdel = [], ord = [];
+  for (var j = 0; j < N; j++) ord.push({ i: j, r: Math.sqrt(TILES[j].dx * TILES[j].dx + TILES[j].dy * TILES[j].dy) });
+  ord.sort(function (a, b) { return b.r - a.r; });
+  for (var j = 0; j < N; j++) Tdel[ord[j].i] = N <= 1 ? 0 : (j / (N - 1)) * cfg.stagger;
 
-          function render(u, eb) {
-            // Ease the parallax toward the cursor target each frame so it glides with inertia
-            // instead of snapping 1:1 (lower factor = looser/smoother, higher = snappier).
-            pxv += (pxT - pxv) * 0.08;
-            pyv += (pyT - pyv) * 0.08;
-            // Frame delta, clamped so a backgrounded tab can't jump the spin.
-            // Per-coin spin energy is eased in render's coin block, not here.
-            var dt = lastEb < 0 ? 0 : eb - lastEb;
-            if (dt < 0) dt = 0;
-            else if (dt > 0.1) dt = 0.1;
-            lastEb = eb;
-            for (var k = 0; k < cards.length; k++) {
-              var c = cards[k],
-                t = c.t;
-              var ell = c.g - LEAD + u;
-              // Each tile's intro ramp starts at its own stagger offset (eb is
-              // elapsed seconds), so the big-bang sprinkles in rather than
-              // every tile popping on the same frame.
-              var te = eb - c.stag;
-              var intro,
-                ip = 0;
-              if (te > 0) {
-                // Load-in shaped by World-3's "Snap" curve (cubic-bezier
-                // 0.10,0.85,0.25,1.00): punches to size fast, then a soft settle —
-                // no overshoot, so no bounce. ip is the eased 0→1 progress, reused
-                // below to unwind each coin's entrance spin as it lands.
-                var p = te / cfg.introDur;
-                if (p > 1) p = 1;
-                ip = snap(p);
-                intro = cfg.introMin + (1 - cfg.introMin) * ip;
-              } else {
-                intro = cfg.introMin;
-              }
-              var scale = cfg.mStar * Math.pow(R, ell) * intro; // POSITION expansion
-              // Tiles grow from a sub-px point at centre up to full size by the resting frame
-              // (scale 1), so they emerge by SCALING — opacity stays 1, no ghosted fade-in, and
-              // the centre stays clean because a sub-px point is invisible (not a cluster).
-              var emerge = (scale - 0.1) / 0.9;
-              if (emerge < 0) emerge = 0;
-              else if (emerge > 1) emerge = 1;
-              var sz = Math.pow(scale, c.P) * emerge; // on-screen SIZE growth (per tile)
-              var onW = t.w * L.s * sz; // target on-screen width (design px)
-              var s = onW / t.nw; // native -> screen (mostly downscale)
-              c.el.style.borderRadius =
-                (s > 0.001 ? 8 / s : 0).toFixed(1) + "px"; // ~8px on screen
-              var depth = (scale < 2.4 ? scale : 2.4) * cfg.pStrength;
-              // After the boom settles, each tile hovers: a slow vertical bob that
-              // eases in (hgate) once the entrance is past, so the field breathes.
-              var st = te - cfg.hoverDelay;
-              var hgate = st > 0 ? 1 - Math.exp(-st / cfg.hoverEase) : 0;
-              var hov =
-                Math.sin(eb * c.hspeed + c.hphase) * cfg.hoverAmp * hgate;
-              var cx = L.cx + (t.dx * scale + pxv * depth) * L.s;
-              var cy = L.cy + (t.dy * scale + pyv * depth + hov) * L.s;
-              var X = cx - onW / 2,
-                Y = cy - (t.h * L.s * sz) / 2;
-              // Stable z-order: generation first (the higher generation always
-              // has a larger ell, so it's always the more-expanded/closer batch),
-              // then the tile's fixed rank. Independent of the live scale, so a
-              // staggered tile can't momentarily outrank a neighbour and flicker.
-              c.el.style.zIndex = 100 + c.g * 1000 + c.z;
-              c.el.style.transform =
-                "translate(" +
-                X.toFixed(1) +
-                "px," +
-                Y.toFixed(1) +
-                "px) scale(" +
-                s.toFixed(4) +
-                ")";
-              // Coins spin: (1) entrance unwind — introTurns of rotation that
-              // bleeds off to 0 as the Snap ramp completes (ip 0→1), so each coin
-              // whirls as it zooms in and lands at its designed angle; (2) cursor
-              // whirl — spinAng accrues from the live spin energy, each coin in its
-              // own random direction/rate, easing to a stop when the cursor rests.
-              if (c.coin) {
-                // Per-coin proximity: this coin's spin target is 1 at the cursor
-                // and eases to 0 at cfg.spinRadius away (squared for a soft
-                // near-field). Its energy chases that target at its own spinResp,
-                // so only coins the cursor is near whirl — each spinning up and
-                // coasting down independently, in its own direction and at its
-                // own rate.
-                var target = 0;
-                if (pointerIn) {
-                  var ddx = mx - cx,
-                    ddy = my - cy;
-                  var pr =
-                    1 - Math.sqrt(ddx * ddx + ddy * ddy) / cfg.spinRadius;
-                  if (pr > 0) target = pr * pr;
-                }
-                c.spinE += (target - c.spinE) * Math.min(1, dt * c.spinResp);
-                // Hover whirl: while energized, accrue rotation about the coin's
-                // own 3D axis so it turns right over (front → edge → back → …),
-                // letting you see every side. When the energy fades, ease the
-                // angle back to the nearest full turn so it always settles
-                // face-on and never rests edge-on (which would be invisible).
-                c.spinAng +=
-                  c.spinDir * c.spinE * c.spinRate * cfg.spinSpeed * 360 * dt;
-                var settle = 1 - c.spinE;
-                if (settle > 0.001) {
-                  var flat = Math.round(c.spinAng / 360) * 360;
-                  c.spinAng += (flat - c.spinAng) * Math.min(1, dt * 3) * settle;
-                }
-                // Entrance 2D whirl, unwinding as the Snap ramp completes.
-                var introRot = c.introDir * c.introTurns * 360 * (1 - ip);
-                // Orbit: while energized, the coin also drifts around its own
-                // ellipse. The offset is scaled by spinE so it eases in/out with
-                // the interaction, and rotated by orbitTilt so each orbit sits at
-                // a different angle — distinct path per coin.
-                c.orbitAng += c.orbitDir * c.orbitSpeed * dt;
-                var ex = Math.cos(c.orbitAng) * c.orbitR;
-                var ey = Math.sin(c.orbitAng) * c.orbitR * c.orbitSquish;
-                var ct = Math.cos(c.orbitTilt),
-                  stt = Math.sin(c.orbitTilt);
-                var ox = (ex * ct - ey * stt) * c.spinE;
-                var oy = (ex * stt + ey * ct) * c.spinE;
-                // Entrance tumble: per-coin X/Y half-turns that unwind to flat as
-                // the coin zooms in.
-                var fx = c.flipX * 180 * (1 - ip);
-                var fy = c.flipY * 180 * (1 - ip);
-                // Hover flip about this coin's own in-plane axis (rotate3d
-                // normalises the vector) — the direction differs per coin, so
-                // they turn over on different orientations and reveal all sides.
-                var axX = Math.cos(c.spinPhi),
-                  axY = Math.sin(c.spinPhi);
-                c.coin.style.transform =
-                  "perspective(700px) translate(" +
-                  ox.toFixed(2) +
-                  "px," +
-                  oy.toFixed(2) +
-                  "px) rotateX(" +
-                  fx.toFixed(2) +
-                  "deg) rotateY(" +
-                  fy.toFixed(2) +
-                  "deg) rotate3d(" +
-                  axX.toFixed(4) +
-                  "," +
-                  axY.toFixed(4) +
-                  ",0," +
-                  c.spinAng.toFixed(2) +
-                  "deg) rotate(" +
-                  introRot.toFixed(2) +
-                  "deg)";
-              }
-            }
-          }
+  var cards = [];
+  for (var g = 0; g < G; g++) {
+    for (var i = 0; i < N; i++) {
+      var t = TILES[i];
+      var el = document.createElement("div");
+      el.className = cfg.cls;
+      el.style.cssText = "left:0;top:0;width:" + t.nw + "px;height:" + t.nh +
+        "px;opacity:0;transition:none;transform-origin:0 0;border-radius:" +
+        Math.round(Math.min(t.nw, t.nh) * 0.05) +
+        "px;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
+      var im = new Image();
+      im.alt = ""; im.decoding = "async"; im.loading = "eager";
+      im.style.cssText = "width:100%;height:100%;object-fit:cover;display:block";
+      im.src = A + encodeURI(t.f);
+      el.appendChild(im);
+      field.appendChild(el);
+      cards.push({ el: el, t: t, g: g, P: tileP(t.w, t.h), spd: Tspd[i], delay: Tdel[i] });
+    }
+  }
 
-          if (reduce) {
-            render(0, 1e6);
-            return;
-          }
+  function measure() {
+    var r = field.getBoundingClientRect();
+    L.s = r.width / DW; L.cx = r.width / 2; L.cy = r.height * cfg.originY;
+  }
+  measure();
+  window.addEventListener("resize", measure);
 
-          var start = 0,
-            PERIOD = cfg.period;
-          function loop(ts) {
-            if (!start) start = ts;
-            var el = (ts - start) / 1000;
-            // World 2: no tunnel, but a slight continuous "morph" (borrowed from
-            // the World version) so the field feels alive instead of frozen once
-            // the boom settles. A slow, bounded sinusoidal breathe of u expands
-            // and contracts the whole composition by ~10% — the images subtly
-            // drift and re-scale ("zoom") in place. Bounded + sinusoidal so it
-            // stays near the Figma composition and loops seamlessly with only two
-            // generations (unlike World's full 0→1 tunnel sweep).
-            var u = cfg.morphAmp * Math.sin(el * (6.2831853 / cfg.morphPeriod));
-            // Pass elapsed seconds; render() applies each tile's own staggered
-            // intro ramp so the big-bang sprinkles in rather than popping at once.
-            render(u, el);
-            requestAnimationFrame(loop);
-          }
-          requestAnimationFrame(loop);
-        })();
+  function render(elapsed, isStatic) {
+    for (var k = 0; k < cards.length; k++) {
+      var c = cards[k], t = c.t;
+      var u = isStatic ? 0 : (phaseTime / (cfg.period * c.spd)) % 1;
+      // zoom phase stays linear → seamless loop; the selected curve drives the load-in boom below
+      var ell = (c.g - LEAD) + u;
+      var scale = cfg.mStar * Math.pow(R, ell);
+      if (scale > cfg.maxScale) { c.el.style.opacity = 0; continue; }
+      var vis = 1;
+      if (!isStatic) {
+        var te = elapsed - c.delay;
+        if (te <= 0) { scale *= cfg.introMin; vis = 0; }
+        else {
+          var p = te < cfg.emDur ? te / cfg.emDur : 1;
+          var e = window.__W3.fns[window.__W3.idx](p);      // load-in shaped by the selected cubic-bezier
+          var m = cfg.introMin + (1 - cfg.introMin) * e;    // may overshoot >1 (spring); settles to exactly 1 at te>=emDur
+          scale *= m < 0.01 ? 0.01 : m;                     // guard: never non-positive scale on undershoot
+          vis = te < cfg.enterFade ? te / cfg.enterFade : 1;
+        }
+      }
+      var env = 1;                                        // depth envelope: swell up out of the far blur, dissolve as it passes the camera
+      if (scale < cfg.fadeInHi) env = (scale - cfg.fadeInLo) / (cfg.fadeInHi - cfg.fadeInLo);
+      else if (scale > cfg.fadeOutLo) env = (cfg.fadeOutHi - scale) / (cfg.fadeOutHi - cfg.fadeOutLo);
+      if (env < 0) env = 0; else if (env > 1) env = 1;
+      var sz = Math.pow(scale, c.P);
+      var onW = t.w * L.s * sz, onH = t.h * L.s * sz;
+      var s = onW / t.nw;
+      var X = L.cx + t.dx * scale * L.s - onW / 2;
+      var Y = L.cy + t.dy * scale * L.s - onH / 2;
+      var bl = 0, sat = 1, haze = 1;
+      if (scale < cfg.blurNear) {
+        var bt = (cfg.blurNear - scale) / (cfg.blurNear - cfg.blurFar);
+        if (bt > 1) bt = 1; else if (bt < 0) bt = 0;
+        bl = cfg.blurMax * bt / s;
+        if (bl > 30) bl = 30;
+        sat = 1 - cfg.hazeSat * bt;                         // far → desaturated
+        haze = 1 - cfg.hazeFade * bt;                       // far → washes toward the white bg (aerial perspective)
+      }
+      c.el.style.zIndex = Math.round(scale * 2000) * 64 + k;
+      c.el.style.opacity = vis * env * haze;
+      c.el.style.filter = "blur(" + bl.toFixed(2) + "px) saturate(" + sat.toFixed(2) + ")";
+      c.el.style.transform = "translate(" + X.toFixed(1) + "px," + Y.toFixed(1) + "px) scale(" + s.toFixed(4) + ")";
+    }
+  }
+
+  if (reduce) { render(0, true); return; }
+
+  var start = 0, lastTs = 0, phaseTime = 0;   // phaseTime advances by dt*speed → speed changes are smooth (no scale jump)
+  (window.__W3.resets = window.__W3.resets || []).push(function () { start = 0; lastTs = 0; phaseTime = 0; });   // picker replays the load from t=0
+  function loop(ts) {
+    if (!start) { start = ts; lastTs = ts; }
+    var dt = (ts - lastTs) / 1000; lastTs = ts;
+    var el = (ts - start) / 1000;
+    var glide = 1;                                       // follow-through: after the load-in, keep drifting and ease down to cruise (no abrupt stop)
+    if (cfg.settleDur > 0) {
+      var gt = (el - cfg.emDur) / cfg.settleDur;         // <0 through the boom, 0 at boom end, 1 once settled
+      if (gt < 1) { if (gt < 0) gt = 0; glide = 1 + cfg.settleBoost * (1 - gt) * (1 - gt); }  // ease-out down to cruise speed
+    }
+    phaseTime += dt * (window.__W3.speed || 1) * glide;   // speed picker scales the zoom rate; load-in below stays on real time
+    render(el, false);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
       }
     </script>
   </body>

@@ -442,25 +442,26 @@
       }
     </style>
     <style>
-      /* Pre-composed row strips (Top row.png / Bottom row.png) replace the
-         individual mosaic tiles. Each strip is duplicated x4 in its track so
-         the -50% loop always covers the viewport; 12px margin matches the
-         inter-tile gap and creates a uniform seam at each repeat. */
-      .mzc-strip {
-        display: block;
-        flex: none;
-        height: 100%;
-        width: auto;
-        margin-right: 12px;
-      }
-      /* Soft load + entrance (Marquee 2): the field stays hidden until its
-         images have decoded (the .is-ready class is added by the bootstrap
-         script). Then the two rows SLIDE in from opposite sides — the top row
-         from the right (moving left), the bottom row from the left (moving
-         right), each matching its own marquee scroll direction — and settle
-         into the steady scroll. Pure horizontal translation: nothing is
-         scaled, so no cropping and no background ring. Gating on decode still
-         means the marquee never animates over empty boxes. */
+      /* ------------------------------------------------------------------
+         Staggered TILE entrance (Marquee 2 · WIP).
+
+         The field stays hidden until its images decode (.is-ready, added by
+         the bootstrap script). Then each TILE animates in on its own — a
+         short directional slide + scale-up with a slight per-tile delay — so
+         the mosaic assembles as a travelling cascade rather than two solid
+         rows sliding in as chunks. Odd rows enter from the right, even rows
+         from the left (each matching its own marquee direction), and the
+         waves cascade in opposite directions for a woven feel.
+
+         Motion sits on .mzc-cell — never .mzc-track (which runs the endless
+         marquee) and never .mzc-row — so the entrance and the loop don't
+         fight. Each cell's delay is the CSS var --d, assigned in JS.
+
+         Easing = "Snap" from World 3: cubic-bezier(0.10,0.85,0.25,1.00), a
+         quick lead-out that decelerates hard into place. As a tile settles,
+         its image also MORPHS shape — border-radius eases from a soft blob
+         down to the resting 16px tile corner — so the picture reads as
+         forming rather than merely arriving. */
       .hero__mosaic {
         opacity: 0;
       }
@@ -468,47 +469,67 @@
         opacity: 1;
       }
       /* Only animate when motion is allowed. Under reduced motion these rules
-         don't exist, so both rows simply rest at translateX(0) (no park, no
-         slide) and the field just appears. */
+         don't exist: tiles rest in place and the field simply appears. */
       @media (prefers-reduced-motion: no-preference) {
-        /* Rows start only a short way off-centre (not all the way from the
-           edge) and slightly zoomed out + faded, then drift the last bit into
-           place while scaling up to 1 and fading in — so each row reads as
-           gently locking into position rather than being flung in. Top row
-           eases in from the right, bottom row from the left. */
-        .hero__mosaic .mzc-row--1 {
-          transform: translateX(22%) scale(0.92); /* top: from the RIGHT */
+        .hero__mosaic .mzc-cell {
           opacity: 0;
+          will-change: transform, opacity;
         }
-        .hero__mosaic .mzc-row--2 {
-          transform: translateX(-22%) scale(0.92); /* bottom: from the LEFT */
-          opacity: 0;
+        /* Direction by row parity, matching each row's scroll direction. */
+        .hero__mosaic.is-ready .mzc-row--1 .mzc-cell,
+        .hero__mosaic.is-ready .mzc-row--3 .mzc-cell,
+        .hero__mosaic.is-ready .mzc-row--5 .mzc-cell {
+          animation: mzc-cell-in-r 0.9s cubic-bezier(0.1, 0.85, 0.25, 1) both;
+          animation-delay: var(--d, 0s);
         }
-        .hero__mosaic.is-ready .mzc-row--1 {
-          animation: mzc-in-from-right 1s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+        .hero__mosaic.is-ready .mzc-row--2 .mzc-cell,
+        .hero__mosaic.is-ready .mzc-row--4 .mzc-cell {
+          animation: mzc-cell-in-l 0.9s cubic-bezier(0.1, 0.85, 0.25, 1) both;
+          animation-delay: var(--d, 0s);
         }
-        .hero__mosaic.is-ready .mzc-row--2 {
-          animation: mzc-in-from-left 1s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+        /* Shape morph: the picture rounds off from a soft blob to the tile
+           corner as it scales in. Runs on the same per-tile delay. */
+        .hero__mosaic.is-ready .mzc-cell img {
+          animation: mzc-shape-morph 0.9s cubic-bezier(0.1, 0.85, 0.25, 1) both;
+          animation-delay: var(--d, 0s);
         }
       }
-      @keyframes mzc-in-from-right {
+      @keyframes mzc-cell-in-r {
         from {
-          transform: translateX(22%) scale(0.92);
           opacity: 0;
+          transform: translate3d(30%, 7%, 0) scale(0.8);
+        }
+        55% {
+          opacity: 1;
         }
         to {
-          transform: translateX(0) scale(1);
           opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
         }
       }
-      @keyframes mzc-in-from-left {
+      @keyframes mzc-cell-in-l {
         from {
-          transform: translateX(-22%) scale(0.92);
           opacity: 0;
+          transform: translate3d(-30%, 7%, 0) scale(0.8);
+        }
+        55% {
+          opacity: 1;
         }
         to {
-          transform: translateX(0) scale(1);
           opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+      }
+      @keyframes mzc-shape-morph {
+        from {
+          /* Per-tile start blob (--mr, set in JS): mild for the first tiles,
+             strongly rounded + irregular for ones that arrive later, so the
+             morph into the square 16px corner gets more obvious down the
+             cascade. Falls back to the mild blob if --mr is unset. */
+          border-radius: var(--mr, 46% 46% 42% 42% / 56% 56% 48% 48%);
+        }
+        to {
+          border-radius: 16px;
         }
       }
     </style>
@@ -535,50 +556,114 @@
         <div class="hero__mosaic" aria-hidden="true">
           <div class="mzc-row mzc-row--1">
             <div class="mzc-track">
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Top%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Top%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Top%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Top%20row.png"
-                alt=""
-              />
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%201.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.715">
+              <img src="assets/Marquee-behind/NorAm_EF_2254.png" alt="" style="height:calc((100% - 12px) * 0.676)" />
+              <img src="assets/Marquee-behind/NorAm_FTC_02105.png" alt="" style="height:calc((100% - 12px) * 0.324)" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%202.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--duo">
+              <div class="mzc-duo-top">
+                <img src="assets/Marquee-behind/IMG.png" alt="" />
+                <img src="assets/Marquee-behind/IMG-1.png" alt="" />
+              </div>
+              <div class="mzc-duo-bot">
+                <img src="assets/Marquee-behind/Image%203.png" alt="" />
+              </div>
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%204.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.943">
+              <img src="assets/Marquee-behind/Image%205.png" alt="" style="height:calc((100% - 12px) * 0.568)" />
+              <img src="assets/Marquee-behind/IMG-2.png" alt="" style="height:calc((100% - 12px) * 0.432)" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%201.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.715">
+              <img src="assets/Marquee-behind/NorAm_EF_2254.png" alt="" style="height:calc((100% - 12px) * 0.676)" />
+              <img src="assets/Marquee-behind/NorAm_FTC_02105.png" alt="" style="height:calc((100% - 12px) * 0.324)" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%202.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--duo">
+              <div class="mzc-duo-top">
+                <img src="assets/Marquee-behind/IMG.png" alt="" />
+                <img src="assets/Marquee-behind/IMG-1.png" alt="" />
+              </div>
+              <div class="mzc-duo-bot">
+                <img src="assets/Marquee-behind/Image%203.png" alt="" />
+              </div>
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%204.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.943">
+              <img src="assets/Marquee-behind/Image%205.png" alt="" style="height:calc((100% - 12px) * 0.568)" />
+              <img src="assets/Marquee-behind/IMG-2.png" alt="" style="height:calc((100% - 12px) * 0.432)" />
+            </div>
             </div>
           </div>
           <div class="mzc-row mzc-row--2">
             <div class="mzc-track">
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Bottom%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Bottom%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Bottom%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Bottom%20row.png"
-                alt=""
-              />
+            <div class="mzc-cell mzc-cell--duo">
+              <div class="mzc-duo-top">
+                <img src="assets/Marquee-behind/IMG-3.png" alt="" />
+                <img src="assets/Marquee-behind/IMG-4.png" alt="" />
+              </div>
+              <div class="mzc-duo-bot">
+                <img src="assets/Marquee-behind/Image%203-1.png" alt="" />
+              </div>
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%201-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.715">
+              <img src="assets/Marquee-behind/NorAm_EF_2254-1.png" alt="" style="height:calc((100% - 12px) * 0.368)" />
+              <img src="assets/Marquee-behind/NorAm_FTC_02105-1.png" alt="" style="height:calc((100% - 12px) * 0.632)" />
+            </div>
+            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.943">
+              <img src="assets/Marquee-behind/Image%205-1.png" alt="" style="height:calc((100% - 12px) * 0.568)" />
+              <img src="assets/Marquee-behind/IMG-5.png" alt="" style="height:calc((100% - 12px) * 0.432)" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/IMG-6.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%202-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--duo">
+              <div class="mzc-duo-top">
+                <img src="assets/Marquee-behind/IMG-3.png" alt="" />
+                <img src="assets/Marquee-behind/IMG-4.png" alt="" />
+              </div>
+              <div class="mzc-duo-bot">
+                <img src="assets/Marquee-behind/Image%203-1.png" alt="" />
+              </div>
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%201-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.715">
+              <img src="assets/Marquee-behind/NorAm_EF_2254-1.png" alt="" style="height:calc((100% - 12px) * 0.368)" />
+              <img src="assets/Marquee-behind/NorAm_FTC_02105-1.png" alt="" style="height:calc((100% - 12px) * 0.632)" />
+            </div>
+            <div class="mzc-cell mzc-cell--stack" style="width:auto;aspect-ratio:0.943">
+              <img src="assets/Marquee-behind/Image%205-1.png" alt="" style="height:calc((100% - 12px) * 0.568)" />
+              <img src="assets/Marquee-behind/IMG-5.png" alt="" style="height:calc((100% - 12px) * 0.432)" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/IMG-6.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%202-1.png" alt="" />
+            </div>
             </div>
           </div>
         </div>
@@ -1031,50 +1116,104 @@
         <div class="hero__mosaic" aria-hidden="true">
           <div class="mzc-row mzc-row--1">
             <div class="mzc-track">
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Top%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Top%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Top%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Top%20row.png"
-                alt=""
-              />
+            <div class="mzc-cell mzc-cell--duo">
+              <div class="mzc-duo-top">
+                <img src="assets/Marquee-behind/IMG.png" alt="" />
+                <img src="assets/Marquee-behind/IMG-1.png" alt="" />
+              </div>
+              <div class="mzc-duo-bot">
+                <img src="assets/Marquee-behind/Image%203.png" alt="" />
+              </div>
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%201.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/NorAm_EF_2254.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--duo">
+              <div class="mzc-duo-top">
+                <img src="assets/Marquee-behind/IMG.png" alt="" />
+                <img src="assets/Marquee-behind/IMG-1.png" alt="" />
+              </div>
+              <div class="mzc-duo-bot">
+                <img src="assets/Marquee-behind/Image%203.png" alt="" />
+              </div>
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%201.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/NorAm_EF_2254.png" alt="" />
+            </div>
             </div>
           </div>
           <div class="mzc-row mzc-row--2">
             <div class="mzc-track">
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Bottom%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Bottom%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Bottom%20row.png"
-                alt=""
-              />
-              <img
-                class="mzc-strip"
-                src="assets/Marquee-behind/Bottom%20row.png"
-                alt=""
-              />
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%201-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/IMG-6.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%202-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%202.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%201-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/IMG-6.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%202-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%202.png" alt="" />
+            </div>
+            </div>
+          </div>
+          <div class="mzc-row mzc-row--3">
+            <div class="mzc-track">
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/IMG-3.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--duo">
+              <div class="mzc-duo-top">
+                <img src="assets/Marquee-behind/IMG-5.png" alt="" />
+                <img src="assets/Marquee-behind/IMG-2.png" alt="" />
+              </div>
+              <div class="mzc-duo-bot">
+                <img src="assets/Marquee-behind/Image%203-1.png" alt="" />
+              </div>
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/NorAm_FTC_02105-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%204.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/IMG-3.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--duo">
+              <div class="mzc-duo-top">
+                <img src="assets/Marquee-behind/IMG-5.png" alt="" />
+                <img src="assets/Marquee-behind/IMG-2.png" alt="" />
+              </div>
+              <div class="mzc-duo-bot">
+                <img src="assets/Marquee-behind/Image%203-1.png" alt="" />
+              </div>
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/NorAm_FTC_02105-1.png" alt="" />
+            </div>
+            <div class="mzc-cell mzc-cell--single">
+              <img src="assets/Marquee-behind/Image%204.png" alt="" />
+            </div>
             </div>
           </div>
         </div>
@@ -1532,6 +1671,56 @@
           s.async = false;
           document.body.appendChild(s);
         });
+
+        // Per-tile entrance cascade: give every mosaic cell a staggered
+        // animation-delay (--d) so tiles arrive one after another in a
+        // travelling wave (reversed on alternate rows for a woven feel)
+        // rather than whole rows sliding in as a single chunk. The tile
+        // sequence is duplicated for the seamless loop, so we key the delay
+        // off the position WITHIN one copy (i % half) — that keeps the delay
+        // bounded and makes the off-screen duplicate cascade identically.
+        Array.prototype.slice
+          .call(document.querySelectorAll(".hero__mosaic .mzc-row"))
+          .forEach(function (row, ri) {
+            var cells = Array.prototype.slice.call(
+              row.querySelectorAll(".mzc-cell"),
+            );
+            var half = Math.max(1, Math.round(cells.length / 2));
+            var reverse = ri % 2 === 1; // even rows (0-based) cascade opposite
+            cells.forEach(function (cell, i) {
+              var k = i % half; // position within one marquee copy
+              var pos = reverse ? half - 1 - k : k;
+              var d = ri * 0.08 + pos * 0.07; // row offset + per-tile step
+              cell.style.setProperty("--d", d.toFixed(3) + "s");
+              // Morph intensity ramps with cascade position: tiles that arrive
+              // later start from a rounder, more irregular blob, so their morph
+              // into the square tile corner is more pronounced than the first
+              // few. w = 0 for the earliest tile in the copy, 1 for the last.
+              var w = half > 1 ? pos / (half - 1) : 0;
+              var lerp = function (a, b) {
+                return (a + (b - a) * w).toFixed(1);
+              };
+              cell.style.setProperty(
+                "--mr",
+                lerp(46, 66) +
+                  "% " +
+                  lerp(46, 60) +
+                  "% " +
+                  lerp(42, 70) +
+                  "% " +
+                  lerp(42, 64) +
+                  "% / " +
+                  lerp(56, 78) +
+                  "% " +
+                  lerp(56, 70) +
+                  "% " +
+                  lerp(48, 74) +
+                  "% " +
+                  lerp(48, 82) +
+                  "%",
+              );
+            });
+          });
 
         // Soft load: keep the photo field transparent until its images have
         // decoded, then fade it in (.is-ready) so you never see the marquee
