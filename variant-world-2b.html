@@ -1,0 +1,2057 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Variant 7 — scattered photo collage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=18" />
+    <link rel="stylesheet" href="shopify-logo-anim.css?v=2" />
+    <style>
+      .vp-d {
+        display: contents;
+      }
+      .vp-m {
+        display: none;
+      }
+      @media (max-width: 480px) {
+        .vp-d {
+          display: none;
+        }
+        .vp-m {
+          display: contents;
+        }
+      }
+    </style>
+    <style>
+      @media (min-width: 480.02px) {
+        /* ================================================================
+         Variant 7 — reference Figma node 325:14199 ("Hero"). A white hero
+         with a centered message stack (a white "intro" card holding the
+         heading + subhead, above a dark email CTA card) framed by seven
+         merchant photos placed at their exact comp positions (node
+         325:14200, "Group 24467"). The photos parallax on pointer move —
+         each shifts by an amount set by its own depth, so the layers slide
+         against one another — while the stack holds still so the copy stays
+         readable. Authored at 1440 × 673; every dim is a cqw unit
+         (--u == one design px) so it scales with the viewport. */
+
+        /* Logo overlaid at the top on a transparent strip, so the corner
+         photos bleed up to the very top edge to the logo's sides, per the
+         comp (the hero is the full frame incl. the 72px header band). */
+        .v7-logo {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 6;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: calc(72 * var(--u));
+        }
+        /* Frosted-glass header band behind the logo (Figma 653:57418): a
+         full-width translucent white strip with a 2px backdrop blur, so the
+         animated photo field reads softly through it and the mark stays
+         legible. Replaces the earlier radial halo. Bottom edge feathers out so
+         the band dissolves into the photo field rather than hard-cutting.
+         Sits below the SVG (z-index:-1) but inside the logo's stacking
+         context, so it's above the photo field. */
+        .v7-logo::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          height: calc(109 * var(--u));
+          z-index: -1;
+          pointer-events: none;
+          background: rgba(255, 255, 255, 0.7);
+          -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
+          -webkit-mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 62%,
+            transparent 100%
+          );
+          mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 62%,
+            transparent 100%
+          );
+        }
+        .v7-logo .shopify-logo {
+          height: calc(72 * var(--u));
+          width: auto;
+          display: block;
+        }
+
+        .v7-hero {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1440 / 673;
+          overflow: hidden;
+          background: #fff;
+          container-type: inline-size;
+          --u: 0.069444cqw; /* 100/1440 cqw */
+        }
+
+        /* ---- Flowing photo field (qkims-v5-style downward loop). Two depth
+         tiers of merchant cards; each tier is a stack twice the hero tall
+         with every card duplicated one hero-height below itself, so the
+         translateY(-50%) -> 0 drift descends and loops seamlessly (the two
+         halves are identical). Back tier is soft/slow, front tier sharp/fast
+         — the differing speeds parallax the layers against each other. On top
+         of the drift, every card also shifts by its tier depth (--d) times the
+         shared pointer offset (--px/--py), so moving the cursor slides the
+         cards against one another too. Fixed image per card (no swapping). */
+        .v7-field {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          z-index: 0;
+        }
+        .v7-tier {
+          position: absolute;
+          inset: 0;
+        }
+        .v7-tier.d1 {
+          z-index: 1;
+          --d: 0.34; /* back: moves least on pointer parallax */
+          opacity: 0.92;
+          /* Depth: the back layer sits softly out of focus so the front tier
+           reads as nearer. This is a permanent depth cue, not a hover effect. */
+          filter: blur(1.4px);
+        }
+        .v7-tier.d2 {
+          z-index: 2;
+          --d: 0.72; /* front: moves most — stays sharp */
+        }
+        .v7-flow {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          animation: v7-down var(--dur, 40s) linear infinite;
+          will-change: transform;
+        }
+        @keyframes v7-down {
+          from {
+            transform: translateY(-50%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+        .v7-card {
+          position: absolute;
+          border-radius: calc(16 * var(--u));
+          overflow: hidden;
+          background: #efece7;
+          box-shadow: 0 calc(22 * var(--u)) calc(50 * var(--u))
+            calc(-26 * var(--u)) rgba(0, 0, 0, 0.34);
+          transform: translate3d(
+              calc(var(--px, 0px) * var(--d, 0)),
+              calc(var(--py, 0px) * var(--d, 0)),
+              0
+            )
+            scale(var(--cs, 1));
+          transition:
+            transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            filter 0.45s ease,
+            opacity 0.45s ease;
+          will-change: transform;
+        }
+
+        .v7-tier.d2 .v7-card {
+          box-shadow:
+            0 calc(32 * var(--u)) calc(66 * var(--u)) calc(-28 * var(--u))
+              rgba(0, 0, 0, 0.42),
+            0 calc(8 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.1);
+        }
+        .v7-card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .v7-flow {
+            animation: none;
+          }
+        }
+
+        /* ---- Centered message stack (reference node 325:14209) ----
+         Transparent positioned wrapper pinned at the comp position (490,
+         212), 460 wide; holds the white "intro" card above the dark email
+         CTA card. Sits above the photos (z 5) so it masks any inner photo
+         edge and keeps the copy legible. */
+        .v7-stack {
+          position: absolute;
+          z-index: 5;
+          left: calc(490 * var(--u));
+          top: calc(212 * var(--u));
+          width: calc(460 * var(--u));
+          display: flex;
+          flex-direction: column;
+          gap: calc(10 * var(--u)); /* Stack gap */
+        }
+        /* The signup card fills the stack width. */
+        .v7-stack .signup-card {
+          width: 100%;
+        }
+
+        /* White "intro" card: heading + subhead, with the comp's soft layered
+         drop shadow. */
+        .v7-intro {
+          background: #fff;
+          border-radius: calc(35 * var(--u));
+          padding: calc(30 * var(--u)) calc(24 * var(--u)) calc(25 * var(--u))
+            calc(20 * var(--u));
+          box-shadow:
+            0 calc(9 * var(--u)) calc(20 * var(--u)) rgba(0, 0, 0, 0.05),
+            0 calc(36 * var(--u)) calc(36 * var(--u)) rgba(0, 0, 0, 0.04),
+            0 calc(82 * var(--u)) calc(49 * var(--u)) rgba(0, 0, 0, 0.03),
+            0 calc(145 * var(--u)) calc(58 * var(--u)) rgba(0, 0, 0, 0.01),
+            0 0 calc(2 * var(--u)) rgba(0, 0, 0, 0.25);
+        }
+
+        .v7-headline {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          margin: 0;
+          font-weight: 500; /* Inter Medium */
+          font-size: calc(44 * var(--u));
+          line-height: 1;
+          letter-spacing: calc(-0.44 * var(--u));
+          color: #000;
+          font-feature-settings: "ss03" 1;
+        }
+        .v7-headline span {
+          white-space: nowrap;
+        }
+
+        .v7-subhead {
+          margin: calc(10 * var(--u)) 0 0;
+          font-weight: 400;
+          font-size: calc(18 * var(--u));
+          line-height: 1.2;
+          letter-spacing: calc(-0.18 * var(--u));
+          color: rgba(0, 0, 0, 0.6);
+          font-feature-settings: "ss03" 1;
+        }
+        /* The mid clause is emphasized in black, per the comp. */
+        .v7-subhead strong {
+          font-weight: 400;
+          color: #000;
+        }
+      }
+    </style>
+    <style>
+      @media (max-width: 480px) {
+        /* ----------------------------------------------------------------
+       Variant 7 — mobile (Scattered)
+
+       Same design and motion as the desktop hero, reflowed to the 393×852
+       mobile frame: a centered message stack (white "intro" card holding the
+       heading + subhead, above the dark email CTA card) framed by the same
+       seven merchant photos, here re-scattered into a top band and a bottom
+       band so they bleed off the portrait edges instead of the sides. The
+       photos parallax on pointer move exactly as on desktop — one shared
+       --px/--py offset scaled per photo by its own depth --d — while the
+       stack holds still so the copy stays readable. The logo is overlaid on
+       a transparent top strip so the top photos bleed up to the very edge.
+
+       Authored at 393 × 852, everything in cqw (--u == one design px at 393
+       wide) so it scales to fill the phone frame.
+    ---------------------------------------------------------------- */
+        html,
+        body {
+          margin: 0;
+          background: #fff;
+        }
+
+        .m7-hero {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 393 / 852;
+          overflow: hidden;
+          background: #fff;
+          container-type: inline-size;
+          --u: 0.254453cqw; /* 100/393 cqw */
+        }
+
+        /* ---- Logo overlaid on a transparent top strip (photos bleed to its
+         sides and up to the very top edge, per the desktop comp) ---- */
+        .m7-logo {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 6;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: calc(72 * var(--u));
+        }
+        /* Frosted-glass header band behind the logo (Figma 653:57418), mobile:
+         same full-width translucent white strip + 2px backdrop blur as desktop,
+         feathered at the bottom so it melts into the photo field. */
+        .m7-logo::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          height: calc(108 * var(--u));
+          z-index: -1;
+          pointer-events: none;
+          background: rgba(255, 255, 255, 0.7);
+          -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
+          -webkit-mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 62%,
+            transparent 100%
+          );
+          mask-image: linear-gradient(
+            to bottom,
+            #000 0%,
+            #000 62%,
+            transparent 100%
+          );
+        }
+        .m7-logo .shopify-logo {
+          height: calc(72 * var(--u));
+          width: auto;
+          display: block;
+        }
+
+        /* ---- Flowing photo field (qkims-v5-style downward loop). Two depth
+         tiers of merchant cards; each tier is a stack twice the hero tall
+         with every card duplicated one hero-height below itself, so the
+         translateY(-50%) -> 0 drift descends and loops seamlessly (the two
+         halves are identical). Back tier is soft/slow, front tier sharp/fast.
+         On top of the drift, every card also shifts by its tier depth (--d)
+         times the shared pointer offset (--px/--py), so the cursor still
+         slides the cards against one another (the harness is viewed on a
+         desktop with a pointer). Fixed image per card (no swapping). */
+        .m7-field {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          z-index: 0;
+        }
+        .m7-tier {
+          position: absolute;
+          inset: 0;
+        }
+        .m7-tier.d1 {
+          z-index: 1;
+          --d: 0.3;
+          opacity: 0.92;
+          /* Depth: back layer softly out of focus so the front tier reads as
+           nearer. Permanent depth cue, not a hover effect. */
+          filter: blur(1px);
+        }
+        .m7-tier.d2 {
+          z-index: 2;
+          --d: 0.6; /* front: stays sharp */
+        }
+        .m7-flow {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          animation: m7-down var(--dur, 44s) linear infinite;
+          will-change: transform;
+        }
+        @keyframes m7-down {
+          from {
+            transform: translateY(-50%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+        .m7-card {
+          position: absolute;
+          border-radius: calc(14 * var(--u));
+          overflow: hidden;
+          background: #efece7;
+          box-shadow: 0 calc(12 * var(--u)) calc(28 * var(--u))
+            calc(-14 * var(--u)) rgba(0, 0, 0, 0.32);
+          transform: translate3d(
+              calc(var(--px, 0px) * var(--d, 0)),
+              calc(var(--py, 0px) * var(--d, 0)),
+              0
+            )
+            scale(var(--cs, 1));
+          transition:
+            transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            filter 0.45s ease,
+            opacity 0.45s ease;
+          will-change: transform;
+        }
+
+        .m7-tier.d2 .m7-card {
+          box-shadow:
+            0 calc(18 * var(--u)) calc(40 * var(--u)) calc(-16 * var(--u))
+              rgba(0, 0, 0, 0.42),
+            0 calc(5 * var(--u)) calc(12 * var(--u)) rgba(0, 0, 0, 0.1);
+        }
+        .m7-card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .m7-flow {
+            animation: none;
+          }
+        }
+
+        /* ---- Bottom-anchored message stack ----
+         Pinned to the bottom of the hero (per the live shopify.com/free-trial
+         mobile layout); holds the white "intro" card above the dark email CTA
+         card. Sits above the photos (z 5) so it masks any photo edge behind it
+         and keeps the copy legible. The flowing field fills the space above. */
+        .m7-stack {
+          position: absolute;
+          z-index: 5;
+          left: calc(20 * var(--u));
+          right: calc(20 * var(--u));
+          /* Raised so the white intro's BOTTOM clears the top of the bottom-pinned
+           black CTA bar — previously the box bottom sat behind the black card,
+           so the white showed through around it. Now it rests just above with a
+           small gap. The black card is moved out of this stack into the fixed
+           bar by mobile-extras.js, leaving only the white intro to scroll up. */
+          bottom: calc(218 * var(--u));
+          display: flex;
+          flex-direction: column;
+          gap: calc(10 * var(--u));
+        }
+        .m7-stack .signup-card {
+          width: 100%;
+          max-width: none;
+        }
+
+        /* Disclaimer pulled out of the dark card — fine print just below it.
+         The stack is bottom-anchored over the flowing photo field, so the
+         text is white with a soft shadow to stay legible over the imagery. */
+        .signup-card__disclaimer--out {
+          margin: calc(8 * var(--u)) 0 0;
+          padding: 0 calc(8 * var(--u));
+          text-align: center;
+          color: rgba(255, 255, 255, 0.9);
+          text-shadow: 0 calc(1 * var(--u)) calc(6 * var(--u))
+            rgba(0, 0, 0, 0.55);
+        }
+
+        /* White "intro" card: heading + subhead, with the comp's soft layered
+         drop shadow. */
+        .m7-intro {
+          background: #fff;
+          border-radius: calc(28 * var(--u));
+          padding: calc(26 * var(--u)) calc(22 * var(--u)) calc(24 * var(--u));
+          box-shadow:
+            0 calc(9 * var(--u)) calc(20 * var(--u)) rgba(0, 0, 0, 0.05),
+            0 calc(36 * var(--u)) calc(36 * var(--u)) rgba(0, 0, 0, 0.04),
+            0 calc(82 * var(--u)) calc(49 * var(--u)) rgba(0, 0, 0, 0.03),
+            0 0 calc(2 * var(--u)) rgba(0, 0, 0, 0.25);
+        }
+        /* T1 heading: 33/35, -0.33 — weight 500 (Inter Medium) */
+        .m7-headline {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          margin: 0;
+          font-weight: 500;
+          font-size: calc(33 * var(--u));
+          line-height: calc(35 * var(--u));
+          letter-spacing: calc(-0.33 * var(--u));
+          color: #000;
+          font-feature-settings: "ss03" 1;
+        }
+        /* Body base: 15/19, -0.15 */
+        .m7-subhead {
+          margin: calc(10 * var(--u)) 0 0;
+          font-weight: 400;
+          font-size: calc(15 * var(--u));
+          line-height: calc(19 * var(--u));
+          letter-spacing: calc(-0.15 * var(--u));
+          color: rgba(0, 0, 0, 0.6);
+          font-feature-settings: "ss03" 1;
+        }
+        /* The mid clause is emphasized in black, per the comp. */
+        .m7-subhead strong {
+          font-weight: 400;
+          color: #000;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="vp-d">
+      <!-- Hero (Variant 7) — the full 1440×673 Figma frame (reference node
+         325:14199). The logo is overlaid at the top so the corner photos can
+         bleed up to the very top edge, exactly as in the comp. -->
+      <section class="v7-hero" aria-label="Your business starts with Shopify">
+        <!-- Soft pastel glow behind the photo field (subtle, slowly drifting) -->
+        <div class="ft-glow" aria-hidden="true"></div>
+
+        <!-- Flowing photo field — two depth tiers of merchant cards that drift
+           downward and loop seamlessly, built by the inline script below. The
+           field clips the hero so cards bleed off its edges. -->
+        <div class="v7-field" id="v7-field" aria-hidden="true"></div>
+
+        <!-- Logo overlaid on a transparent strip (photos show to its sides) -->
+        <div class="v7-logo">
+          <a href="#" aria-label="Shopify home">
+            <svg
+              class="shopify-logo h-header-logo-height w-auto -translate-x-2"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              viewBox="0 0 1700 600"
+              shape-rendering="geometricPrecision"
+              text-rendering="geometricPrecision"
+              role="img"
+              aria-label="Shopify"
+            >
+              <g
+                class="shopify-y-container shopify-letter-container"
+                transform="translate(760,320)"
+              >
+                <g
+                  class="shopify-y-scale shopify-letter-scale"
+                  transform="scale(2.09,2.09)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-y-position"
+                      transform="translate(143.359,39.063)"
+                    >
+                      <g class="shopify-y-visibility" transform="scale(0,0)">
+                        <g transform="translate(0,0)">
+                          <g
+                            class="shopify-y"
+                            transform="matrix(2.56 0 0 2.56 30.904-36.565)"
+                            opacity="0"
+                          >
+                            <path
+                              d="M12.879,-38.967c0,0-9.455,23.824-13.701,36.829c0,0-.219,0-.219,0-.291-4.187-3.727-36.829-3.727-36.829s-15.894,0-15.894,0s9.098,49.215,9.098,49.215c.219,1.096.109,1.755-.329,2.522-1.754,3.398-4.714,6.686-8.221,9.097-2.85,2.083-6.028,3.398-8.549,4.275c0,0,4.165,12.825,4.165,12.825c3.069-.658,9.426-3.179,14.797-8.221c6.906-6.467,13.263-16.442,19.84-30.034c0,0,18.524-39.679,18.524-39.679s-15.784,0-15.784,0Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-f-container shopify-letter-container"
+                transform="translate(760,320)"
+              >
+                <g
+                  class="shopify-f-scale shopify-letter-scale"
+                  transform="scale(2.09,2.09)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-f-position"
+                      transform="translate(96.094,39.063)"
+                    >
+                      <g class="shopify-f-visibility" transform="scale(0,0)">
+                        <g transform="translate(0,0)">
+                          <g
+                            class="shopify-f"
+                            transform="matrix(2.56 0 0 2.56 54.812-99.422)"
+                            opacity="0"
+                          >
+                            <path
+                              d="M14.414,-14.523c0,0-32.445,0-32.445,0s-2.192,11.399-2.192,11.399s32.555,0,32.555,0s2.082-11.399,2.082-11.399Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                            <path
+                              d="M4.439,-17.044c.877-5.152,3.947-9.756,8.989-9.756c2.693,0,4.822.767,4.822.767s2.96-11.838,2.96-11.838s-2.631-1.315-8.221-1.315c-5.371,0-10.742,1.534-14.797,5.042-5.152,4.384-7.563,10.742-8.769,17.1c0,0-10.633,56.23-10.633,56.23s15.127,0,15.127,0s10.522-56.23,10.522-56.23Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-i-container shopify-letter-container"
+                transform="translate(760,320)"
+              >
+                <g
+                  class="shopify-i-scale shopify-letter-scale"
+                  transform="scale(2.09,2.09)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-i-position"
+                      transform="translate(67.969,39.063)"
+                    >
+                      <g class="shopify-i-visibility" transform="scale(0,0)">
+                        <g transform="translate(0,0)">
+                          <g
+                            class="shopify-i-dot-position"
+                            transform="translate(20.876,-2.062)"
+                          >
+                            <g
+                              class="shopify-i-dot"
+                              transform="scale(2.56,2.56) translate(0,0)"
+                              opacity="0"
+                            >
+                              <path
+                                d="M0.547,-8.166c-4.822,0-8.658,3.836-8.658,8.769c0,4.494,2.849,7.563,7.124,7.563c0,0,.22,0,.22,0c4.713,0,8.769-3.179,8.878-8.769c0-4.384-2.96-7.563-7.564-7.563Z"
+                                fill="#fff"
+                                stroke-width="0"
+                              ></path>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-i2-container shopify-letter-container"
+                transform="translate(760,320)"
+              >
+                <g
+                  class="shopify-i2-scale shopify-letter-scale"
+                  transform="scale(2.09,2.09)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-i2-position"
+                      transform="translate(67.969,39.063)"
+                    >
+                      <g class="shopify-i2-visibility" transform="scale(0,0)">
+                        <g transform="translate(0,0)">
+                          <g
+                            class="shopify-i2"
+                            transform="matrix(2.56 0 0 2.56 32.672-67.713)"
+                            opacity="0"
+                          >
+                            <path
+                              d="M-12.715,26.8c0,0,15.127,0,15.127,0s10.303-53.6,10.303-53.6-15.235,0-15.235,0-10.195,53.6-10.195,53.6Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-p-container shopify-letter-container"
+                transform="translate(760,320)"
+              >
+                <g
+                  class="shopify-p-scale shopify-letter-scale"
+                  transform="scale(2.09,2.09)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-p-position"
+                      transform="translate(13.672,39.063)"
+                    >
+                      <g class="shopify-p-visibility" transform="scale(0,0)">
+                        <g transform="translate(0,0)">
+                          <g
+                            class="shopify-p"
+                            transform="matrix(2.56 0 0 2.56-135-100)"
+                            opacity="0"
+                          >
+                            <path
+                              d="M106.639,3.898c0,18.415-11.618,36.61-29.375,36.61-5.773,0-8.879-1.973-8.879-1.973h-.329L63.891,60.896h-15.127L59.287,5.542c1.206-6.248,2.412-14.578,3.07-20.059h13.372l-.877,8.111h.219c0,0,5.794-8.988,16.003-8.988c11.071,0,15.565,9.098,15.565,19.292ZM90.855,5.432c0-4.055-1.425-8.33-6.028-8.33-5.261,0-10.194,6.248-11.948,15.674L70.358,26.917c0,0,2.32,2.191,6.248,2.191c8.44,0,14.249-13.92,14.249-23.676Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-o-container shopify-letter-container"
+                transform="translate(760,320)"
+              >
+                <g
+                  class="shopify-o-scale shopify-letter-scale"
+                  transform="scale(2.09,2.09)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-o-position"
+                      transform="translate(-28.516,39.063)"
+                    >
+                      <g class="shopify-o-visibility" transform="scale(0,0)">
+                        <g transform="translate(0,0)">
+                          <g
+                            class="shopify-o"
+                            transform="matrix(2.56 0 0 2.56-27-100)"
+                            opacity="0"
+                          >
+                            <path
+                              d="M52.38,5.761c0,18.744-12.057,34.747-29.924,34.747-13.592,0-20.825-9.426-20.825-21.155c0-18.305,12.056-34.747,30.252-34.747c14.14,0,20.497,10.304,20.497,21.155ZM36.925,5.323c0-4.494-1.753-9.098-7.124-9.098-8.221,0-12.715,14.141-12.715,22.8c0,5.48,2.192,9.864,7.344,9.864c8.002,0,12.495-14.248,12.495-23.566Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-h-container shopify-letter-container"
+                transform="translate(760,320)"
+              >
+                <g
+                  class="shopify-h-scale shopify-letter-scale"
+                  transform="scale(2.09,2.09)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-h-position"
+                      transform="translate(-93.359,39.063)"
+                    >
+                      <g class="shopify-h-visibility" transform="scale(0,0)">
+                        <g transform="translate(0,0)">
+                          <g
+                            class="shopify-h"
+                            transform="matrix(2.56 0 0 2.56 65.725-98.018)"
+                            opacity="0"
+                          >
+                            <path
+                              d="M13.92,-16.168c-6.686,0-11.948,3.179-16.003,8.002c0,0-.219-.11-.219-.11s5.809-30.362,5.809-30.362-15.126,0-15.126,0-14.688,77.276-14.688,77.276s15.126,0,15.126,0s5.043-26.416,5.043-26.416C-4.165,2.247,0.986,-3.891,5.809,-3.891c3.397,0,4.714,2.301,4.714,5.59c0,2.082-.22,4.603-.658,6.686c0,0-5.7,30.253-5.7,30.253s15.127,0,15.127,0s5.918-31.239,5.918-31.239c.657-3.289,1.097-7.234,1.097-9.865c0-8.549-4.495-13.702-12.387-13.702Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-s-container shopify-letter-container"
+                transform="translate(760,320)"
+              >
+                <g
+                  class="shopify-s-scale shopify-letter-scale"
+                  transform="scale(2.09,2.09)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-s-position"
+                      transform="translate(-135.156,39.063)"
+                    >
+                      <g class="shopify-s-visibility" transform="scale(0,0)">
+                        <g transform="translate(0,0)">
+                          <g
+                            class="shopify-s"
+                            transform="matrix(2.56 0 0 2.56 52.765-67.854)"
+                            opacity="0"
+                          >
+                            <path
+                              d="M6.631,-5.371c-3.836-2.082-5.809-3.836-5.809-6.248c0-3.069,2.74-5.042,7.015-5.042c4.98,0,9.427,2.083,9.427,2.083s3.507-10.742,3.507-10.742-3.225-2.521-12.715-2.521c-13.208,0-22.36,7.562-22.36,18.195c0,6.028,4.274,10.633,9.974,13.921c4.604,2.631,6.248,4.494,6.248,7.234c0,2.85-2.302,5.152-6.577,5.152-6.368,0-12.386-3.288-12.386-3.288s-3.726,10.742-3.726,10.742s5.557,3.726,14.907,3.726c13.592,0,23.347-6.686,23.347-18.743c0-6.467-4.933-11.071-10.852-14.469Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-logo-move shopify-logo-elements"
+                transform="translate(852,310)"
+              >
+                <g transform="translate(0,0)">
+                  <g transform="matrix(5.04 0 0 5.04-5379.798-3204.89336)">
+                    <g transform="translate(1059.947 632.849)">
+                      <path
+                        d="M19.247,-25.322v58.243l-38.494-6.947c0,0,1.511-12.196,2.841-22.913c1-8.061,1.898-15.284,1.974-15.851.233-1.744.289-1.802,2.062-2.383.053-.017,31.147-10.066,31.151-10.067.106-.033.276-.069.466-.082ZM5.31665,-12.30482c-8.85527.55892-12.86886,6.75078-12.48272,12.86256.4583,7.26176,7.71583,7.001,7.99503,11.42074.06743,1.0678-.59579,2.57757-2.45219,2.69504-2.84254.17963-6.39307-2.49908-6.39307-2.49908l-1.35753,5.77622c0,0,3.52789,3.78075,9.93518,3.37618c5.3395-.33714,9.04544-4.60781,8.65141-10.85076-.50097-7.93552-9.41419-8.67618-9.62807-12.06395-.03898-.62056.00263-3.09698,3.9293-3.3451c2.67818-.1691,4.93651.85919,4.93651.85919l2.02497-7.5752c0,0-1.74682-.87131-5.15882-.65585v.00001Z"
+                        fill="#fff"
+                        stroke-width="0"
+                      ></path>
+                    </g>
+                    <g transform="translate(1088.451 636.887)">
+                      <path
+                        d="M-7.984,28.725c0,0,15.968-4.143,15.968-4.143s-1.842-13.002-3.626-25.591c-1.662-11.728-3.272-23.097-3.293-23.258-.044-.333-.323-.517-.553-.537s-4.726-.091-4.726-.091-2.74-2.779-3.77-3.83c0,0,0,27.83,0,27.83s0,29.62,0,29.62Z"
+                        fill="#fff"
+                        stroke-width="0"
+                      ></path>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g>
+                <g
+                  class="shopify-mask-container shopify-logo-elements"
+                  transform="translate(852,310)"
+                >
+                  <g transform="translate(0,0)">
+                    <g
+                      class="shopify-mask-element"
+                      transform="translate(-34.889,7.392)"
+                    >
+                      <g transform="scale(2.655,2.655) translate(0,0)">
+                        <path
+                          d="M18.84,-30.673c0,0-3.844,14.38-3.844,14.38s-4.287-1.952-9.371-1.631c-7.454.471-7.533,5.172-7.459,6.35.406,6.431,17.326,7.837,18.277,22.901.748,11.851-6.287,19.958-16.423,20.598-12.163.768-18.86-6.409-18.86-6.409s2.577-10.965,2.577-10.965s6.74,5.085,12.136,4.744c3.524-.223,4.783-3.089,4.655-5.116-.53-8.39-14.307-7.895-15.177-21.68-.733-11.602,6.886-23.356,23.696-24.417c6.477-.409,9.793,1.245,9.793,1.245Z"
+                          stroke-width="0"
+                        ></path>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-decorative-1 shopify-logo-elements"
+                transform="translate(852,310)"
+              >
+                <g transform="translate(0,0)">
+                  <g transform="matrix(2.56 0 0 2.56 8.167-137.88)">
+                    <path
+                      d="M-13.953,11.268c0,0,.638-6.499,3.88-12.526c2.513-4.672,6.359-9.519,11.763-9.976c4.111-.348,7.241,1.979,9.228,5.03c1.164,1.787,2.37,4.364,3.035,7.856"
+                      paint-order="stroke fill markers"
+                      fill="none"
+                      fill-rule="evenodd"
+                      stroke="#fff"
+                      stroke-width="4"
+                      stroke-miterlimit="10"
+                    ></path>
+                  </g>
+                </g>
+              </g>
+              <g
+                class="shopify-decorative-2 shopify-logo-elements"
+                transform="translate(852,310)"
+              >
+                <g transform="translate(0,0)">
+                  <g transform="matrix(2.56 0 0 2.56-24.022-136.054)">
+                    <path
+                      d="M-16.177,15.598c0,0,.388-8.535,5.875-18.234c3.686-6.516,9.31-12.304,15.407-12.914c4.105-.41,7.383,1.815,8.924,5.376c1.607,3.713,2.604,8.868,1.939,14.965"
+                      paint-order="stroke fill markers"
+                      fill="none"
+                      fill-rule="evenodd"
+                      stroke="#fff"
+                      stroke-width="4"
+                      stroke-miterlimit="10"
+                    ></path>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Centered message stack (reference node 325:14209): a white rounded
+           "intro" card (heading + subhead) above the dark email CTA card.
+           Pinned at the comp position (490, 212), 460 wide; sits above the
+           photos (z 5) so it stays clean and legible. -->
+        <div class="v7-stack">
+          <div class="v7-intro ft-in-white">
+            <h1 class="v7-headline">
+              <span>Your business</span>
+              <span>starts with Shopify</span>
+            </h1>
+            <p class="v7-subhead">
+              Try 3 days free, then <strong>$1/month for 3 months.</strong> What
+              are you waiting for?
+            </p>
+          </div>
+
+          <form class="signup-card ft-in-black" action="#" method="post">
+            <div class="signup-card__label">
+              <span class="signup-card__cta">Start for free</span>
+              <p class="signup-card__disclaimer">
+                You agree to receive Shopify marketing emails.
+              </p>
+            </div>
+            <div class="signup-card__field">
+              <input
+                class="signup-card__email"
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                aria-label="Enter your email"
+              />
+              <button
+                class="signup-card__submit"
+                type="submit"
+                aria-label="Start your free trial"
+              >
+                <svg
+                  class="signup-card__arrow"
+                  viewBox="0 0 23.475 22"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12.475 22L10.184 19.709L14.0913 15.8174C14.4679 15.4513 14.8497 15.0799 15.2368 14.7033C15.6343 14.3267 16.0371 13.9501 16.4451 13.5735C16.8531 13.1864 17.2558 12.8098 17.6534 12.4437C18.0613 12.0775 18.4589 11.7218 18.8459 11.3766L19.0813 12.4907C18.6419 12.5117 18.1712 12.5378 17.669 12.5692C17.1774 12.5901 16.6752 12.611 16.1626 12.632C15.65 12.6529 15.1479 12.6633 14.6562 12.6633H0V9.33666H14.6562C15.1479 9.33666 15.65 9.34712 16.1626 9.36805C16.6752 9.38897 17.1774 9.40989 17.669 9.43081C18.1712 9.45174 18.6419 9.47789 19.0813 9.50927L18.8459 10.6391C18.3333 10.1788 17.805 9.70281 17.2611 9.21113C16.7171 8.70899 16.1783 8.20685 15.6448 7.70471C15.1113 7.19211 14.5934 6.68997 14.0913 6.19829L10.184 2.3067L12.475 0L23.475 11L12.475 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Shared: brand logos + feature cards (identical across all variants) -->
+      <div id="below-hero"></div>
+
+      <!-- Flowing field + pointer parallax. The drift lives on each tier's
+         track (translateY loop); the pointer offset (--px/--py) is set once on
+         the field, and every card adds its tier-depth (--d) share on top, so
+         the two motions compose. Disabled under prefers-reduced-motion. -->
+    </div>
+    <div class="vp-m">
+      <section class="m7-hero" aria-label="Your business starts with Shopify">
+        <!-- Soft pastel glow behind the photo field (subtle, slowly drifting) -->
+        <div class="ft-glow" aria-hidden="true"></div>
+
+        <!-- Flowing photo field — two depth tiers of merchant cards that drift
+           downward and loop seamlessly, built by the inline script below. The
+           field clips the hero so cards bleed off its edges. -->
+        <div class="m7-field" id="m7-field" aria-hidden="true"></div>
+
+        <!-- Logo overlaid on a transparent strip (photos show to its sides) -->
+        <div class="m7-logo">
+          <svg
+            class="shopify-logo"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1700 600"
+            shape-rendering="geometricPrecision"
+            text-rendering="geometricPrecision"
+            role="img"
+            aria-label="Shopify"
+          >
+            <g
+              class="shopify-y-container shopify-letter-container"
+              transform="translate(760,320)"
+            >
+              <g
+                class="shopify-y-scale shopify-letter-scale"
+                transform="scale(2.09,2.09)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-y-position"
+                    transform="translate(143.359,39.063)"
+                  >
+                    <g class="shopify-y-visibility" transform="scale(0,0)">
+                      <g transform="translate(0,0)">
+                        <g
+                          class="shopify-y"
+                          transform="matrix(2.56 0 0 2.56 30.904-36.565)"
+                          opacity="0"
+                        >
+                          <path
+                            d="M12.879,-38.967c0,0-9.455,23.824-13.701,36.829c0,0-.219,0-.219,0-.291-4.187-3.727-36.829-3.727-36.829s-15.894,0-15.894,0s9.098,49.215,9.098,49.215c.219,1.096.109,1.755-.329,2.522-1.754,3.398-4.714,6.686-8.221,9.097-2.85,2.083-6.028,3.398-8.549,4.275c0,0,4.165,12.825,4.165,12.825c3.069-.658,9.426-3.179,14.797-8.221c6.906-6.467,13.263-16.442,19.84-30.034c0,0,18.524-39.679,18.524-39.679s-15.784,0-15.784,0Z"
+                            fill="#fff"
+                            stroke-width="0"
+                          ></path>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-f-container shopify-letter-container"
+              transform="translate(760,320)"
+            >
+              <g
+                class="shopify-f-scale shopify-letter-scale"
+                transform="scale(2.09,2.09)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-f-position"
+                    transform="translate(96.094,39.063)"
+                  >
+                    <g class="shopify-f-visibility" transform="scale(0,0)">
+                      <g transform="translate(0,0)">
+                        <g
+                          class="shopify-f"
+                          transform="matrix(2.56 0 0 2.56 54.812-99.422)"
+                          opacity="0"
+                        >
+                          <path
+                            d="M14.414,-14.523c0,0-32.445,0-32.445,0s-2.192,11.399-2.192,11.399s32.555,0,32.555,0s2.082-11.399,2.082-11.399Z"
+                            fill="#fff"
+                            stroke-width="0"
+                          ></path>
+                          <path
+                            d="M4.439,-17.044c.877-5.152,3.947-9.756,8.989-9.756c2.693,0,4.822.767,4.822.767s2.96-11.838,2.96-11.838s-2.631-1.315-8.221-1.315c-5.371,0-10.742,1.534-14.797,5.042-5.152,4.384-7.563,10.742-8.769,17.1c0,0-10.633,56.23-10.633,56.23s15.127,0,15.127,0s10.522-56.23,10.522-56.23Z"
+                            fill="#fff"
+                            stroke-width="0"
+                          ></path>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-i-container shopify-letter-container"
+              transform="translate(760,320)"
+            >
+              <g
+                class="shopify-i-scale shopify-letter-scale"
+                transform="scale(2.09,2.09)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-i-position"
+                    transform="translate(67.969,39.063)"
+                  >
+                    <g class="shopify-i-visibility" transform="scale(0,0)">
+                      <g transform="translate(0,0)">
+                        <g
+                          class="shopify-i-dot-position"
+                          transform="translate(20.876,-2.062)"
+                        >
+                          <g
+                            class="shopify-i-dot"
+                            transform="scale(2.56,2.56) translate(0,0)"
+                            opacity="0"
+                          >
+                            <path
+                              d="M0.547,-8.166c-4.822,0-8.658,3.836-8.658,8.769c0,4.494,2.849,7.563,7.124,7.563c0,0,.22,0,.22,0c4.713,0,8.769-3.179,8.878-8.769c0-4.384-2.96-7.563-7.564-7.563Z"
+                              fill="#fff"
+                              stroke-width="0"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-i2-container shopify-letter-container"
+              transform="translate(760,320)"
+            >
+              <g
+                class="shopify-i2-scale shopify-letter-scale"
+                transform="scale(2.09,2.09)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-i2-position"
+                    transform="translate(67.969,39.063)"
+                  >
+                    <g class="shopify-i2-visibility" transform="scale(0,0)">
+                      <g transform="translate(0,0)">
+                        <g
+                          class="shopify-i2"
+                          transform="matrix(2.56 0 0 2.56 32.672-67.713)"
+                          opacity="0"
+                        >
+                          <path
+                            d="M-12.715,26.8c0,0,15.127,0,15.127,0s10.303-53.6,10.303-53.6-15.235,0-15.235,0-10.195,53.6-10.195,53.6Z"
+                            fill="#fff"
+                            stroke-width="0"
+                          ></path>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-p-container shopify-letter-container"
+              transform="translate(760,320)"
+            >
+              <g
+                class="shopify-p-scale shopify-letter-scale"
+                transform="scale(2.09,2.09)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-p-position"
+                    transform="translate(13.672,39.063)"
+                  >
+                    <g class="shopify-p-visibility" transform="scale(0,0)">
+                      <g transform="translate(0,0)">
+                        <g
+                          class="shopify-p"
+                          transform="matrix(2.56 0 0 2.56-135-100)"
+                          opacity="0"
+                        >
+                          <path
+                            d="M106.639,3.898c0,18.415-11.618,36.61-29.375,36.61-5.773,0-8.879-1.973-8.879-1.973h-.329L63.891,60.896h-15.127L59.287,5.542c1.206-6.248,2.412-14.578,3.07-20.059h13.372l-.877,8.111h.219c0,0,5.794-8.988,16.003-8.988c11.071,0,15.565,9.098,15.565,19.292ZM90.855,5.432c0-4.055-1.425-8.33-6.028-8.33-5.261,0-10.194,6.248-11.948,15.674L70.358,26.917c0,0,2.32,2.191,6.248,2.191c8.44,0,14.249-13.92,14.249-23.676Z"
+                            fill="#fff"
+                            stroke-width="0"
+                          ></path>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-o-container shopify-letter-container"
+              transform="translate(760,320)"
+            >
+              <g
+                class="shopify-o-scale shopify-letter-scale"
+                transform="scale(2.09,2.09)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-o-position"
+                    transform="translate(-28.516,39.063)"
+                  >
+                    <g class="shopify-o-visibility" transform="scale(0,0)">
+                      <g transform="translate(0,0)">
+                        <g
+                          class="shopify-o"
+                          transform="matrix(2.56 0 0 2.56-27-100)"
+                          opacity="0"
+                        >
+                          <path
+                            d="M52.38,5.761c0,18.744-12.057,34.747-29.924,34.747-13.592,0-20.825-9.426-20.825-21.155c0-18.305,12.056-34.747,30.252-34.747c14.14,0,20.497,10.304,20.497,21.155ZM36.925,5.323c0-4.494-1.753-9.098-7.124-9.098-8.221,0-12.715,14.141-12.715,22.8c0,5.48,2.192,9.864,7.344,9.864c8.002,0,12.495-14.248,12.495-23.566Z"
+                            fill="#fff"
+                            stroke-width="0"
+                          ></path>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-h-container shopify-letter-container"
+              transform="translate(760,320)"
+            >
+              <g
+                class="shopify-h-scale shopify-letter-scale"
+                transform="scale(2.09,2.09)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-h-position"
+                    transform="translate(-93.359,39.063)"
+                  >
+                    <g class="shopify-h-visibility" transform="scale(0,0)">
+                      <g transform="translate(0,0)">
+                        <g
+                          class="shopify-h"
+                          transform="matrix(2.56 0 0 2.56 65.725-98.018)"
+                          opacity="0"
+                        >
+                          <path
+                            d="M13.92,-16.168c-6.686,0-11.948,3.179-16.003,8.002c0,0-.219-.11-.219-.11s5.809-30.362,5.809-30.362-15.126,0-15.126,0s-14.688,77.276-14.688,77.276s15.126,0,15.126,0s5.043-26.416,5.043-26.416C-4.165,2.247,0.986,-3.891,5.809,-3.891c3.397,0,4.714,2.301,4.714,5.59c0,2.082-.22,4.603-.658,6.686c0,0-5.7,30.253-5.7,30.253s15.127,0,15.127,0s5.918-31.239,5.918-31.239c.657-3.289,1.097-7.234,1.097-9.865c0-8.549-4.495-13.702-12.387-13.702Z"
+                            fill="#fff"
+                            stroke-width="0"
+                          ></path>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-s-container shopify-letter-container"
+              transform="translate(760,320)"
+            >
+              <g
+                class="shopify-s-scale shopify-letter-scale"
+                transform="scale(2.09,2.09)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-s-position"
+                    transform="translate(-135.156,39.063)"
+                  >
+                    <g class="shopify-s-visibility" transform="scale(0,0)">
+                      <g transform="translate(0,0)">
+                        <g
+                          class="shopify-s"
+                          transform="matrix(2.56 0 0 2.56 52.765-67.854)"
+                          opacity="0"
+                        >
+                          <path
+                            d="M6.631,-5.371c-3.836-2.082-5.809-3.836-5.809-6.248c0-3.069,2.74-5.042,7.015-5.042c4.98,0,9.427,2.083,9.427,2.083s3.507-10.742,3.507-10.742-3.225-2.521-12.715-2.521c-13.208,0-22.36,7.562-22.36,18.195c0,6.028,4.274,10.633,9.974,13.921c4.604,2.631,6.248,4.494,6.248,7.234c0,2.85-2.302,5.152-6.577,5.152-6.368,0-12.386-3.288-12.386-3.288s-3.726,10.742-3.726,10.742s5.557,3.726,14.907,3.726c13.592,0,23.347-6.686,23.347-18.743c0-6.467-4.933-11.071-10.852-14.469Z"
+                            fill="#fff"
+                            stroke-width="0"
+                          ></path>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-logo-move shopify-logo-elements"
+              transform="translate(852,310)"
+            >
+              <g transform="translate(0,0)">
+                <g transform="matrix(5.04 0 0 5.04-5379.798-3204.89336)">
+                  <g transform="translate(1059.947 632.849)">
+                    <path
+                      d="M19.247,-25.322v58.243l-38.494-6.947c0,0,1.511-12.196,2.841-22.913c1-8.061,1.898-15.284,1.974-15.851.233-1.744.289-1.802,2.062-2.383.053-.017,31.147-10.066,31.151-10.067.106-.033.276-.069.466-.082ZM5.31665,-12.30482c-8.85527.55892-12.86886,6.75078-12.48272,12.86256.4583,7.26176,7.71583,7.001,7.99503,11.42074.06743,1.0678-.59579,2.57757-2.45219,2.69504-2.84254.17963-6.39307-2.49908-6.39307-2.49908l-1.35753,5.77622c0,0,3.52789,3.78075,9.93518,3.37618c5.3395-.33714,9.04544-4.60781,8.65141-10.85076-.50097-7.93552-9.41419-8.67618-9.62807-12.06395-.03898-.62056.00263-3.09698,3.9293-3.3451c2.67818-.1691,4.93651.85919,4.93651.85919l2.02497-7.5752c0,0-1.74682-.87131-5.15882-.65585v.00001Z"
+                      fill="#fff"
+                      stroke-width="0"
+                    ></path>
+                  </g>
+                  <g transform="translate(1088.451 636.887)">
+                    <path
+                      d="M-7.984,28.725c0,0,15.968-4.143,15.968-4.143s-1.842-13.002-3.626-25.591c-1.662-11.728-3.272-23.097-3.293-23.258-.044-.333-.323-.517-.553-.537s-4.726-.091-4.726-.091-2.74-2.779-3.77-3.83c0,0,0,27.83,0,27.83s0,29.62,0,29.62Z"
+                      fill="#fff"
+                      stroke-width="0"
+                    ></path>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g>
+              <g
+                class="shopify-mask-container shopify-logo-elements"
+                transform="translate(852,310)"
+              >
+                <g transform="translate(0,0)">
+                  <g
+                    class="shopify-mask-element"
+                    transform="translate(-34.889,7.392)"
+                  >
+                    <g transform="scale(2.655,2.655) translate(0,0)">
+                      <path
+                        d="M18.84,-30.673c0,0-3.844,14.38-3.844,14.38s-4.287-1.952-9.371-1.631c-7.454.471-7.533,5.172-7.459,6.35.406,6.431,17.326,7.837,18.277,22.901.748,11.851-6.287,19.958-16.423,20.598-12.163.768-18.86-6.409-18.86-6.409s2.577-10.965,2.577-10.965s6.74,5.085,12.136,4.744c3.524-.223,4.783-3.089,4.655-5.116-.53-8.39-14.307-7.895-15.177-21.68-.733-11.602,6.886-23.356,23.696-24.417c6.477-.409,9.793,1.245,9.793,1.245Z"
+                        stroke-width="0"
+                      ></path>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-decorative-1 shopify-logo-elements"
+              transform="translate(852,310)"
+            >
+              <g transform="translate(0,0)">
+                <g transform="matrix(2.56 0 0 2.56 8.167-137.88)">
+                  <path
+                    d="M-13.953,11.268c0,0,.638-6.499,3.88-12.526c2.513-4.672,6.359-9.519,11.763-9.976c4.111-.348,7.241,1.979,9.228,5.03c1.164,1.787,2.37,4.364,3.035,7.856"
+                    paint-order="stroke fill markers"
+                    fill="none"
+                    fill-rule="evenodd"
+                    stroke="#fff"
+                    stroke-width="4"
+                    stroke-miterlimit="10"
+                  ></path>
+                </g>
+              </g>
+            </g>
+            <g
+              class="shopify-decorative-2 shopify-logo-elements"
+              transform="translate(852,310)"
+            >
+              <g transform="translate(0,0)">
+                <g transform="matrix(2.56 0 0 2.56-24.022-136.054)">
+                  <path
+                    d="M-16.177,15.598c0,0,.388-8.535,5.875-18.234c3.686-6.516,9.31-12.304,15.407-12.914c4.105-.41,7.383,1.815,8.924,5.376c1.607,3.713,2.604,8.868,1.939,14.965"
+                    paint-order="stroke fill markers"
+                    fill="none"
+                    fill-rule="evenodd"
+                    stroke="#fff"
+                    stroke-width="4"
+                    stroke-miterlimit="10"
+                  ></path>
+                </g>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Centered message stack: a white rounded "intro" card (heading +
+           subhead) above the dark email CTA card. Sits above the photos
+           (z 5) so it stays clean and legible. -->
+        <div class="m7-stack">
+          <div class="m7-intro ft-in-white">
+            <h1 class="m7-headline">
+              <span>Your business</span>
+              <span>starts with Shopify</span>
+            </h1>
+            <p class="m7-subhead">
+              Try 3 days free, then <strong>$1/month for 3 months.</strong> What
+              are you waiting for?
+            </p>
+          </div>
+
+          <form class="signup-card ft-in-black" action="#" method="post">
+            <div class="signup-card__label">
+              <span class="signup-card__cta">Start for free</span>
+            </div>
+            <div class="signup-card__field">
+              <input
+                class="signup-card__email"
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                aria-label="Enter your email"
+              />
+              <button
+                class="signup-card__submit"
+                type="submit"
+                aria-label="Start your free trial"
+              >
+                <svg
+                  class="signup-card__arrow"
+                  viewBox="0 0 23.475 22"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12.475 22L10.184 19.709L14.0913 15.8174C14.4679 15.4513 14.8497 15.0799 15.2368 14.7033C15.6343 14.3267 16.0371 13.9501 16.4451 13.5735C16.8531 13.1864 17.2558 12.8098 17.6534 12.4437C18.0613 12.0775 18.4589 11.7218 18.8459 11.3766L19.0813 12.4907C18.6419 12.5117 18.1712 12.5378 17.669 12.5692C17.1774 12.5901 16.6752 12.611 16.1626 12.632C15.65 12.6529 15.1479 12.6633 14.6562 12.6633H0V9.33666H14.6562C15.1479 9.33666 15.65 9.34712 16.1626 9.36805C16.6752 9.38897 17.1774 9.40989 17.669 9.43081C18.1712 9.45174 18.6419 9.47789 19.0813 9.50927L18.8459 10.6391C18.3333 10.1788 17.805 9.70281 17.2611 9.21113C16.7171 8.70899 16.1783 8.20685 15.6448 7.70471C15.1113 7.19211 14.5934 6.68997 14.0913 6.19829L10.184 2.3067L12.475 0L23.475 11L12.475 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+            </div>
+          </form>
+          <p class="signup-card__disclaimer signup-card__disclaimer--out">
+            You agree to receive Shopify marketing emails.
+          </p>
+        </div>
+      </section>
+
+      <!-- Flowing field + pointer parallax. The drift lives on each tier's
+         track (translateY loop); the pointer offset (--px/--py) is set once on
+         the field, and every card adds its tier-depth (--d) share on top, so
+         the two motions compose. Works in the mobile preview because the
+         harness is viewed on a desktop with a pointer. Disabled under
+         prefers-reduced-motion. -->
+
+      <div id="below-hero"></div>
+    </div>
+
+    <script>
+      // Responsive bootstrap: pick layout by viewport width (each harness
+      // iframe sizes its own viewport), drop the inactive hero tree, then
+      // load only that side's scripts so shared selectors resolve cleanly.
+      window.__VP_MOBILE__ = window.matchMedia("(max-width:480px)").matches;
+      (function () {
+        var dead = document.querySelector(
+          window.__VP_MOBILE__ ? ".vp-d" : ".vp-m",
+        );
+        if (dead) dead.remove();
+        var ext = window.__VP_MOBILE__
+          ? ["mobile-extras.js?v=7"]
+          : ["shared-below.js?v=3"];
+        ext.forEach(function (src) {
+          var s = document.createElement("script");
+          s.src = src;
+          s.async = false;
+          document.body.appendChild(s);
+        });
+      })();
+    </script>
+    <script>
+      if (!window.__VP_MOBILE__) {
+        (function () {
+          var cfg = {
+            heroSel: ".v7-hero",
+            fieldId: "v7-field",
+            cls: "v7-card",
+            gens: 2,
+            lead: 1,
+            ratio: 10.0,
+            mStar: 1.0,
+            period: 135,
+            introTau: 0.16,
+            introMin: 0.03,
+            introStagger: 0.16,
+            introOver: 1.15,
+            hoverAmp: 8,
+            hoverDelay: 0.9,
+            hoverEase: 0.8,
+            pSmall: 0.92,
+            pBig: 0.5,
+            pLoD: 26,
+            pHiD: 400,
+            pStrength: 0.5,
+            amp: 26,
+          };
+          var hero = document.querySelector(cfg.heroSel);
+          var field = document.getElementById(cfg.fieldId);
+          if (!field) return;
+          var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var A = "assets/world-two/";
+          var DW = 1440;
+
+          // ---- Exact composition from Figma (file SwnQ7M7I5DG7o0QcZTncet, node 546:36120) -------
+          // dx,dy,w,h: design-px layout (centre-relative). nw,nh: the image's NATIVE pixel size,
+          // used so each tile is rasterised at full resolution and only ever scaled DOWN (crisp).
+          var TILES = [
+            // Composition matched to the reference: 4 photos + 3 coins.
+            // Photos carry a `hover` twin (cross-fades on hover); coins do not.
+            // Coins are front (higher index = higher z). w/h track native aspect.
+            {
+              f: "NORAM_FTC_2511_0008 1.png",
+              hover: "NORAM_FTC_2511_0008 2.png",
+              name: "FTC",
+              dx: -322,
+              dy: -181,
+              w: 235,
+              h: 157,
+              nw: 690,
+              nh: 460,
+            },
+            {
+              f: "MIB_CASSIDY_1781 1.png",
+              hover: "MIB_CASSIDY_1781 3.png",
+              name: "Hutch Cassidy",
+              dx: 497,
+              dy: -225,
+              w: 250,
+              h: 374,
+              nw: 485,
+              nh: 726,
+            },
+            {
+              f: "MIB_CASSIDY_1781 2.png",
+              hover: "MIB_CASSIDY_1781 4.png",
+              name: "feYi",
+              dx: -443,
+              dy: 96,
+              w: 201,
+              h: 301,
+              nw: 484,
+              nh: 726,
+            },
+            {
+              f: "Image1.png",
+              hover: "Image1-1.png",
+              name: "Jitensha",
+              dx: 454,
+              dy: 297,
+              w: 292,
+              h: 208,
+              nw: 690,
+              nh: 492,
+            },
+            // ---- 4 coins, arranged to match the reference screenshot ----
+            // image 4171: bright frontal 3/4 coin, top-left over the FTC photo.
+            {
+              f: "image 4171.png",
+              dx: -376,
+              dy: -268,
+              w: 115,
+              h: 125,
+              nw: 699,
+              nh: 759,
+            },
+            // image 4633: thin edge-on coin, right of the CTA card.
+            {
+              f: "image 4633.png",
+              dx: 253,
+              dy: -83,
+              w: 62,
+              h: 82,
+              nw: 312,
+              nh: 414,
+            },
+            // image 4631: big dark-face coin, lower-left over the florist photo.
+            {
+              f: "image 4631.png",
+              dx: -408,
+              dy: 259,
+              w: 192,
+              h: 201,
+              nw: 1111,
+              nh: 1165,
+            },
+            // image 4632: flatter-tilt coin, lower-right on the bike photo.
+            {
+              f: "image 4632.png",
+              dx: 324,
+              dy: 174,
+              w: 89,
+              h: 96,
+              nw: 372,
+              nh: 402,
+            },
+          ];
+
+          var N = TILES.length,
+            G = cfg.gens,
+            R = cfg.ratio,
+            LEAD = cfg.lead;
+
+          // Per-tile size-growth power. Small images grow nearly in step with the expansion so they
+          // stay embedded in the cluster and leave WITH the group; big images grow slowly so they
+          // neither balloon into "one zoomed photo" nor blur.
+          function tileP(w, h) {
+            var d = Math.sqrt(w * h),
+              x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
+            if (x < 0) x = 0;
+            else if (x > 1) x = 1;
+            return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
+          }
+
+          // ---- Expanding-universe loop -----------------------------------------------------------
+          // POSITION expands by scale = mStar*R^L*intro; on-screen SIZE grows by scale^P (per tile).
+          // Each element is sized to the image's NATIVE px and positioned with translate + a scale
+          // that maps native -> on-screen (almost always < 1, so downscaling keeps it sharp).
+          // opacity is always 1 (no fade). Two instances spaced by a large R: the incoming batch is
+          // a sub-px point behind the card during the boom and only grows out after the first batch
+          // has moved off-frame. Loops seamlessly: all quantities are functions of L=(g-LEAD)+u.
+          var L = { s: 1, cx: 0, cy: 0 };
+          var pxv = 0,
+            pyv = 0,
+            pxT = 0,
+            pyT = 0;
+          var cards = [];
+          for (var g = 0; g < G; g++) {
+            for (var i = 0; i < N; i++) {
+              var t = TILES[i];
+              var el = document.createElement("div");
+              el.className = cfg.cls;
+              el.style.cssText =
+                "left:0;top:0;width:" +
+                t.nw +
+                "px;height:" +
+                t.nh +
+                "px;opacity:1;transition:none;transform-origin:0 0;border-radius:0;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
+              var im = new Image();
+              im.alt = "";
+              im.decoding = "async";
+              im.loading = "eager";
+              im.style.cssText =
+                "width:100%;height:100%;object-fit:cover;display:block";
+              im.src = A + encodeURI(t.f);
+              el.appendChild(im);
+              // Photos carry a hover twin that cross-fades in on pointer hover.
+              // Coins have no t.hover, so they never swap.
+              if (t.hover) {
+                var imh = new Image();
+                imh.alt = "";
+                imh.decoding = "async";
+                imh.loading = "eager";
+                imh.style.cssText =
+                  "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 0.35s ease";
+                imh.src = A + encodeURI(t.hover);
+                el.appendChild(imh);
+                el.__imh = imh;
+                // 50% black scrim + white business name, revealed on hover.
+                // Font is sized in the tile's NATIVE px space (nw/w) so it renders
+                // at a consistent on-screen size regardless of each tile's scale.
+                var ov = document.createElement("div");
+                var fs = Math.round((22 * t.nw) / t.w);
+                ov.style.cssText =
+                  "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8%;box-sizing:border-box;background:rgba(0,0,0,0.5);color:#fff;font-weight:600;line-height:1.15;opacity:0;transition:opacity 0.35s ease;font-size:" +
+                  fs +
+                  "px";
+                ov.textContent = t.name || "";
+                el.appendChild(ov);
+                el.__ov = ov;
+                el.style.cursor = "pointer";
+                el.addEventListener("pointerenter", function () {
+                  this.__imh.style.opacity = "1";
+                  if (this.__ov) this.__ov.style.opacity = "1";
+                });
+                el.addEventListener("pointerleave", function () {
+                  this.__imh.style.opacity = "0";
+                  if (this.__ov) this.__ov.style.opacity = "0";
+                });
+              }
+              field.appendChild(el);
+              cards.push({
+                el: el,
+                t: t,
+                g: g,
+                P: tileP(t.w, t.h),
+                // Golden-ratio spread over [0, introStagger): an even but
+                // non-sequential sprinkle of per-tile big-bang start offsets.
+                stag: ((i * 0.618033) % 1) * cfg.introStagger,
+                // Fixed stacking rank (tile index): unique within a generation so
+                // overlapping tiles never tie and never swap front/back.
+                z: i,
+                // Per-tile hover: a slow bob at its own speed/phase so the field
+                // breathes rather than pulsing in lockstep.
+                hspeed: 0.5 + ((i * 0.377) % 1) * 0.5,
+                hphase: (i * 2.39996323) % 6.28318,
+              });
+            }
+          }
+
+          function measure() {
+            var r = field.getBoundingClientRect();
+            L.s = r.width / DW;
+            L.cx = r.width / 2;
+            L.cy = r.height / 2;
+          }
+          measure();
+          window.addEventListener("resize", measure);
+
+          if (hero && !reduce) {
+            hero.addEventListener("pointermove", function (e) {
+              var r = hero.getBoundingClientRect();
+              pxT = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
+              pyT = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
+            });
+            hero.addEventListener("pointerleave", function () {
+              pxT = 0;
+              pyT = 0;
+            });
+          }
+
+          function render(u, eb) {
+            // Ease the parallax toward the cursor target each frame so it glides with inertia
+            // instead of snapping 1:1 (lower factor = looser/smoother, higher = snappier).
+            pxv += (pxT - pxv) * 0.08;
+            pyv += (pyT - pyv) * 0.08;
+            for (var k = 0; k < cards.length; k++) {
+              var c = cards[k],
+                t = c.t;
+              var ell = c.g - LEAD + u;
+              // Each tile's intro ramp starts at its own stagger offset (eb is
+              // elapsed seconds), so the big-bang sprinkles in rather than
+              // every tile popping on the same frame.
+              var te = eb - c.stag;
+              var intro;
+              if (te > 0) {
+                // Fast rush outward (small introTau) plus a short overshoot bump
+                // (introOver) that peaks then decays — a punchy boom that flies
+                // slightly past its resting size/position, then settles back.
+                var xr = te / cfg.introTau;
+                intro =
+                  cfg.introMin +
+                  (1 - cfg.introMin) * (1 - Math.exp(-xr)) +
+                  cfg.introOver * xr * Math.exp(-xr);
+              } else {
+                intro = cfg.introMin;
+              }
+              var scale = cfg.mStar * Math.pow(R, ell) * intro; // POSITION expansion
+              // Tiles grow from a sub-px point at centre up to full size by the resting frame
+              // (scale 1), so they emerge by SCALING — opacity stays 1, no ghosted fade-in, and
+              // the centre stays clean because a sub-px point is invisible (not a cluster).
+              var emerge = (scale - 0.1) / 0.9;
+              if (emerge < 0) emerge = 0;
+              else if (emerge > 1) emerge = 1;
+              var sz = Math.pow(scale, c.P) * emerge; // on-screen SIZE growth (per tile)
+              var onW = t.w * L.s * sz; // target on-screen width (design px)
+              var s = onW / t.nw; // native -> screen (mostly downscale)
+              c.el.style.borderRadius =
+                (s > 0.001 ? 8 / s : 0).toFixed(1) + "px"; // ~8px on screen
+              var depth = (scale < 2.4 ? scale : 2.4) * cfg.pStrength;
+              // After the boom settles, each tile hovers: a slow vertical bob that
+              // eases in (hgate) once the entrance is past, so the field breathes.
+              var st = te - cfg.hoverDelay;
+              var hgate = st > 0 ? 1 - Math.exp(-st / cfg.hoverEase) : 0;
+              var hov =
+                Math.sin(eb * c.hspeed + c.hphase) * cfg.hoverAmp * hgate;
+              var cx = L.cx + (t.dx * scale + pxv * depth) * L.s;
+              var cy = L.cy + (t.dy * scale + pyv * depth + hov) * L.s;
+              var X = cx - onW / 2,
+                Y = cy - (t.h * L.s * sz) / 2;
+              // Stable z-order: generation first (the higher generation always
+              // has a larger ell, so it's always the more-expanded/closer batch),
+              // then the tile's fixed rank. Independent of the live scale, so a
+              // staggered tile can't momentarily outrank a neighbour and flicker.
+              c.el.style.zIndex = 100 + c.g * 1000 + c.z;
+              c.el.style.transform =
+                "translate(" +
+                X.toFixed(1) +
+                "px," +
+                Y.toFixed(1) +
+                "px) scale(" +
+                s.toFixed(4) +
+                ")";
+            }
+          }
+
+          if (reduce) {
+            render(0, 1e6);
+            return;
+          }
+
+          var start = 0,
+            PERIOD = cfg.period;
+          function loop(ts) {
+            if (!start) start = ts;
+            var el = (ts - start) / 1000;
+            // World 2: no tunnel. Hold u at the resting frame (u=0) so the
+            // tiles don't keep expanding outward; the only motion is the
+            // one-time big-bang intro, which render() ramps per tile from the
+            // elapsed seconds below — so the boom plays once, then freezes.
+            var u = 0;
+            // Pass elapsed seconds; render() applies each tile's own staggered
+            // intro ramp so the big-bang sprinkles in rather than popping at once.
+            render(u, el);
+            requestAnimationFrame(loop);
+          }
+          requestAnimationFrame(loop);
+        })();
+      }
+    </script>
+    <script>
+      if (window.__VP_MOBILE__) {
+        (function () {
+          var cfg = {
+            heroSel: ".m7-hero",
+            fieldId: "m7-field",
+            cls: "m7-card",
+            gens: 2,
+            lead: 1,
+            ratio: 10.0,
+            mStar: 1.0,
+            period: 135,
+            introTau: 0.16,
+            introMin: 0.03,
+            introStagger: 0.16,
+            introOver: 1.15,
+            hoverAmp: 8,
+            hoverDelay: 0.9,
+            hoverEase: 0.8,
+            pSmall: 0.92,
+            pBig: 0.5,
+            pLoD: 26,
+            pHiD: 200,
+            pStrength: 0.5,
+            amp: 18,
+          };
+          var hero = document.querySelector(cfg.heroSel);
+          var field = document.getElementById(cfg.fieldId);
+          if (!field) return;
+          var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var A = "assets/world-two/";
+          var DW = 393;
+
+          // ---- Exact composition from Figma (file SwnQ7M7I5DG7o0QcZTncet, node 546:36120) -------
+          // dx,dy,w,h: design-px layout (centre-relative). nw,nh: the image's NATIVE pixel size,
+          // used so each tile is rasterised at full resolution and only ever scaled DOWN (crisp).
+          var TILES = [
+            // Mobile: same 7 photos/coins arranged around the card. Photos carry
+            // a `hover` twin (cross-fades on hover); coins do not.
+            {
+              f: "MIB_CASSIDY_1781 1.png",
+              hover: "MIB_CASSIDY_1781 3.png",
+              name: "Hutch Cassidy",
+              dx: -118,
+              dy: -290,
+              w: 150,
+              h: 225,
+              nw: 485,
+              nh: 726,
+            },
+            {
+              f: "NORAM_FTC_2511_0008 1.png",
+              hover: "NORAM_FTC_2511_0008 2.png",
+              name: "FTC",
+              dx: 140,
+              dy: -278,
+              w: 150,
+              h: 100,
+              nw: 690,
+              nh: 460,
+            },
+            {
+              f: "MIB_CASSIDY_1781 2.png",
+              hover: "MIB_CASSIDY_1781 4.png",
+              name: "feYi",
+              dx: -150,
+              dy: -110,
+              w: 95,
+              h: 143,
+              nw: 484,
+              nh: 726,
+            },
+            {
+              f: "Image1.png",
+              hover: "Image1-1.png",
+              name: "Jitensha",
+              dx: 40,
+              dy: -120,
+              w: 140,
+              h: 100,
+              nw: 690,
+              nh: 492,
+            },
+            {
+              f: "image 4171.png",
+              dx: 150,
+              dy: -70,
+              w: 100,
+              h: 109,
+              nw: 699,
+              nh: 759,
+            },
+            {
+              f: "image 4631.png",
+              dx: -110,
+              dy: 25,
+              w: 125,
+              h: 131,
+              nw: 1111,
+              nh: 1165,
+            },
+            {
+              f: "image 4633.png",
+              dx: 70,
+              dy: 35,
+              w: 95,
+              h: 126,
+              nw: 312,
+              nh: 414,
+            },
+          ];
+
+          var N = TILES.length,
+            G = cfg.gens,
+            R = cfg.ratio,
+            LEAD = cfg.lead;
+
+          // Per-tile size-growth power. Small images grow nearly in step with the expansion so they
+          // stay embedded in the cluster and leave WITH the group; big images grow slowly so they
+          // neither balloon into "one zoomed photo" nor blur.
+          function tileP(w, h) {
+            var d = Math.sqrt(w * h),
+              x = (d - cfg.pLoD) / (cfg.pHiD - cfg.pLoD);
+            if (x < 0) x = 0;
+            else if (x > 1) x = 1;
+            return cfg.pSmall + (cfg.pBig - cfg.pSmall) * x;
+          }
+
+          // ---- Expanding-universe loop -----------------------------------------------------------
+          // POSITION expands by scale = mStar*R^L*intro; on-screen SIZE grows by scale^P (per tile).
+          // Each element is sized to the image's NATIVE px and positioned with translate + a scale
+          // that maps native -> on-screen (almost always < 1, so downscaling keeps it sharp).
+          // opacity is always 1 (no fade). Two instances spaced by a large R: the incoming batch is
+          // a sub-px point behind the card during the boom and only grows out after the first batch
+          // has moved off-frame. Loops seamlessly: all quantities are functions of L=(g-LEAD)+u.
+          var L = { s: 1, cx: 0, cy: 0 };
+          var pxv = 0,
+            pyv = 0,
+            pxT = 0,
+            pyT = 0;
+          var cards = [];
+          for (var g = 0; g < G; g++) {
+            for (var i = 0; i < N; i++) {
+              var t = TILES[i];
+              var el = document.createElement("div");
+              el.className = cfg.cls;
+              el.style.cssText =
+                "left:0;top:0;width:" +
+                t.nw +
+                "px;height:" +
+                t.nh +
+                "px;opacity:1;transition:none;transform-origin:0 0;border-radius:0;overflow:hidden;box-shadow:none;background:transparent;will-change:transform";
+              var im = new Image();
+              im.alt = "";
+              im.decoding = "async";
+              im.loading = "eager";
+              im.style.cssText =
+                "width:100%;height:100%;object-fit:cover;display:block";
+              im.src = A + encodeURI(t.f);
+              el.appendChild(im);
+              // Photos carry a hover twin that cross-fades in on pointer hover.
+              // Coins have no t.hover, so they never swap.
+              if (t.hover) {
+                var imh = new Image();
+                imh.alt = "";
+                imh.decoding = "async";
+                imh.loading = "eager";
+                imh.style.cssText =
+                  "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 0.35s ease";
+                imh.src = A + encodeURI(t.hover);
+                el.appendChild(imh);
+                el.__imh = imh;
+                // 50% black scrim + white business name, revealed on hover.
+                // Font is sized in the tile's NATIVE px space (nw/w) so it renders
+                // at a consistent on-screen size regardless of each tile's scale.
+                var ov = document.createElement("div");
+                var fs = Math.round((22 * t.nw) / t.w);
+                ov.style.cssText =
+                  "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8%;box-sizing:border-box;background:rgba(0,0,0,0.5);color:#fff;font-weight:600;line-height:1.15;opacity:0;transition:opacity 0.35s ease;font-size:" +
+                  fs +
+                  "px";
+                ov.textContent = t.name || "";
+                el.appendChild(ov);
+                el.__ov = ov;
+                el.style.cursor = "pointer";
+                el.addEventListener("pointerenter", function () {
+                  this.__imh.style.opacity = "1";
+                  if (this.__ov) this.__ov.style.opacity = "1";
+                });
+                el.addEventListener("pointerleave", function () {
+                  this.__imh.style.opacity = "0";
+                  if (this.__ov) this.__ov.style.opacity = "0";
+                });
+              }
+              field.appendChild(el);
+              cards.push({
+                el: el,
+                t: t,
+                g: g,
+                P: tileP(t.w, t.h),
+                // Golden-ratio spread over [0, introStagger): an even but
+                // non-sequential sprinkle of per-tile big-bang start offsets.
+                stag: ((i * 0.618033) % 1) * cfg.introStagger,
+                // Fixed stacking rank (tile index): unique within a generation so
+                // overlapping tiles never tie and never swap front/back.
+                z: i,
+                // Per-tile hover: a slow bob at its own speed/phase so the field
+                // breathes rather than pulsing in lockstep.
+                hspeed: 0.5 + ((i * 0.377) % 1) * 0.5,
+                hphase: (i * 2.39996323) % 6.28318,
+              });
+            }
+          }
+
+          function measure() {
+            var r = field.getBoundingClientRect();
+            L.s = r.width / DW;
+            L.cx = r.width / 2;
+            L.cy = r.height / 2;
+          }
+          measure();
+          window.addEventListener("resize", measure);
+
+          if (hero && !reduce) {
+            hero.addEventListener("pointermove", function (e) {
+              var r = hero.getBoundingClientRect();
+              pxT = -((e.clientX - r.left) / r.width - 0.5) * 2 * cfg.amp;
+              pyT = -((e.clientY - r.top) / r.height - 0.5) * 2 * cfg.amp;
+            });
+            hero.addEventListener("pointerleave", function () {
+              pxT = 0;
+              pyT = 0;
+            });
+          }
+
+          function render(u, eb) {
+            // Ease the parallax toward the cursor target each frame so it glides with inertia
+            // instead of snapping 1:1 (lower factor = looser/smoother, higher = snappier).
+            pxv += (pxT - pxv) * 0.08;
+            pyv += (pyT - pyv) * 0.08;
+            for (var k = 0; k < cards.length; k++) {
+              var c = cards[k],
+                t = c.t;
+              var ell = c.g - LEAD + u;
+              // Each tile's intro ramp starts at its own stagger offset (eb is
+              // elapsed seconds), so the big-bang sprinkles in rather than
+              // every tile popping on the same frame.
+              var te = eb - c.stag;
+              var intro;
+              if (te > 0) {
+                // Fast rush outward (small introTau) plus a short overshoot bump
+                // (introOver) that peaks then decays — a punchy boom that flies
+                // slightly past its resting size/position, then settles back.
+                var xr = te / cfg.introTau;
+                intro =
+                  cfg.introMin +
+                  (1 - cfg.introMin) * (1 - Math.exp(-xr)) +
+                  cfg.introOver * xr * Math.exp(-xr);
+              } else {
+                intro = cfg.introMin;
+              }
+              var scale = cfg.mStar * Math.pow(R, ell) * intro; // POSITION expansion
+              // Tiles grow from a sub-px point at centre up to full size by the resting frame
+              // (scale 1), so they emerge by SCALING — opacity stays 1, no ghosted fade-in, and
+              // the centre stays clean because a sub-px point is invisible (not a cluster).
+              var emerge = (scale - 0.1) / 0.9;
+              if (emerge < 0) emerge = 0;
+              else if (emerge > 1) emerge = 1;
+              var sz = Math.pow(scale, c.P) * emerge; // on-screen SIZE growth (per tile)
+              var onW = t.w * L.s * sz; // target on-screen width (design px)
+              var s = onW / t.nw; // native -> screen (mostly downscale)
+              c.el.style.borderRadius =
+                (s > 0.001 ? 8 / s : 0).toFixed(1) + "px"; // ~8px on screen
+              var depth = (scale < 2.4 ? scale : 2.4) * cfg.pStrength;
+              // After the boom settles, each tile hovers: a slow vertical bob that
+              // eases in (hgate) once the entrance is past, so the field breathes.
+              var st = te - cfg.hoverDelay;
+              var hgate = st > 0 ? 1 - Math.exp(-st / cfg.hoverEase) : 0;
+              var hov =
+                Math.sin(eb * c.hspeed + c.hphase) * cfg.hoverAmp * hgate;
+              var cx = L.cx + (t.dx * scale + pxv * depth) * L.s;
+              var cy = L.cy + (t.dy * scale + pyv * depth + hov) * L.s;
+              var X = cx - onW / 2,
+                Y = cy - (t.h * L.s * sz) / 2;
+              // Stable z-order: generation first (the higher generation always
+              // has a larger ell, so it's always the more-expanded/closer batch),
+              // then the tile's fixed rank. Independent of the live scale, so a
+              // staggered tile can't momentarily outrank a neighbour and flicker.
+              c.el.style.zIndex = 100 + c.g * 1000 + c.z;
+              c.el.style.transform =
+                "translate(" +
+                X.toFixed(1) +
+                "px," +
+                Y.toFixed(1) +
+                "px) scale(" +
+                s.toFixed(4) +
+                ")";
+            }
+          }
+
+          if (reduce) {
+            render(0, 1e6);
+            return;
+          }
+
+          var start = 0,
+            PERIOD = cfg.period;
+          function loop(ts) {
+            if (!start) start = ts;
+            var el = (ts - start) / 1000;
+            // World 2: no tunnel. Hold u at the resting frame (u=0) so the
+            // tiles don't keep expanding outward; the only motion is the
+            // one-time big-bang intro, which render() ramps per tile from the
+            // elapsed seconds below — so the boom plays once, then freezes.
+            var u = 0;
+            // Pass elapsed seconds; render() applies each tile's own staggered
+            // intro ramp so the big-bang sprinkles in rather than popping at once.
+            render(u, el);
+            requestAnimationFrame(loop);
+          }
+          requestAnimationFrame(loop);
+        })();
+      }
+    </script>
+  </body>
+</html>
