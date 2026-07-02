@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>World-2 — top-fan build</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: #ececee;
+      }
+
+      /* ---- Two-column shell: panel left, preview right ---- */
+      body {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 24px;
+        padding: 24px;
+      }
+
+      /* ---- Left panel: variant selector ---- */
+      .vr-panel {
+        flex: 0 0 280px;
+        align-self: flex-start;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid #e3e3e6;
+        border-radius: 16px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+      }
+
+      .vr-title {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: #1a1a1a;
+      }
+
+      .vr-tabs {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .vr-tab {
+        appearance: none;
+        border: 1px solid #e6e6e8;
+        background: #fff;
+        padding: 12px 16px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        color: #1a1a1a;
+        border-radius: 12px;
+        cursor: pointer;
+        text-align: left;
+        transition:
+          background-color 0.15s ease,
+          color 0.15s ease,
+          border-color 0.15s ease;
+      }
+
+      .vr-tab:hover {
+        background: #fafafa;
+        border-color: #d6d6d8;
+      }
+
+      .vr-tab.is-active {
+        background: #1a1a1a;
+        color: #fff;
+        border-color: #1a1a1a;
+        border-radius: 14px;
+      }
+
+      .vr-tab:focus-visible {
+        outline: 2px solid #008060;
+        outline-offset: 2px;
+      }
+
+      /* ---- Mode segmented control (Desktop / Mobile) ---- */
+      .vr-divider {
+        height: 1px;
+        background: #ececee;
+        margin: 0 -2px;
+      }
+
+      .vr-mode-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #8a8a8a;
+        margin-bottom: -8px;
+      }
+
+      .vr-modes {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        background: #f1f1f2;
+        border-radius: 10px;
+      }
+
+      .vr-mode {
+        appearance: none;
+        flex: 1 1 0;
+        border: 0;
+        background: transparent;
+        padding: 8px 10px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        color: #616161;
+        border-radius: 7px;
+        cursor: pointer;
+        transition:
+          background-color 0.15s ease,
+          color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .vr-mode:hover {
+        color: #1a1a1a;
+      }
+
+      .vr-mode.is-active {
+        background: #fff;
+        color: #1a1a1a;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      }
+
+      .vr-mode:focus-visible {
+        outline: 2px solid #008060;
+        outline-offset: 2px;
+      }
+
+      /* ---- Performance metric (LCP) readout ---- */
+      .vr-metric {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .vr-metric__row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .vr-metric__name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .vr-metric__value {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: #1a1a1a;
+      }
+
+      .vr-metric__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #c7c7cc;
+        flex: 0 0 auto;
+      }
+      .vr-metric__dot[data-rating="good"] {
+        background: #0a8754;
+      }
+      .vr-metric__dot[data-rating="ni"] {
+        background: #d9a300;
+      }
+      .vr-metric__dot[data-rating="poor"] {
+        background: #d72c0d;
+      }
+
+      .vr-metric__hint {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.4;
+        color: #9a9a9a;
+      }
+
+      /* ---- Right stage: the selected variant, full page, scrollable ---- */
+      .vr-stage {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 100%;
+        display: flex;
+      }
+
+      .vr-frame {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+      }
+
+      /* Mobile: center a phone-proportioned placeholder screen. */
+      .vr-stage.is-mobile {
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+        padding: 16px 0;
+      }
+
+      /* `display: flex` below would otherwise win over the UA [hidden] rule. */
+      .vr-screen[hidden] {
+        display: none;
+      }
+
+      .vr-screen {
+        position: relative;
+        flex: 0 0 auto;
+        width: 393px;
+        max-width: 90%;
+        aspect-ratio: 393 / 852;
+        max-height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #fff;
+        border-radius: 28px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+      }
+
+      /* Mobile variant page, framed by the phone-proportioned screen. */
+      .vr-screen__frame {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #fff;
+      }
+
+      .vr-screen__frame[hidden] {
+        display: none;
+      }
+
+      .vr-screen__label {
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        color: #9a9a9a;
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="vr-panel">
+      <span class="vr-title">World-2 · standalone</span>
+      <span class="vr-mode-label">Variant</span>
+      <nav class="vr-tabs" role="tablist" aria-label="Variant">
+        <button
+          class="vr-tab is-active"
+          role="tab"
+          aria-selected="true"
+          data-src="variant-world-2.html"
+        >
+          World-2
+        </button>
+      </nav>
+
+      <div class="vr-divider"></div>
+
+      <span class="vr-mode-label">Viewport</span>
+      <div class="vr-modes" role="group" aria-label="Viewport">
+        <button
+          class="vr-mode is-active"
+          data-mode="desktop"
+          aria-pressed="true"
+        >
+          Desktop
+        </button>
+        <button class="vr-mode" data-mode="mobile" aria-pressed="false">
+          Mobile
+        </button>
+      </div>
+    </aside>
+
+    <main class="vr-stage">
+      <iframe
+        class="vr-frame"
+        src="variant-world-2.html"
+        title="Variant preview"
+      ></iframe>
+      <div class="vr-screen" hidden>
+        <iframe class="vr-screen__frame" title="Mobile preview" hidden></iframe>
+        <span class="vr-screen__label">Coming soon</span>
+      </div>
+    </main>
+
+    <script>
+      const frame = document.querySelector(".vr-frame");
+      const screen = document.querySelector(".vr-screen");
+      const screenFrame = document.querySelector(".vr-screen__frame");
+      const screenLabel = document.querySelector(".vr-screen__label");
+      const stage = document.querySelector(".vr-stage");
+      const tabs = [...document.querySelectorAll(".vr-tab")];
+      const modes = [...document.querySelectorAll(".vr-mode")];
+      const lcpNumber = document.getElementById("lcp-number");
+      const lcpDot = document.querySelector(".vr-metric__dot");
+      const lcpHint = document.querySelector(".vr-metric__hint");
+
+      let mode = "desktop";
+      let activeTab =
+        tabs.find((t) => t.classList.contains("is-active")) || tabs[0];
+
+      // Append a fresh token so the iframe always loads the latest HTML
+      // (variant files' ?v= only busts their CSS, not the page the iframe loads).
+      const bust = (src) =>
+        src + (src.includes("?") ? "&" : "?") + "t=" + Date.now();
+
+      // ---- LCP readout -------------------------------------------------
+      // One normal load = one measurement. Switching to a variant (or the
+      // user reloading the harness) records a single LCP sample for it; the
+      // running average/range is built only from the loads the user actually
+      // performs (samples persist in localStorage). All variants share the
+      // same below-hero components (shared-below.js) — only the hero differs —
+      // so differences reflect the hero's cost. A run id invalidates a pending
+      // measurement when the user switches before it settles.
+      const SETTLE_MS = 750; // wait after load for the largest paint to land
+      const LCP_KEY = "freeTrialHero.lcpSamples.v1";
+      let runId = 0;
+
+      function loadStore() {
+        try {
+          return JSON.parse(localStorage.getItem(LCP_KEY) || "{}");
+        } catch (e) {
+          return {};
+        }
+      }
+      function saveStore(s) {
+        try {
+          localStorage.setItem(LCP_KEY, JSON.stringify(s));
+        } catch (e) {}
+      }
+
+      function setLCP(text, rating) {
+        if (!lcpNumber) return;
+        lcpNumber.textContent = text;
+        if (lcpDot) lcpDot.dataset.rating = rating || "none";
+      }
+
+      function setHint(text) {
+        if (lcpHint) lcpHint.textContent = text;
+      }
+
+      function ratingFor(ms) {
+        if (ms <= 2500) return "good";
+        if (ms <= 4000) return "ni";
+        return "poor";
+      }
+
+      function fmt(ms) {
+        return ms >= 1000
+          ? (ms / 1000).toFixed(2) + " s"
+          : Math.round(ms) + " ms";
+      }
+
+      // Reload the iframe once and resolve the largest LCP start time seen
+      // within SETTLE_MS of the load event (null if superseded/unavailable).
+      function measureOnce(iframeEl, src) {
+        return new Promise((resolve) => {
+          const myRun = runId;
+          const onLoad = () => {
+            if (myRun !== runId) return resolve(null);
+            let win;
+            try {
+              win = iframeEl.contentWindow;
+            } catch (e) {
+              win = null;
+            }
+            if (!win || !win.PerformanceObserver) return resolve(null);
+            let best = 0;
+            let po;
+            try {
+              po = new win.PerformanceObserver((list) => {
+                for (const e of list.getEntries()) {
+                  const t = e.startTime || e.renderTime || 0;
+                  if (t > best) best = t;
+                }
+              });
+              po.observe({ type: "largest-contentful-paint", buffered: true });
+            } catch (e) {
+              return resolve(null);
+            }
+            win.setTimeout(() => {
+              if (po) po.disconnect();
+              resolve(myRun === runId ? best : null);
+            }, SETTLE_MS);
+          };
+          iframeEl.addEventListener("load", onLoad, { once: true });
+          iframeEl.src = bust(src);
+        });
+      }
+
+      // One normal load = one measurement. Record this load's LCP as a single
+      // sample, then show this load's value plus the running average/range
+      // built only from the loads the user has actually done for this variant.
+      async function trackLCP(iframeEl, src) {
+        const myRun = ++runId;
+        setLCP("measuring…", "none");
+        const ms = await measureOnce(iframeEl, src);
+        if (myRun !== runId) return;
+        if (ms == null || ms <= 0) {
+          setLCP("n/a", "none");
+          setHint("Largest Contentful Paint could not be measured here.");
+          return;
+        }
+
+        const store = loadStore();
+        const arr = (store[src] || []).concat(ms).slice(-30);
+        store[src] = arr;
+        saveStore(store);
+
+        const rating = ratingFor(ms);
+        setLCP(fmt(ms), rating);
+
+        if (arr.length > 1) {
+          const min = Math.min.apply(null, arr);
+          const max = Math.max.apply(null, arr);
+          const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
+          setHint(
+            "This load " +
+              fmt(ms) +
+              " · avg " +
+              fmt(avg) +
+              " · range " +
+              fmt(min) +
+              "–" +
+              fmt(max) +
+              " over " +
+              arr.length +
+              " loads. Reload to add a sample.",
+          );
+        } else {
+          const word =
+            rating === "good"
+              ? "good"
+              : rating === "ni"
+                ? "needs work"
+                : "poor";
+          setHint(
+            "Single load (" +
+              word +
+              "). Reload to build an average — only the hero differs across variants.",
+          );
+        }
+      }
+
+      // Each variant is a single responsive file. Desktop loads it in the wide
+      // iframe; mobile loads the SAME file in the 393px phone iframe, whose
+      // narrower viewport trips the file's width breakpoint into its mobile
+      // layout. No separate -mobile.html anymore.
+      function load() {
+        const mobile = mode === "mobile";
+        stage.classList.toggle("is-mobile", mobile);
+        frame.hidden = mobile;
+        screen.hidden = !mobile;
+
+        if (!mobile) {
+          trackLCP(frame, activeTab.dataset.src);
+          return;
+        }
+
+        screenFrame.hidden = false;
+        screenLabel.hidden = true;
+        trackLCP(screenFrame, activeTab.dataset.src);
+      }
+
+      // Force a fresh initial load (HTML in src="" may be cached).
+      load();
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          activeTab = tab;
+          tabs.forEach((t) => {
+            const active = t === tab;
+            t.classList.toggle("is-active", active);
+            t.setAttribute("aria-selected", String(active));
+          });
+          load();
+        });
+      });
+
+      modes.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          mode = btn.dataset.mode;
+          modes.forEach((m) => {
+            const active = m === btn;
+            m.classList.toggle("is-active", active);
+            m.setAttribute("aria-pressed", String(active));
+          });
+          load();
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -23,8 +23,8 @@
 
   .field{ position:absolute; inset:0; z-index:1; }
   .layer{ position:absolute; inset:0; }
-  .layer.d0{ z-index:1; filter:blur(5px) saturate(.92) brightness(1.03); opacity:.7; }
-  .layer.d1{ z-index:2; filter:blur(1.6px); opacity:.92; }
+  /* Shallower depth: just two tiers now — a soft back and a sharp front. */
+  .layer.d1{ z-index:2; filter:blur(1px); opacity:.94; }
   .layer.d2{ z-index:3; }
 
   /* Each layer's cards live in a stack twice the viewport tall; translateY 0 -> -50%
@@ -33,7 +33,7 @@
     animation:slideUp var(--dur,40s) linear infinite; will-change:transform; }
   @keyframes slideUp{ from{ transform:translateY(0); } to{ transform:translateY(-50%); } }
 
-  .card{ position:absolute; border-radius:18px; overflow:hidden; background:#efece7;
+  .card{ position:absolute; border-radius:14px; overflow:hidden; background:#efece7;
     box-shadow:0 22px 50px -26px rgba(0,0,0,.34); }
   .layer.d2 .card{ box-shadow:0 32px 66px -28px rgba(0,0,0,.42), 0 8px 18px rgba(0,0,0,.10); }
   /* Two stacked photo layers per card so it can crossfade to a new image while it travels. */
@@ -44,7 +44,7 @@
   /* Feathered white pool behind the signup: a bright, near-opaque core that melts outward
      through several soft stops to fully transparent, so the signup lifts off the card field
      without any hard edge. Two stacked radials — a wider gentle feather + a tighter glow. */
-  .halo{ position:absolute; z-index:2; top:50%; left:50%; transform:translate(-50%,-50%);
+  .halo{ position:absolute; z-index:2; top:44%; left:50%; transform:translate(-50%,-50%);
     width:min(900px,104vw); height:min(640px,88vh); pointer-events:none;
     background:
       radial-gradient(52% 52% at 50% 50%,
@@ -56,7 +56,7 @@
   .logo{ position:absolute; top:max(16px,2.4vh); left:50%; transform:translateX(-50%); z-index:5; line-height:0; }
   .logo .logo-vid{ height:clamp(36px,3.6vw,50px); filter:none; }
 
-  .content{ position:absolute; z-index:4; top:50%; left:50%; transform:translate(-50%,-50%);
+  .content{ position:absolute; z-index:4; top:44%; left:50%; transform:translate(-50%,-50%);
     width:min(470px,88vw); display:flex; flex-direction:column; gap:12px; text-align:center; align-items:center; }
   .content .intro{ width:100%; }
   .content .intro h1{ font-size:clamp(32px,4.2vw,46px); }
@@ -64,15 +64,17 @@
 
   @media (max-width: 900px){
     .hero{ min-height:100svh; }
-    .layer.d0{ display:none; }              /* thin the back layer so mobile stays calm */
-    .halo{ width:148vw; height:70vh;
-      background:
-        radial-gradient(54% 50% at 50% 50%,
-          rgba(255,255,255,.99) 0%, rgba(255,255,255,.97) 34%, rgba(255,255,255,.8) 54%,
-          rgba(255,255,255,.4) 70%, rgba(255,255,255,.14) 84%, rgba(255,255,255,0) 95%),
-        radial-gradient(36% 38% at 50% 48%,
-          rgba(255,255,255,1) 0%, rgba(255,255,255,.9) 55%, rgba(255,255,255,0) 100%); }
+    /* Signup drops to the bottom; the feathered pool follows it down. */
+    .content{ top:auto; bottom:clamp(26px,5vh,46px); transform:translateX(-50%); }
     .content .intro h1{ font-size:clamp(30px,8vw,42px); }
+    .halo{ top:auto; bottom:0; transform:translateX(-50%);
+      width:172vw; height:64vh;
+      background:
+        radial-gradient(62% 58% at 50% 80%,
+          rgba(255,255,255,.99) 0%, rgba(255,255,255,.97) 34%, rgba(255,255,255,.8) 54%,
+          rgba(255,255,255,.4) 70%, rgba(255,255,255,.13) 86%, rgba(255,255,255,0) 97%),
+        radial-gradient(40% 34% at 50% 86%,
+          rgba(255,255,255,1) 0%, rgba(255,255,255,.9) 55%, rgba(255,255,255,0) 100%); }
   }
   @media (prefers-reduced-motion: reduce){ .stack{ animation:none; } }
 </style>
@@ -129,19 +131,17 @@
     // x = centre fraction of W, y = centre fraction of one loop (= viewport height). Cards are
     // spread wide across the field, including past the edges, so nothing clusters.
     // `swap:true` cards crossfade to a fresh photo periodically while they travel.
+    // Two tiers only (shallower depth) and a leaner card count so desktop doesn't crowd.
+    // Front cards are scaled up and pushed toward the edges, leaving the centre clear.
     var TIERS = [
-      { d:0, scale:0.80, dur:46, cards:[          // back — blurred, slow, small
-        {x:.04,y:.08,w:150,ar:1.28}, {x:.49,y:.04,w:128,ar:0.78}, {x:.95,y:.15,w:140,ar:1.0},
-        {x:.18,y:.42,w:120,ar:1.0},  {x:.80,y:.50,w:158,ar:1.30}, {x:.45,y:.72,w:132,ar:0.80},
-        {x:.97,y:.83,w:126,ar:1.20}, {x:.08,y:.88,w:146,ar:1.0} ]},
-      { d:1, scale:0.92, dur:35, cards:[          // mid
+      { d:1, scale:0.90, dur:35, cards:[          // back — soft, slow
         {x:.30,y:.15,w:176,ar:1.30, swap:true}, {x:.68,y:.27,w:160,ar:0.82},
         {x:.02,y:.58,w:184,ar:1.0},  {x:.90,y:.66,w:170,ar:1.28, swap:true},
-        {x:.54,y:.92,w:164,ar:1.0},  {x:.40,y:.40,w:148,ar:0.78} ]},
-      { d:2, scale:1.04, dur:27, cards:[          // front — sharp, faster, larger
-        {x:.13,y:.30,w:212,ar:1.30, swap:true}, {x:.82,y:.10,w:226,ar:1.0, swap:true},
-        {x:.71,y:.82,w:214,ar:0.80, swap:true},  {x:.24,y:.66,w:202,ar:1.24, swap:true},
-        {x:.96,y:.44,w:196,ar:1.0} ]}
+        {x:.54,y:.92,w:164,ar:1.0} ]},
+      { d:2, scale:1.14, dur:27, cards:[          // front — sharp, faster, larger
+        {x:.12,y:.30,w:232,ar:1.30, swap:true}, {x:.84,y:.10,w:246,ar:1.0, swap:true},
+        {x:.72,y:.82,w:234,ar:0.80, swap:true},  {x:.22,y:.66,w:220,ar:1.24, swap:true},
+        {x:.97,y:.44,w:214,ar:1.0} ]}
     ];
 
     var eager = 0, swapGroups = [], swapIdx = 0;

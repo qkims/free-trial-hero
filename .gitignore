@@ -1,3 +1,12 @@
-node_modules/
+# macOS
 .DS_Store
+
+# Editor / OS cruft
+*.swp
+*~
+.vscode/
+
+# Node (if any tooling gets added later)
+node_modules/
+npm-debug.log*
 *.log

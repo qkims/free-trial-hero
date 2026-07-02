@@ -16,11 +16,18 @@ html,body{ margin:0; }
    still covers the frame. Rotation lives here; the drift lives per-row. */
 .rotor{
   position:absolute; top:50%; left:50%;
-  width:130%; height:158%;
+  width:142%; height:172%;
   transform:translate(-50%,-50%) rotate(var(--tilt, 18deg));
   transform-origin:center;
   overflow:hidden;
   z-index:0;
+}
+/* Tall, narrow phones: the 18° tilt swings the rotor's left/right edges off the top-right and
+   bottom-left corners, exposing the grey backdrop. A taller, narrower viewport needs MORE width
+   over-scan (and less height) to keep those corners covered. buildFixed reads the rotor's box at
+   runtime, so it auto-fills the wider area. */
+@media (max-width: 900px){
+  .rotor{ width:190%; height:138%; }
 }
 .track{
   position:absolute; top:50%; left:0; width:100%;
@@ -48,6 +55,16 @@ html,body{ margin:0; }
 .card.w1{ aspect-ratio: 239 / 314; }   /* portrait */
 .card.w2{ aspect-ratio: 539 / 314; }   /* landscape */
 .card img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+/* Addressable cell badge (buildFixed): a small mono label in the corner so each image
+   can be named for swapping. Counter-rotated so it stays upright against the .rotor tilt. */
+.card .badge{
+  position:absolute; left:8px; bottom:8px; z-index:2;
+  font:600 11px/1 ui-monospace, Menlo, monospace; letter-spacing:.02em;
+  color:#fff; background:rgba(0,0,0,.62); padding:3px 6px; border-radius:6px;
+  pointer-events:none; transform:rotate(calc(-1 * var(--tilt, 18deg)));
+  transform-origin:left bottom; backdrop-filter:blur(2px);
+}
 
 /* ---------------------------------------------------------------------------
    Vertical-columns mode — a row of columns, each an independent vertical marquee
